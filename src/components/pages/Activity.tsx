@@ -1,21 +1,53 @@
-
+import { useLanguage } from '../../contexts/LanguageContext';
 import { Card } from '../ui/Card';
 import { Mail, Trash2, Archive, Reply, Forward } from 'lucide-react';
 
-const mockActivity = [
-    { action: 'Respondeu email', target: 'Re: Projeto Ratel', time: '10 min atrás', icon: Reply, color: 'text-blue-500' },
-    { action: 'Arquivou 15 emails', target: 'Newsletter Folder', time: '30 min atrás', icon: Archive, color: 'text-green-500' },
-    { action: 'Excluiu permanentemente', target: 'Spam (5 itens)', time: '1 hora atrás', icon: Trash2, color: 'text-red-500' },
-    { action: 'Encaminhou anexo', target: 'Fwd: Relatório Mensal', time: '2 horas atrás', icon: Forward, color: 'text-purple-500' },
-    { action: 'Nova Inscrição', target: 'RocketSeat Newsletter', time: 'ontem', icon: Mail, color: 'text-yellow-500' },
-];
-
 export function ActivityPage() {
+    const { t } = useLanguage();
+
+    const mockActivity = [
+        {
+            action: t('activity_page.items.replied'),
+            target: 'Re: Projeto Ratel',
+            time: `10 ${t('activity_page.time.min_ago')}`,
+            icon: Reply,
+            color: 'text-blue-500'
+        },
+        {
+            action: t('activity_page.items.archived'),
+            target: 'Newsletter Folder',
+            time: `30 ${t('activity_page.time.min_ago')}`,
+            icon: Archive,
+            color: 'text-green-500'
+        },
+        {
+            action: t('activity_page.items.deleted_permanent'),
+            target: 'Spam (5 itens)',
+            time: `1 ${t('activity_page.time.hour_ago')}`,
+            icon: Trash2,
+            color: 'text-red-500'
+        },
+        {
+            action: t('activity_page.items.forwarded'),
+            target: 'Fwd: Relatório Mensal',
+            time: `2 ${t('activity_page.time.hours_ago')}`,
+            icon: Forward,
+            color: 'text-purple-500'
+        },
+        {
+            action: t('activity_page.items.new_subscription'),
+            target: 'RocketSeat Newsletter',
+            time: t('activity_page.time.yesterday'),
+            icon: Mail,
+            color: 'text-yellow-500'
+        },
+    ];
+
     return (
-        <div className="max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div>
-                <h2 className="text-3xl font-bold tracking-tight">Atividade Recente</h2>
-                <p className="text-muted-foreground">Registro das suas últimas ações no sistema.</p>
+        <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-col gap-2 mb-6">
+                <h2 className="text-3xl font-heading font-bold tracking-tight">{t('activity_page.title')}</h2>
+                <p className="text-muted-foreground">{t('activity_page.subtitle')}</p>
             </div>
 
             <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent">
@@ -25,9 +57,9 @@ export function ActivityPage() {
                             <item.icon className={`h-5 w-5 ${item.color}`} />
                         </div>
 
-                        <Card className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4">
-                            <div className="font-bold text-slate-900">{item.action}</div>
-                            <div className="text-sm text-slate-500">{item.target}</div>
+                        <Card className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 hover:shadow-md transition-shadow">
+                            <div className="font-bold text-slate-900 dark:text-slate-100">{item.action}</div>
+                            <div className="text-sm text-slate-500 dark:text-slate-400">{item.target}</div>
                             <time className="block text-xs font-medium text-slate-400 mt-2">{item.time}</time>
                         </Card>
                     </div>

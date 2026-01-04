@@ -1,61 +1,159 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Mapear Medium (500) e SemiBold (600) para Bold para atender pedido da Sidebar */
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Bold.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Bold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Extra Bold para Títulos */
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Heavy.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Heavy.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: block;
+}
+
 @layer base {
   :root {
+    /* Paleta Microsoft Fluent UI - Light Mode */
     --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --foreground: 210 11% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 210 11% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
+    --popover-foreground: 210 11% 15%;
+
+    /* Cores Fluent - Azul Microsoft */
+    --primary: 206 100% 40%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 142 76% 36%;
+
+    /* Secundário - Cinza suave */
+    --secondary: 210 16% 93%;
+    --secondary-foreground: 210 11% 15%;
+    --muted: 210 16% 93%;
+    --muted-foreground: 210 11% 45%;
+
+    /* Accent - Verde Microsoft */
+    --accent: 151 55% 42%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+
+    /* Destructive - Vermelho Fluent */
+    --destructive: 0 78% 53%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
-    --radius: 0.5rem;
+
+    /* Borders */
+    --border: 210 16% 87%;
+    --input: 210 16% 87%;
+    --ring: 206 100% 40%;
+    --radius: 0.375rem;
+
+    /* Cores adicionais Fluent UI */
+    --fluent-blue: 206 100% 40%;
+    --fluent-teal: 180 60% 35%;
+    --fluent-green: 151 55% 42%;
+    --fluent-yellow: 45 100% 51%;
+    --fluent-orange: 27 98% 54%;
+    --fluent-red: 0 78% 53%;
+    --fluent-magenta: 328 80% 50%;
+    --fluent-purple: 262 68% 58%;
   }
 
   .dark {
-    --background: 222 47% 11%;
+    /* Paleta Microsoft Fluent UI - Dark Mode */
+    --background: 220 17% 10%;
     --foreground: 210 40% 98%;
-    --card: 222 47% 11%;
+    --card: 220 17% 14%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
+    --popover: 220 17% 14%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217 33% 17%;
+    --primary: 206 100% 50%;
+    --primary-foreground: 220 17% 10%;
+    --secondary: 220 17% 20%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
+    --muted: 220 17% 20%;
     --muted-foreground: 215 20% 65%;
-    --accent: 142 76% 36%;
+    --accent: 151 55% 52%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 84% 60%;
+    --destructive: 0 78% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 217 91% 60%;
+    --border: 220 17% 25%;
+    --input: 220 17% 25%;
+    --ring: 206 100% 50%;
   }
 }
 
 @layer base {
+
+  /* Forçar fonte em TODOS os elementos para corrigir herança (buttons, inputs, etc) */
+  * {
+    font-family: "Nexa", system-ui, sans-serif;
+    font-style: normal !important;
+    /* Garantir que nada fique itálico acidentalmente */
+  }
+
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    font-family: "Nexa", system-ui, sans-serif;
     font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Nexa", system-ui, sans-serif;
+    font-weight: 900;
+    /* Forçar Extra Bold/Heavy para títulos */
   }
 
   /* Scrollbar customizada */

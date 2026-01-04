@@ -45,15 +45,22 @@ export default {
                     DEFAULT: 'hsl(var(--card))',
                     foreground: 'hsl(var(--card-foreground))',
                 },
+                /* Cores Fluent UI para ícones coloridos */
+                fluent: {
+                    blue: 'hsl(var(--fluent-blue))',
+                    teal: 'hsl(var(--fluent-teal))',
+                    green: 'hsl(var(--fluent-green))',
+                    yellow: 'hsl(var(--fluent-yellow))',
+                    orange: 'hsl(var(--fluent-orange))',
+                    red: 'hsl(var(--fluent-red))',
+                    magenta: 'hsl(var(--fluent-magenta))',
+                    purple: 'hsl(var(--fluent-purple))',
+                },
             },
             borderRadius: {
                 lg: 'var(--radius)',
                 md: 'calc(var(--radius) - 2px)',
                 sm: 'calc(var(--radius) - 4px)',
-            },
-            fontFamily: {
-                sans: ['Inter', 'system-ui', 'sans-serif'],
-                mono: ['JetBrains Mono', 'monospace'],
             },
             keyframes: {
                 'accordion-down': {
@@ -72,7 +79,7 @@ export default {
                     from: { transform: 'translateX(0)' },
                     to: { transform: 'translateX(-100%)' },
                 },
-                shimmer: {
+                'shimmer': {
                     '0%': { backgroundPosition: '-1000px 0' },
                     '100%': { backgroundPosition: '1000px 0' },
                 },
@@ -82,8 +89,13 @@ export default {
                 'accordion-up': 'accordion-up 0.2s ease-out',
                 'slide-in': 'slide-in 0.3s ease-out',
                 'slide-out': 'slide-out 0.3s ease-out',
-                shimmer: 'shimmer 2s infinite linear',
+                'shimmer': 'shimmer 2s infinite linear',
             },
+        },
+        fontFamily: {
+            sans: ['"Nexa"', 'system-ui', 'sans-serif'],
+            heading: ['"Nexa"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
         },
     },
     plugins: [],

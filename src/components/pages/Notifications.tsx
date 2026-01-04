@@ -1,21 +1,24 @@
+import { useLanguage } from '../../contexts/LanguageContext';
 import { Button } from '../ui/Button';
-import { Star, UserPlus } from 'lucide-react';
+import { Star, UserPlus, Shield, Zap } from 'lucide-react';
 
 export function NotificationsPage() {
+    const { t } = useLanguage();
+
     const notifications = [
         {
             id: 1,
-            title: 'Novo login detectado',
-            description: 'Um novo login foi realizado no dispositivo "Chrome no Windows".',
+            title: t('notifications_page.items.login.title'),
+            description: t('notifications_page.items.login.description'),
             time: 'Há 2 minutos',
-            icon: ShieldIcon,
+            icon: Shield,
             color: 'bg-yellow-100 text-yellow-600',
             read: false
         },
         {
             id: 2,
-            title: 'Meta de Inbox Zero atingida!',
-            description: 'Parabéns! Você limpou sua caixa de entrada 3 dias seguidos.',
+            title: t('notifications_page.items.inbox_zero.title'),
+            description: t('notifications_page.items.inbox_zero.description'),
             time: 'Há 1 hora',
             icon: Star,
             color: 'bg-green-100 text-green-600',
@@ -23,17 +26,17 @@ export function NotificationsPage() {
         },
         {
             id: 3,
-            title: 'Atualização do Sistema',
-            description: 'O Ratel foi atualizado para a versão 2.1 com novos recursos.',
+            title: t('notifications_page.items.update.title'),
+            description: t('notifications_page.items.update.description'),
             time: 'Há 5 horas',
-            icon: ZapIcon,
+            icon: Zap,
             color: 'bg-blue-100 text-blue-600',
             read: true
         },
         {
             id: 4,
-            title: 'Novo seguidor',
-            description: 'Rafael Silva começou a seguir suas listas públicas.',
+            title: t('notifications_page.items.follower.title'),
+            description: t('notifications_page.items.follower.description'),
             time: 'Ontem',
             icon: UserPlus,
             color: 'bg-purple-100 text-purple-600',
@@ -41,14 +44,11 @@ export function NotificationsPage() {
         }
     ];
 
-    function ShieldIcon(props: any) { return <div {...props}>🛡️</div> }
-    function ZapIcon(props: any) { return <div {...props}>⚡</div> }
-
     return (
         <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center justify-between">
-                <h2 className="text-3xl font-bold tracking-tight">Notificações</h2>
-                <Button variant="ghost" size="sm">Marcar todas como lidas</Button>
+                <h2 className="text-3xl font-bold tracking-tight">{t('notifications_page.title')}</h2>
+                <Button variant="ghost" size="sm">{t('notifications_page.mark_all_read')}</Button>
             </div>
 
             <div className="space-y-4">
@@ -68,7 +68,7 @@ export function NotificationsPage() {
                             <p className="text-sm text-muted-foreground">{notification.description}</p>
                             {!notification.read && (
                                 <div className="pt-2">
-                                    <Button size="sm" variant="secondary" className="h-7 text-xs">Marcar como lida</Button>
+                                    <Button size="sm" variant="secondary" className="h-7 text-xs">{t('notifications_page.mark_read')}</Button>
                                 </div>
                             )}
                         </div>

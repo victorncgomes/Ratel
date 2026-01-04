@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Menu, Bell, Search, Mail, Inbox, Tag, Activity, Settings, HelpCircle, LogOut } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, Bell, Search, Settings, HelpCircle, LogOut } from 'lucide-react';
 import { useTheme } from './hooks/useTheme';
 import { Button } from './components/ui/Button';
 import { Card, CardContent } from './components/ui/Card';
@@ -8,32 +8,90 @@ import { Badge } from './components/ui/badge';
 import { Input } from './components/ui/input';
 import { cn } from './lib/utils';
 import { LoginPage } from './components/LoginPage';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { Language } from './lib/i18n/translations';
+import { FlagBR, FlagES, FlagUK } from './components/icons/Flags';
 
 // Pages
 import { DashboardPage } from './components/pages/Dashboard';
-import { SettingsPage } from './components/pages/Settings';
 import { HelpPage } from './components/pages/Help';
 import { NotificationsPage } from './components/pages/Notifications';
 import { ProfilePage } from './components/pages/Profile';
 import { SubscriptionsPage } from './components/pages/Subscriptions';
 import { LabelsPage } from './components/pages/Labels';
 import { ActivityPage } from './components/pages/Activity';
+import { CleanupPage } from './components/pages/Cleanup';
 
-function App() {
+interface UserData {
+    name: string;
+    email: string;
+    photo: string;
+    provider: string;
+    accessToken?: string;
+}
+
+function RatelApp() {
     useTheme(); // Inicializa tema
+    const { t, language, setLanguage } = useLanguage();
+    const [isFlagMenuOpen, setIsFlagMenuOpen] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('dashboard');
+    const [user, setUser] = useState<UserData | null>(null);
+
+    // Verificar parâmetros de URL para login OAuth
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const authStatus = params.get('auth');
+        const userData = params.get('user');
+
+        if (authStatus === 'success' && userData) {
+            try {
+                const parsedUser = JSON.parse(decodeURIComponent(userData));
+                setUser(parsedUser);
+                setIsAuthenticated(true);
+                // Limpa URL sem recarregar a página
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } catch (e) {
+                console.error('Erro ao parsear dados do usuário:', e);
+            }
+        }
+
+        // Verifica localStorage para sessão persistida
+        const storedUser = localStorage.getItem('ratel_user');
+        if (storedUser) {
+            try {
+                setUser(JSON.parse(storedUser));
+                setIsAuthenticated(true);
+            } catch (e) {
+                localStorage.removeItem('ratel_user');
+            }
+        }
+    }, []);
+
+    // Persiste usuário no localStorage quando muda
+    useEffect(() => {
+        if (user) {
+            localStorage.setItem('ratel_user', JSON.stringify(user));
+        }
+    }, [user]);
+
+    const handleLogout = () => {
+        setIsAuthenticated(false);
+        setUser(null);
+        localStorage.removeItem('ratel_user');
+    };
 
     if (!isAuthenticated) {
         return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
     }
 
     const navItems = [
-        { id: 'dashboard', icon: Inbox, label: 'Dashboard', badge: null },
-        { id: 'subscriptions', icon: Mail, label: 'Inscrições', badge: '12' },
-        { id: 'labels', icon: Tag, label: 'Labels', badge: null },
-        { id: 'activity', icon: Activity, label: 'Atividade', badge: null },
+        { id: 'dashboard', icon: '📊', label: t('menu.dashboard'), badge: null },
+        { id: 'subscriptions', icon: '📬', label: t('menu.subscriptions'), badge: '12' },
+        { id: 'cleanup', icon: '🧹', label: 'Limpeza', badge: 'NOVO' },
+        { id: 'labels', icon: '🏷️', label: t('menu.labels'), badge: null },
+        { id: 'activity', icon: '⚡', label: t('menu.activity'), badge: null },
     ];
 
     const renderContent = () => {
@@ -41,11 +99,12 @@ function App() {
             case 'dashboard': return <DashboardPage />;
             case 'subscriptions': return <SubscriptionsPage />;
             case 'labels': return <LabelsPage />;
+            case 'cleanup': return <CleanupPage />;
             case 'activity': return <ActivityPage />;
-            case 'settings': return <SettingsPage />;
+            case 'settings': return <ProfilePage user={user} />;
             case 'help': return <HelpPage />;
             case 'notifications': return <NotificationsPage />;
-            case 'profile': return <ProfilePage />;
+            case 'profile': return <ProfilePage user={user} />;
             default: return <DashboardPage />;
         }
     };
@@ -66,11 +125,19 @@ function App() {
                     </Button>
 
                     {/* Logo */}
-                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary shadow-sm">
-                            <Mail className="h-5 w-5 text-primary-foreground" />
+                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
+                        <div className="flex items-center justify-center">
+                            <img
+                                src="/ratel.svg"
+                                alt="Ratel Logo"
+                                className="h-10 w-10 object-contain"
+                            />
                         </div>
-                        <span className="text-xl font-bold gradient-text hidden sm:inline-block">Ratel</span>
+                        <img
+                            src="/name-ratel.svg"
+                            alt="Ratel"
+                            className="h-7 object-contain"
+                        />
                     </div>
 
                     {/* Search */}
@@ -79,7 +146,7 @@ function App() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <Input
                                 type="text"
-                                placeholder="Pesquisar emails, contatos ou labels... (Ctrl+K)"
+                                placeholder={t('common.search_placeholder')}
                                 className="pl-10 w-full bg-secondary/50 border-transparent focus:bg-background focus:border-input transition-all"
                             />
                         </div>
@@ -87,27 +154,47 @@ function App() {
 
                     {/* Right Actions */}
                     <div className="flex items-center gap-2 ml-auto">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="relative hover:bg-secondary/80"
-                            onClick={() => setActiveTab('notifications')}
-                        >
-                            <Bell className={`h - 5 w - 5 ${activeTab === 'notifications' ? 'text-primary fill-primary' : ''} `} />
-                            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 ring-2 ring-background animate-pulse" />
-                        </Button>
+                        {/* Language Selector */}
+                        <div className="relative">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setIsFlagMenuOpen(!isFlagMenuOpen)}
+                                className="w-10 h-10 p-0 hover:bg-muted/50"
+                            >
+                                {language === 'pt' && <FlagBR className="w-6 h-auto rounded-[2px] shadow-sm" />}
+                                {language === 'es' && <FlagES className="w-6 h-auto rounded-[2px] shadow-sm" />}
+                                {language === 'en' && <FlagUK className="w-6 h-auto rounded-[2px] shadow-sm" />}
+                            </Button>
 
-                        <div
-                            className="cursor-pointer"
-                            onClick={() => setActiveTab('profile')}
-                        >
-                            <Avatar className="h-8 w-8 hover:ring-2 ring-primary ring-offset-2 transition-all">
-                                <AvatarImage src="" />
-                                <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-primary-foreground text-sm font-semibold">
-                                    V
-                                </AvatarFallback>
-                            </Avatar>
+                            {isFlagMenuOpen && (
+                                <div className="absolute right-0 top-full mt-2 w-40 bg-popover border rounded-lg shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                                    <button
+                                        className={cn("w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-muted transition-colors", language === 'pt' && "bg-muted/70 font-medium")}
+                                        onClick={() => { setLanguage('pt'); setIsFlagMenuOpen(false); }}
+                                    >
+                                        <FlagBR className="w-5 h-auto rounded-[2px] shadow-sm" />
+                                        <span>Português</span>
+                                    </button>
+                                    <button
+                                        className={cn("w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-muted transition-colors", language === 'es' && "bg-muted/70 font-medium")}
+                                        onClick={() => { setLanguage('es'); setIsFlagMenuOpen(false); }}
+                                    >
+                                        <FlagES className="w-5 h-auto rounded-[2px] shadow-sm" />
+                                        <span>Español</span>
+                                    </button>
+                                    <button
+                                        className={cn("w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-muted transition-colors", language === 'en' && "bg-muted/70 font-medium")}
+                                        onClick={() => { setLanguage('en'); setIsFlagMenuOpen(false); }}
+                                    >
+                                        <FlagUK className="w-5 h-auto rounded-[2px] shadow-sm" />
+                                        <span>English</span>
+                                    </button>
+                                </div>
+                            )}
                         </div>
+
+                        {/* Empty as items moved to sidebar (Notifications/Profile) */}
                     </div>
                 </div>
             </header>
@@ -115,15 +202,14 @@ function App() {
             {/* Sidebar */}
             <aside
                 className={cn(
-                    'fixed top-16 left-0 bottom-0 w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-transform duration-300 z-40',
+                    'fixed top-16 left-0 bottom-0 w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-transform duration-300 z-40 flex flex-col',
                     sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
                 )}
             >
                 <nav className="flex flex-col h-full p-4 gap-2">
                     <div className="space-y-1 flex-1">
-                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Menu Principal</p>
+                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{t('common.main_menu')}</p>
                         {navItems.map((item) => {
-                            const Icon = item.icon;
                             const isActive = activeTab === item.id;
 
                             return (
@@ -140,7 +226,10 @@ function App() {
                                             : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                                     )}
                                 >
-                                    <Icon className={cn("h-4 w-4 transition-transform group-hover:scale-110", isActive && "scale-105")} />
+                                    <span className={cn(
+                                        "text-lg transition-transform group-hover:scale-110",
+                                        isActive && "scale-105"
+                                    )}>{item.icon}</span>
                                     <span className="flex-1 text-left">{item.label}</span>
                                     {item.badge && (
                                         <Badge variant={isActive ? 'secondary' : 'outline'} className={cn(isActive && "bg-primary-foreground text-primary hover:bg-primary-foreground")}>
@@ -154,54 +243,62 @@ function App() {
 
                     {/* Bottom Section */}
                     <div className="pt-4 space-y-1 border-t border-border/50">
-                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Suporte</p>
+                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{t('common.support')}</p>
+
                         <Button
                             variant="ghost"
-                            className={cn("w-full justify-start gap-3 px-3", activeTab === 'settings' && "bg-secondary")}
-                            onClick={() => setActiveTab('settings')}
+                            className={cn("w-full justify-start gap-3 px-3", activeTab === 'notifications' && "bg-secondary")}
+                            onClick={() => setActiveTab('notifications')}
                         >
-                            <Settings className="h-4 w-4" />
-                            Configurações
+                            <Bell className="h-4 w-4" />
+                            {t('common.notifications')}
+                            <Badge className="ml-auto h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px]">3</Badge>
                         </Button>
+
                         <Button
                             variant="ghost"
                             className={cn("w-full justify-start gap-3 px-3", activeTab === 'help' && "bg-secondary")}
                             onClick={() => setActiveTab('help')}
                         >
                             <HelpCircle className="h-4 w-4" />
-                            Ajuda
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            className="w-full justify-start gap-3 px-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
-                            onClick={() => setIsAuthenticated(false)}
-                        >
-                            <LogOut className="h-4 w-4" />
-                            Sair
+                            {t('common.help')}
                         </Button>
 
-                        {/* Storage Card */}
-                        <Card className="mt-4 bg-secondary/30 border-none shadow-inner">
-                            <CardContent className="p-3">
-                                <div className="flex justify-between items-center mb-2">
-                                    <p className="text-xs font-semibold text-foreground">
-                                        Armazenamento
-                                    </p>
-                                    <span className="text-[10px] text-muted-foreground">78%</span>
+                        {/* User Profile Button */}
+                        <div className="pt-2 mt-2 border-t border-border/30">
+                            <Button
+                                variant="ghost"
+                                className={cn("w-full justify-start gap-3 px-2 h-auto py-2", activeTab === 'profile' && "bg-secondary")}
+                                onClick={() => setActiveTab('profile')}
+                            >
+                                <Avatar className="h-8 w-8">
+                                    <AvatarImage src={user?.photo || ''} />
+                                    <AvatarFallback>{user?.name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
+                                </Avatar>
+                                <div className="text-left overflow-hidden">
+                                    <p className="text-sm font-medium truncate w-[140px]">{user?.name || t('common.user')}</p>
+                                    <p className="text-xs text-muted-foreground truncate w-[140px]">{user?.email || 'user@ratel.app'}</p>
                                 </div>
-                                <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden mb-2">
-                                    <div className="h-full bg-primary w-[78%] rounded-full" />
-                                </div>
-                                <p className="text-[10px] font-medium text-muted-foreground">11.7 GB de 15 GB</p>
-                            </CardContent>
-                        </Card>
+                            </Button>
+
+                            <Button
+                                variant="ghost"
+                                className="w-full justify-start gap-3 px-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 mt-1"
+                                onClick={handleLogout}
+                            >
+                                <LogOut className="h-4 w-4" />
+                                {t('common.logout')}
+                            </Button>
+                        </div>
+
+                        {/* Storage Card Removed - Moved to Dashboard */}
                     </div>
                 </nav>
             </aside>
 
             {/* Main Content */}
-            <main className="pt-16 lg:pl-64 min-h-screen transition-all duration-300">
-                <div className="p-6 max-w-7xl mx-auto space-y-6">
+            <main className="pt-0 lg:pl-64 min-h-screen transition-all duration-300">
+                <div className="px-4 pt-4 max-w-7xl mx-auto space-y-6">
                     {renderContent()}
                 </div>
             </main>
@@ -217,4 +314,10 @@ function App() {
     );
 }
 
-export default App;
+export default function App() {
+    return (
+        <LanguageProvider>
+            <RatelApp />
+        </LanguageProvider>
+    );
+}

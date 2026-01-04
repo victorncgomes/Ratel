@@ -1,155 +1,221 @@
-import { TrendingUp, Users, Clock, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { TrendingUp, Users, Clock, Mail, AlertCircle, CheckCircle2, Loader2, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { Button } from '../ui/Button';
 
-const dataVolume = [
-    { name: 'Seg', emails: 40 },
-    { name: 'Ter', emails: 75 },
-    { name: 'Qua', emails: 58 },
-    { name: 'Qui', emails: 90 },
-    { name: 'Sex', emails: 65 },
-    { name: 'Sab', emails: 30 },
-    { name: 'Dom', emails: 25 },
-];
-
-const dataActivity = [
-    { name: '00:00', value: 10 },
-    { name: '04:00', value: 5 },
-    { name: '08:00', value: 80 },
-    { name: '12:00', value: 120 },
-    { name: '16:00', value: 90 },
-    { name: '20:00', value: 45 },
-    { name: '23:59', value: 20 },
-];
-
-const dataCategories = [
-    { name: 'Trabalho', value: 450, color: '#2563EB' },
-    { name: 'Social', value: 300, color: '#10B981' },
-    { name: 'Promoções', value: 200, color: '#F59E0B' },
-    { name: 'Updates', value: 150, color: '#6366F1' },
-];
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useStats } from '../../hooks/useStats';
+import { useAnalytics } from '../../hooks/useAnalytics';
+import { mockStats, mockAnalytics } from '../../lib/mockData';
+import { getAccessToken } from '../../lib/api';
 
 export function DashboardPage() {
+    const { t } = useLanguage();
+    const { stats, loading: statsLoading, fetchStats } = useStats();
+    const { analytics, loading: analyticsLoading, fetchAnalytics } = useAnalytics();
+    const [isDemoMode, setIsDemoMode] = useState(false);
+
+    useEffect(() => {
+        // Detectar modo demo (sem token de acesso)
+        const hasToken = getAccessToken();
+        setIsDemoMode(!hasToken);
+
+        if (hasToken) {
+            fetchStats();
+            fetchAnalytics();
+        }
+    }, [fetchStats, fetchAnalytics]);
+
+    const loading = statsLoading || analyticsLoading;
+
+    // Usar dados mockados em modo demo, senão dados reais
+    const weeklyData = isDemoMode ? mockAnalytics.weeklyVolume : (analytics?.weeklyVolume || []);
+    const hourlyData = isDemoMode ? mockAnalytics.hourlyActivity : (analytics?.hourlyActivity || []);
+    const categoriesData = isDemoMode ? mockAnalytics.categories : (analytics?.categories || []);
+    const metrics = isDemoMode ? mockAnalytics.metrics : analytics?.metrics;
+
+    // Stats
+    const inboxCount = isDemoMode ? mockStats.inboxCount : (stats?.inboxCount || 0);
+    const unreadCount = isDemoMode ? mockStats.unreadCount : (stats?.unreadCount || 0);
+    const spamCount = isDemoMode ? mockStats.spamCount : (stats?.spamCount || 0);
+
+    const handleRefresh = () => {
+        if (isDemoMode) {
+            // Em modo demo, simular refresh
+            window.location.reload();
+        } else {
+            fetchStats();
+            fetchAnalytics();
+        }
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div>
-                <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-                <p className="text-muted-foreground">Visão geral da sua produtividade e métricas de email.</p>
-            </div>
+            {/* Header com Badge Demo */}
+            {isDemoMode && (
+                <div className="flex items-center justify-between p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                    <div className="flex items-center gap-2">
+                        <AlertCircle className="h-5 w-5 text-yellow-600" />
+                        <div>
+                            <p className="font-medium text-yellow-900 dark:text-yellow-100">Modo Demonstração</p>
+                            <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                                Você está visualizando dados simulados. Faça login para ver seus dados reais.
+                            </p>
+                        </div>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-2">
+                        <RefreshCw className="h-4 w-4" />
+                        Atualizar
+                    </Button>
+                </div>
+            )}
 
-            {/* Top Stats */}
+            {/* Top Stats - Dados Reais ou Mockados */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Emails Recebidos</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('dashboard.received_emails')}</CardTitle>
                         <Mail className="h-4 w-4 text-blue-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">1,248</div>
-                        <p className="text-xs text-muted-foreground">+12% em relação à semana passada</p>
+                        <div className="text-2xl font-bold">
+                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : inboxCount}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Total na Caixa de Entrada</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Tempo de Leitura</CardTitle>
-                        <Clock className="h-4 w-4 text-orange-500" />
+                        <CardTitle className="text-sm font-medium text-red-500">Não Lidos</CardTitle>
+                        <Clock className="h-4 w-4 text-red-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">45m</div>
-                        <p className="text-xs text-muted-foreground">Média diária estimada</p>
+                        <div className="text-2xl font-bold">
+                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : unreadCount}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Emails precisam de atenção</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Taxa de Resposta</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('dashboard.spam_blocked')}</CardTitle>
                         <TrendingUp className="h-4 w-4 text-green-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">85%</div>
-                        <p className="text-xs text-muted-foreground">+5% melhor que a média</p>
+                        <div className="text-2xl font-bold">
+                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : spamCount}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Identificados como Spam</p>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Spam Bloqueado</CardTitle>
-                        <AlertCircle className="h-4 w-4 text-red-500" />
+                        <CardTitle className="text-sm font-medium">{t('dashboard.reading_time')}</CardTitle>
+                        <AlertCircle className="h-4 w-4 text-fluent-orange" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">142</div>
-                        <p className="text-xs text-muted-foreground">Nos últimos 30 dias</p>
+                        <div className="text-2xl font-bold">
+                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (metrics?.estimatedReadingTime || '--')}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            {metrics ? `${metrics.avgDailyEmails} emails/dia em média` : 'Tempo médio estimado'}
+                        </p>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Charts Section */}
+            {/* Charts Section - DADOS REAIS */}
             <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
-                {/* Main Chart */}
+                {/* Main Chart - Volume Semanal Colorido */}
                 <Card className="col-span-1 lg:col-span-4">
                     <CardHeader>
-                        <CardTitle>Volume Semanal</CardTitle>
-                        <CardDescription>Quantidade de emails processados nos últimos 7 dias</CardDescription>
+                        <CardTitle>{t('dashboard.weekly_volume')}</CardTitle>
+                        <CardDescription>
+                            {metrics ? `${metrics.last7Days} emails nos últimos 7 dias` : t('dashboard.processed_emails_7_days')}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">
                         <div className="h-[300px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={dataVolume}>
-                                    <XAxis
-                                        dataKey="name"
-                                        stroke="#888888"
-                                        fontSize={12}
-                                        tickLine={false}
-                                        axisLine={false}
-                                    />
-                                    <YAxis
-                                        stroke="#888888"
-                                        fontSize={12}
-                                        tickLine={false}
-                                        axisLine={false}
-                                        tickFormatter={(value) => `${value}`}
-                                    />
-                                    <Tooltip
-                                        cursor={{ fill: 'transparent' }}
-                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    />
-                                    <Bar dataKey="emails" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                            {loading ? (
+                                <div className="h-full flex items-center justify-center">
+                                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                </div>
+                            ) : weeklyData.length > 0 ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={weeklyData}>
+                                        <XAxis
+                                            dataKey="name"
+                                            stroke="#888888"
+                                            fontSize={12}
+                                            tickLine={false}
+                                            axisLine={false}
+                                        />
+                                        <YAxis
+                                            stroke="#888888"
+                                            fontSize={12}
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tickFormatter={(value) => `${value}`}
+                                        />
+                                        <Tooltip
+                                            cursor={{ fill: 'transparent' }}
+                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                        />
+                                        <Bar dataKey="emails" radius={[4, 4, 0, 0]}>
+                                            {weeklyData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="h-full flex items-center justify-center text-muted-foreground">
+                                    Sem dados disponíveis
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Sales/Categories Chart */}
+                {/* Categorias Chart */}
                 <Card className="col-span-1 lg:col-span-3">
                     <CardHeader>
-                        <CardTitle>Categorias</CardTitle>
-                        <CardDescription>Distribuição dos emails recebidos</CardDescription>
+                        <CardTitle>{t('dashboard.categories')}</CardTitle>
+                        <CardDescription>{t('dashboard.distribution_received')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="h-[300px] w-full flex items-center justify-center">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={dataCategories}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={80}
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                    >
-                                        {dataCategories.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </ResponsiveContainer>
+                            {loading ? (
+                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                            ) : categoriesData.length > 0 ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={categoriesData}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={80}
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                        >
+                                            {categoriesData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="text-muted-foreground">Sem dados</div>
+                            )}
                         </div>
-                        <div className="mt-4 flex justify-center gap-4 text-sm text-muted-foreground">
-                            {dataCategories.map((item) => (
+                        <div className="mt-4 flex justify-center gap-4 text-sm text-muted-foreground flex-wrap">
+                            {categoriesData.map((item) => (
                                 <div key={item.name} className="flex items-center gap-1">
                                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                                    {item.name}
+                                    {item.name} ({item.value})
                                 </div>
                             ))}
                         </div>
@@ -157,48 +223,69 @@ export function DashboardPage() {
                 </Card>
             </div>
 
-            {/* Recent Activity & Health */}
+            {/* Atividade Horária & Saúde */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Atividade Horária</CardTitle>
-                        <CardDescription>Picos de recebimento de emails</CardDescription>
+                        <CardTitle>{t('dashboard.hourly_activity')}</CardTitle>
+                        <CardDescription>{t('dashboard.peak_reception')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="h-[200px] w-full">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={dataActivity}>
-                                    <Line
-                                        type="monotone"
-                                        dataKey="value"
-                                        stroke="hsl(var(--primary))"
-                                        strokeWidth={2}
-                                        dot={false}
-                                    />
-                                    <Tooltip />
-                                </LineChart>
-                            </ResponsiveContainer>
+                            {loading ? (
+                                <div className="h-full flex items-center justify-center">
+                                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                </div>
+                            ) : hourlyData.length > 0 ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={hourlyData}>
+                                        <XAxis dataKey="name" stroke="#888888" fontSize={10} />
+                                        <Line
+                                            type="monotone"
+                                            dataKey="value"
+                                            stroke="hsl(var(--primary))"
+                                            strokeWidth={2}
+                                            dot={{ fill: 'hsl(var(--primary))' }}
+                                        />
+                                        <Tooltip />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="h-full flex items-center justify-center text-muted-foreground">
+                                    Sem dados
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Saúde da Caixa de Entrada</CardTitle>
-                        <CardDescription>Status atual da sua organização</CardDescription>
+                        <CardTitle>{t('dashboard.inbox_health')}</CardTitle>
+                        <CardDescription>{t('dashboard.current_status')}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex items-center justify-between p-4 border rounded-lg bg-card/50">
                             <div className="flex items-center gap-4">
-                                <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-                                    <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-500" />
+                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${unreadCount === 0 ? 'bg-green-100 dark:bg-green-900/20' : 'bg-orange-100 dark:bg-orange-900/20'}`}>
+                                    {unreadCount === 0 ? (
+                                        <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-500" />
+                                    ) : (
+                                        <AlertCircle className="h-6 w-6 text-orange-600 dark:text-orange-500" />
+                                    )}
                                 </div>
                                 <div>
-                                    <p className="font-medium">Inbox Zero</p>
-                                    <p className="text-sm text-muted-foreground">Você está mantendo o ritmo!</p>
+                                    <p className="font-medium">
+                                        {unreadCount === 0 ? t('dashboard.inbox_zero') : `${unreadCount} não lidos`}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {unreadCount === 0 ? t('dashboard.keeping_rhythm') : 'Você tem emails pendentes'}
+                                    </p>
                                 </div>
                             </div>
-                            <span className="text-green-600 font-bold">98%</span>
+                            <span className={`font-bold ${unreadCount === 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                                {unreadCount === 0 ? '100%' : `${Math.round((1 - unreadCount / Math.max(inboxCount, 1)) * 100)}%`}
+                            </span>
                         </div>
 
                         <div className="flex items-center justify-between p-4 border rounded-lg bg-card/50">
@@ -207,11 +294,13 @@ export function DashboardPage() {
                                     <Users className="h-6 w-6 text-blue-600 dark:text-blue-500" />
                                 </div>
                                 <div>
-                                    <p className="font-medium">Respostas Rápidas</p>
-                                    <p className="text-sm text-muted-foreground">Tempo médio &#60; 2h</p>
+                                    <p className="font-medium">Emails Processados</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {metrics ? `${metrics.last30Days} nos últimos 30 dias` : 'Calculando...'}
+                                    </p>
                                 </div>
                             </div>
-                            <span className="text-blue-600 font-bold">Bom</span>
+                            <span className="text-blue-600 font-bold">{metrics?.totalEmails || '--'}</span>
                         </div>
                     </CardContent>
                 </Card>
