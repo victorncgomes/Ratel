@@ -35,6 +35,7 @@ export function CleanupPage() {
     }, []);
 
     // Usar dados reais ou mockados
+    // Usar dados reais ou mockados
     const cleanupData = isDemoMode ? demoData : (analysis ? {
         inbox_old: { count: analysis.oldEmails.count, size: analysis.oldEmails.size },
         unread_old: { count: analysis.oldUnread.count, size: analysis.oldUnread.size },
@@ -42,7 +43,15 @@ export function CleanupPage() {
         large_attachments: { count: analysis.largeAttachments.count, size: analysis.largeAttachments.size },
         spam: { count: 0, size: '0 MB' },
         trash: { count: 0, size: '0 MB' }
-    } : demoData);
+    } : {
+        // Estado inicial para usuário logado (antes da análise)
+        inbox_old: { count: 0, size: '...' },
+        unread_old: { count: 0, size: '...' },
+        drafts: { count: 0, size: '...' },
+        large_attachments: { count: 0, size: '...' },
+        spam: { count: 0, size: '...' },
+        trash: { count: 0, size: '...' }
+    });
 
     const cleanupCategories: CleanupCategory[] = [
         {

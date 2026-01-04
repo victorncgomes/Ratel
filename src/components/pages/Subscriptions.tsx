@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLanguage } from '../../contexts/LanguageContext';
+
 import { useSubscriptions, Subscription } from '../../hooks/useSubscriptions';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/Button';
@@ -16,7 +16,7 @@ import { useRatelFurioso } from '../../hooks/useRatelFurioso';
 import { RatelFuriosoModal } from '../RatelFuriosoModal';
 
 export function SubscriptionsPage() {
-    const { t } = useLanguage();
+
     const { subscriptions: realSubscriptions, loading, error, fetchSubscriptions, archiveAll, deleteAll, unsubscribe, removeSubscription } = useSubscriptions();
 
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
