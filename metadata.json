@@ -1,0 +1,9 @@
+{
+  "name": "Ratel Inbox Manager",
+  "description": "Enterprise-grade email manager for Gmail and Hotmail with AI-powered subscription control and inbox health tracking.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
