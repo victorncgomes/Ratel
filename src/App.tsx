@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, Bell, Search, HelpCircle, LogOut } from 'lucide-react';
+import { Menu, Bell, Search, HelpCircle, LogOut, Settings } from 'lucide-react';
 import { useTheme } from './hooks/useTheme';
 import { Button } from './components/ui/Button';
 
@@ -41,6 +41,7 @@ function RatelApp() {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [user, setUser] = useState<UserData | null>(null);
     const [showLegalPage, setShowLegalPage] = useState<'terms' | 'privacy' | null>(null);
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
 
     // Verificar parâmetros de URL para login OAuth
     useEffect(() => {
@@ -313,57 +314,58 @@ function RatelApp() {
 
                     <div className="flex-1" />
 
-                    {/* Bottom Section */}
-                    <div className="pt-4 space-y-1 border-t border-border/50">
-                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{t('common.support')}</p>
-
-                        <Button
-                            variant="ghost"
-                            className={cn("w-full justify-start gap-3 px-3", activeTab === 'notifications' && "bg-secondary")}
-                            onClick={() => setActiveTab('notifications')}
-                        >
-                            <Bell className="h-4 w-4" />
-                            {t('common.notifications')}
-                            <Badge className="ml-auto h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px]">3</Badge>
-                        </Button>
-
-                        <Button
-                            variant="ghost"
-                            className={cn("w-full justify-start gap-3 px-3", activeTab === 'help' && "bg-secondary")}
-                            onClick={() => setActiveTab('help')}
-                        >
-                            <HelpCircle className="h-4 w-4" />
-                            {t('common.help')}
-                        </Button>
-
-                        {/* User Profile Button */}
-                        <div className="pt-2 mt-2 border-t border-border/30">
-                            <Button
-                                variant="ghost"
-                                className={cn("w-full justify-start gap-3 px-2 h-auto py-2", activeTab === 'profile' && "bg-secondary")}
-                                onClick={() => setActiveTab('profile')}
+                    {/* User Profile Section */}
+                    <div className="pt-4 border-t border-border/50">
+                        <div className="relative">
+                            <button
+                                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-secondary"
                             >
                                 <Avatar className="h-8 w-8">
                                     <AvatarImage src={user?.photo || ''} />
                                     <AvatarFallback>{user?.name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
                                 </Avatar>
-                                <div className="text-left overflow-hidden">
-                                    <p className="text-sm font-medium truncate w-[140px]">{user?.name || t('common.user')}</p>
-                                    <p className="text-xs text-muted-foreground truncate w-[140px]">{user?.email || 'user@ratel.app'}</p>
+                                <div className="flex-1 text-left overflow-hidden">
+                                    <p className="font-medium truncate">{user?.name || 'Usuário Demo'}</p>
                                 </div>
-                            </Button>
+                            </button>
 
-                            <Button
-                                variant="ghost"
-                                className="w-full justify-start gap-3 px-3 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 mt-1"
-                                onClick={handleLogout}
-                            >
-                                <LogOut className="h-4 w-4" />
-                                {t('common.logout')}
-                            </Button>
+                            {/* User Submenu */}
+                            {userMenuOpen && (
+                                <div className="absolute bottom-full left-0 right-0 mb-2 bg-popover border rounded-lg shadow-xl py-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                    <button
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-muted transition-colors"
+                                        onClick={() => { setActiveTab('notifications'); setUserMenuOpen(false); }}
+                                    >
+                                        <Bell className="h-4 w-4" />
+                                        Notificações
+                                        <Badge className="ml-auto h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px]">3</Badge>
+                                    </button>
+                                    <button
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-muted transition-colors"
+                                        onClick={() => { setActiveTab('help'); setUserMenuOpen(false); }}
+                                    >
+                                        <HelpCircle className="h-4 w-4" />
+                                        Ajuda
+                                    </button>
+                                    <button
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-muted transition-colors"
+                                        onClick={() => { setActiveTab('profile'); setUserMenuOpen(false); }}
+                                    >
+                                        <Settings className="h-4 w-4" />
+                                        Configurações
+                                    </button>
+                                    <hr className="my-1 border-border" />
+                                    <button
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOut className="h-4 w-4" />
+                                        Sair
+                                    </button>
+                                </div>
+                            )}
                         </div>
-
-                        {/* Storage Card Removed - Moved to Dashboard */}
                     </div>
                 </nav>
             </aside>
