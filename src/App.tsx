@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Menu, Bell, Search, Settings, HelpCircle, LogOut } from 'lucide-react';
+import { Menu, Bell, Search, HelpCircle, LogOut } from 'lucide-react';
 import { useTheme } from './hooks/useTheme';
 import { Button } from './components/ui/Button';
-import { Card, CardContent } from './components/ui/Card';
+
 import { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 import { Badge } from './components/ui/badge';
 import { Input } from './components/ui/input';
 import { cn } from './lib/utils';
 import { LoginPage } from './components/LoginPage';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
-import { Language } from './lib/i18n/translations';
+
 import { FlagBR, FlagES, FlagUK } from './components/icons/Flags';
 
 // Pages
@@ -21,6 +21,8 @@ import { SubscriptionsPage } from './components/pages/Subscriptions';
 import { LabelsPage } from './components/pages/Labels';
 import { ActivityPage } from './components/pages/Activity';
 import { CleanupPage } from './components/pages/Cleanup';
+import { TermsPage } from './components/pages/TermsPage';
+import { PrivacyPage } from './components/pages/PrivacyPage';
 
 interface UserData {
     name: string;
@@ -38,6 +40,7 @@ function RatelApp() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('dashboard');
     const [user, setUser] = useState<UserData | null>(null);
+    const [showLegalPage, setShowLegalPage] = useState<'terms' | 'privacy' | null>(null);
 
     // Verificar parâmetros de URL para login OAuth
     useEffect(() => {
@@ -82,8 +85,22 @@ function RatelApp() {
         localStorage.removeItem('ratel_user');
     };
 
+    if (showLegalPage === 'terms') {
+        return <TermsPage onBack={() => setShowLegalPage(null)} />;
+    }
+
+    if (showLegalPage === 'privacy') {
+        return <PrivacyPage onBack={() => setShowLegalPage(null)} />;
+    }
+
     if (!isAuthenticated) {
-        return <LoginPage onLogin={() => setIsAuthenticated(true)} />;
+        return (
+            <LoginPage
+                onLogin={() => setIsAuthenticated(true)}
+                onShowTerms={() => setShowLegalPage('terms')}
+                onShowPrivacy={() => setShowLegalPage('privacy')}
+            />
+        );
     }
 
     const navItems = [
@@ -128,13 +145,13 @@ function RatelApp() {
                     <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
                         <div className="flex items-center justify-center">
                             <img
-                                src="/ratel.svg"
+                                src="/ratel.svg?v=2"
                                 alt="Ratel Logo"
                                 className="h-10 w-10 object-contain"
                             />
                         </div>
                         <img
-                            src="/name-ratel.svg"
+                            src="/name-ratel.svg?v=2"
                             alt="Ratel"
                             className="h-7 object-contain"
                         />

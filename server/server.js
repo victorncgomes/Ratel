@@ -13,6 +13,7 @@ const { detectSubscriptions } = require('./services/subscriptionDetector');
 const { generateAnalytics } = require('./services/analyticsService');
 const { classifyEmails, generateClassificationStats, groupByLabel } = require('./services/geminiService');
 const { analyzeInbox, getOldDrafts, emptyTrash, emptySpam } = require('./services/cleanupService');
+const { loadRules, addToShield, addToRollup, removeRule } = require('./services/rulesService');
 
 // Load env vars
 dotenv.config();
@@ -200,11 +201,36 @@ const requireAuth = (req, res, next) => {
     return res.status(401).json({ error: 'Não autenticado. Faça login novamente.' });
 };
 
-// GET /api/emails - Lista emails
+// GET /api/messages - Busca genérica de emails (suporta queries do Gmail)
+app.get('/api/messages', requireAuth, async (req, res) => {
+    try {
+        const { accessToken, provider } = req.user;
+        const maxResults = parseInt(req.query.limit) || 50;
+        const query = req.query.q || null; // Query string (ex: 'larger:5M', 'category:marketing')
+
+        let emails;
+        if (provider === 'google') {
+            emails = await fetchGmailEmails(accessToken, maxResults, query);
+        } else if (provider === 'microsoft') {
+            // Outlook support to be added later
+            emails = await fetchOutlookEmails(accessToken, maxResults);
+        } else {
+            return res.status(400).json({ error: 'Provedor não suportado' });
+        }
+
+        res.json({ emails, count: emails.length });
+    } catch (error) {
+        console.error('Erro ao buscar mensagens:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET /api/emails - Lista emails (Legado/Atalho para Inbox)
 app.get('/api/emails', requireAuth, async (req, res) => {
     try {
         const { accessToken, provider } = req.user;
         const maxResults = parseInt(req.query.limit) || 50;
+        // Default behavior: fetch inbox
 
         let emails;
         if (provider === 'google') {
@@ -226,17 +252,19 @@ app.get('/api/emails', requireAuth, async (req, res) => {
 app.get('/api/subscriptions', requireAuth, async (req, res) => {
     try {
         const { accessToken, provider } = req.user;
+        const limit = parseInt(req.query.limit) || 10000;
+        const debug = req.query.debug === 'true';
 
         let emails;
         if (provider === 'google') {
-            emails = await fetchGmailEmails(accessToken, 200); // Buscar mais para melhor detecção
+            emails = await fetchGmailEmails(accessToken, limit);
         } else if (provider === 'microsoft') {
-            emails = await fetchOutlookEmails(accessToken, 200);
+            emails = await fetchOutlookEmails(accessToken, limit);
         } else {
             return res.status(400).json({ error: 'Provedor não suportado' });
         }
 
-        const subscriptions = detectSubscriptions(emails);
+        const subscriptions = await detectSubscriptions(emails, debug);
 
         res.json({ subscriptions, count: subscriptions.length });
     } catch (error) {
@@ -270,12 +298,13 @@ app.get('/api/stats', requireAuth, async (req, res) => {
 app.get('/api/analytics', requireAuth, async (req, res) => {
     try {
         const { accessToken, provider } = req.user;
+        const limit = parseInt(req.query.limit) || 10000;
 
         let emails;
         if (provider === 'google') {
-            emails = await fetchGmailEmails(accessToken, 200);
+            emails = await fetchGmailEmails(accessToken, limit);
         } else if (provider === 'microsoft') {
-            emails = await fetchOutlookEmails(accessToken, 200);
+            emails = await fetchOutlookEmails(accessToken, limit);
         } else {
             return res.status(400).json({ error: 'Provedor não suportado' });
         }
@@ -589,6 +618,59 @@ app.post('/api/cleanup/empty-spam', requireAuth, async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Erro ao esvaziar spam:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ========================================
+// RULES ROUTES (Shield & Rollup)
+// ========================================
+
+// GET /api/rules - Listar todas as regras
+app.get('/api/rules', requireAuth, (req, res) => {
+    try {
+        const rules = loadRules();
+        res.json(rules);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST /api/rules/shield - Adicionar ao Shield (Bloquear)
+app.post('/api/rules/shield', requireAuth, (req, res) => {
+    try {
+        const { sender } = req.body;
+        if (!sender) return res.status(400).json({ error: 'Sender required' });
+
+        const rules = addToShield(sender);
+        res.json(rules);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST /api/rules/rollup - Adicionar ao Rollup
+app.post('/api/rules/rollup', requireAuth, (req, res) => {
+    try {
+        const { sender } = req.body;
+        if (!sender) return res.status(400).json({ error: 'Sender required' });
+
+        const rules = addToRollup(sender);
+        res.json(rules);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// DELETE /api/rules - Remover regra de um sender
+app.delete('/api/rules', requireAuth, (req, res) => {
+    try {
+        const { sender } = req.query;
+        if (!sender) return res.status(400).json({ error: 'Sender required' });
+
+        const rules = removeRule(sender);
+        res.json(rules);
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });

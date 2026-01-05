@@ -124,9 +124,10 @@ function determineStatus(score, hasUnsubscribe) {
 /**
  * Detecta e agrupa inscrições/newsletters
  * @param {Array} emails - Lista de emails do fetchEmails
+ * @param {boolean} debug - Se true, retorna todos os grupos sem filtrar
  * @returns {Array} Lista de inscrições agrupadas
  */
-function detectSubscriptions(emails) {
+function detectSubscriptions(emails, debug = false) {
     // Agrupar emails por remetente
     const groupedByEmail = {};
 
@@ -149,6 +150,8 @@ function detectSubscriptions(emails) {
     // Filtrar apenas os que parecem newsletters e criar resultado
     const subscriptions = Object.entries(groupedByEmail)
         .filter(([_, data]) => {
+            if (debug) return true; // Retorna tudo no modo debug
+
             // Incluir se: tem mais de 1 email OU parece newsletter
             return data.emails.length > 1 || data.emails.some(e => isLikelyNewsletter(e));
         })

@@ -46,11 +46,11 @@ export function useAnalytics() {
         error: null
     });
 
-    const fetchAnalytics = useCallback(async () => {
+    const fetchAnalytics = useCallback(async (limit: number = 10000) => {
         setState(prev => ({ ...prev, loading: true, error: null }));
 
         try {
-            const response = await authFetch('/api/analytics');
+            const response = await authFetch(`/api/analytics?limit=${limit}`);
 
             if (!response.ok) {
                 const data = await response.json();

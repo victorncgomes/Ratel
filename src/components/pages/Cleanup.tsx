@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useLanguage } from '../../contexts/LanguageContext';
 import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { Badge } from '../ui/badge';
 import {
-    Trash2, Archive, Mail, FileText, AlertTriangle, Sparkles,
-    Loader2, RefreshCw, HardDrive, Clock, Paperclip
+    Trash2, Mail, FileText, AlertTriangle, Sparkles,
+    Loader2, HardDrive, Clock, Paperclip
 } from 'lucide-react';
 import { mockCleanupData } from '../../lib/mockData';
 import { showToast } from '../../lib/toast';
@@ -24,7 +23,6 @@ interface CleanupCategory {
 }
 
 export function CleanupPage() {
-    const { t } = useLanguage();
     const [isDemoMode, setIsDemoMode] = useState(false);
     const [demoData, setDemoData] = useState(mockCleanupData);
     const { analysis, loading, analyze, emptyTrash, emptySpam } = useCleanup();
@@ -35,16 +33,14 @@ export function CleanupPage() {
     }, []);
 
     // Usar dados reais ou mockados
-    // Usar dados reais ou mockados
     const cleanupData = isDemoMode ? demoData : (analysis ? {
         inbox_old: { count: analysis.oldEmails.count, size: analysis.oldEmails.size },
         unread_old: { count: analysis.oldUnread.count, size: analysis.oldUnread.size },
         drafts: { count: analysis.drafts.count, size: analysis.drafts.size },
         large_attachments: { count: analysis.largeAttachments.count, size: analysis.largeAttachments.size },
-        spam: { count: 0, size: '0 MB' },
-        trash: { count: 0, size: '0 MB' }
+        spam: { count: analysis.spam.count, size: analysis.spam.size },
+        trash: { count: analysis.trash.count, size: analysis.trash.size }
     } : {
-        // Estado inicial para usuário logado (antes da análise)
         inbox_old: { count: 0, size: '...' },
         unread_old: { count: 0, size: '...' },
         drafts: { count: 0, size: '...' },
@@ -118,13 +114,11 @@ export function CleanupPage() {
 
     const handleAnalyze = async () => {
         if (isDemoMode) {
-            // Modo demo
             showToast('Analisando sua caixa de entrada...', 'info');
             setTimeout(() => {
                 showToast('Análise concluída! Encontramos oportunidades de limpeza.', 'success');
             }, 2000);
         } else {
-            // Modo real
             try {
                 await analyze();
                 showToast('Análise concluída!', 'success');
@@ -138,14 +132,14 @@ export function CleanupPage() {
         if (isDemoMode) {
             showToast('Esvaziando lixeira...', 'info');
             setTimeout(() => {
-                setDemoData(prev => ({ ...prev, trash: { count: 0, size: '0 MB' } }));
+                setDemoData(prev => ({ ...prev, trash: { ...prev.trash, count: 0, size: '0 MB' } }));
                 showToast('Lixeira esvaziada!', 'success');
             }, 1500);
         } else {
             try {
                 await emptyTrash();
                 showToast('Lixeira esvaziada!', 'success');
-                await analyze(); // Re-analisar
+                await analyze();
             } catch (error) {
                 showToast('Erro ao esvaziar lixeira', 'error');
             }
@@ -156,14 +150,14 @@ export function CleanupPage() {
         if (isDemoMode) {
             showToast('Esvaziando spam...', 'info');
             setTimeout(() => {
-                setDemoData(prev => ({ ...prev, spam: { count: 0, size: '0 MB' } }));
+                setDemoData(prev => ({ ...prev, spam: { ...prev.spam, count: 0, size: '0 MB' } }));
                 showToast('Spam esvaziado!', 'success');
             }, 1500);
         } else {
             try {
                 await emptySpam();
                 showToast('Spam esvaziado!', 'success');
-                await analyze(); // Re-analisar
+                await analyze();
             } catch (error) {
                 showToast('Erro ao esvaziar spam', 'error');
             }

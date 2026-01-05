@@ -8,17 +8,26 @@ require('isomorphic-fetch');
 async function analyzeInbox(accessToken, provider) {
     try {
         let emails = [];
+        let spamCount = 0;
+        let trashCount = 0;
+        let draftsData = { count: 0, size: '0 MB', ids: [] };
 
         if (provider === 'google') {
             emails = await fetchGmailForAnalysis(accessToken);
+            // Buscar contagem de spam e lixeira
+            const spamTrashData = await getGmailSpamTrashCount(accessToken);
+            spamCount = spamTrashData.spam;
+            trashCount = spamTrashData.trash;
+            // Buscar rascunhos
+            draftsData = await getGmailDrafts(accessToken, 7);
         } else if (provider === 'microsoft') {
             emails = await fetchOutlookForAnalysis(accessToken);
+            // TODO: Implementar contagem para Outlook
         }
 
         const now = new Date();
         const sixMonthsAgo = new Date(now.setMonth(now.getMonth() - 6));
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
         // Análise de emails antigos
         const oldEmails = emails.filter(e => new Date(e.date) < sixMonthsAgo);
@@ -54,6 +63,15 @@ async function analyzeInbox(accessToken, provider) {
                 count: largeAttachments.length,
                 size: calculateSize(largeAttachments),
                 ids: largeAttachments.map(e => e.id)
+            },
+            drafts: draftsData,
+            spam: {
+                count: spamCount,
+                size: '...' // Tamanho não calculado para performance
+            },
+            trash: {
+                count: trashCount,
+                size: '...'
             },
             totalAnalyzed: emails.length
         };
@@ -110,6 +128,38 @@ async function fetchGmailForAnalysis(accessToken) {
     } catch (error) {
         console.error('Erro ao buscar emails do Gmail:', error);
         throw error;
+    }
+}
+
+/**
+ * Busca contagem de spam e lixeira do Gmail
+ */
+async function getGmailSpamTrashCount(accessToken) {
+    const oauth2Client = new google.auth.OAuth2();
+    oauth2Client.setCredentials({ access_token: accessToken });
+    const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+    try {
+        const [spamResponse, trashResponse] = await Promise.all([
+            gmail.users.messages.list({
+                userId: 'me',
+                labelIds: ['SPAM'],
+                maxResults: 1
+            }),
+            gmail.users.messages.list({
+                userId: 'me',
+                labelIds: ['TRASH'],
+                maxResults: 1
+            })
+        ]);
+
+        return {
+            spam: spamResponse.data.resultSizeEstimate || 0,
+            trash: trashResponse.data.resultSizeEstimate || 0
+        };
+    } catch (error) {
+        console.error('Erro ao buscar contagem de spam/trash:', error);
+        return { spam: 0, trash: 0 };
     }
 }
 

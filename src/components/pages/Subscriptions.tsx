@@ -25,6 +25,8 @@ export function SubscriptionsPage() {
     const [isDemoMode, setIsDemoMode] = useState(false);
     const [demoSubscriptions, setDemoSubscriptions] = useState(mockSubscriptions);
     const [showRatelFurioso, setShowRatelFurioso] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 100;
     const ratelFurioso = useRatelFurioso();
 
     // Detectar modo demo e carregar dados
@@ -38,7 +40,21 @@ export function SubscriptionsPage() {
     }, [fetchSubscriptions]);
 
     // Usar dados mockados ou reais
-    const subscriptions = isDemoMode ? demoSubscriptions : realSubscriptions;
+    const allSubscriptions = isDemoMode ? demoSubscriptions : realSubscriptions;
+
+    // Pagination logic
+    const totalPages = Math.ceil(allSubscriptions.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const subscriptions = allSubscriptions.slice(startIndex, endIndex);
+
+    const nextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
+    const prevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
+
+    // Reset page when switching modes or searching (if search was added)
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [isDemoMode, realSubscriptions.length]);
 
     const toggleSelect = (id: number) => {
         setSelectedIds(prev =>
@@ -277,7 +293,7 @@ export function SubscriptionsPage() {
                 <div className="flex items-center gap-3">
                     <input
                         type="checkbox"
-                        checked={selectedIds.length === subscriptions.length && subscriptions.length > 0}
+                        checked={subscriptions.length > 0 && subscriptions.every(s => selectedIds.includes(s.id))}
                         onChange={selectAll}
                         className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
                     />
@@ -428,6 +444,39 @@ export function SubscriptionsPage() {
                 ))}
             </div>
 
+
+            {/* Pagination Controls */}
+            {
+                allSubscriptions.length > itemsPerPage && (
+                    <div className="flex items-center justify-between py-4 border-t">
+                        <div className="text-sm text-muted-foreground">
+                            Mostrando {startIndex + 1} a {Math.min(endIndex, allSubscriptions.length)} de {allSubscriptions.length} inscrições
+                        </div>
+                        <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={prevPage}
+                                disabled={currentPage === 1}
+                            >
+                                Anterior
+                            </Button>
+                            <div className="flex items-center px-4 font-medium">
+                                Página {currentPage} de {totalPages}
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={nextPage}
+                                disabled={currentPage === totalPages}
+                            >
+                                Próxima
+                            </Button>
+                        </div>
+                    </div>
+                )
+            }
+
             {/* Modal Ratel Furioso */}
             <RatelFuriosoModal
                 isOpen={showRatelFurioso}
@@ -437,6 +486,6 @@ export function SubscriptionsPage() {
                 loading={ratelFurioso.loading}
                 progress={ratelFurioso.progress}
             />
-        </div>
+        </div >
     );
 }

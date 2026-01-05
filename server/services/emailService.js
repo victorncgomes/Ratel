@@ -15,45 +15,88 @@ function createGmailClient(accessToken) {
  * @param {number} maxResults - Número máximo de emails (default: 50)
  * @returns {Promise<Array>} Lista de emails formatados
  */
-async function fetchGmailEmails(accessToken, maxResults = 50) {
+async function fetchGmailEmails(accessToken, maxResults = 50, query = null) {
     try {
         const gmail = createGmailClient(accessToken);
 
-        // Buscar lista de IDs de mensagens
-        const listResponse = await gmail.users.messages.list({
-            userId: 'me',
-            maxResults,
-            labelIds: ['INBOX']
-        });
+        // Buscar lista de IDs de mensagens com paginação
+        let allMessages = [];
+        let nextPageToken = null;
 
-        const messages = listResponse.data.messages || [];
+        do {
+            const listParams = {
+                userId: 'me',
+                maxResults: Math.min(maxResults - allMessages.length, 100),
+                pageToken: nextPageToken
+            };
 
-        // Buscar detalhes de cada mensagem
-        const emails = await Promise.all(
-            messages.map(async (msg) => {
-                const detail = await gmail.users.messages.get({
-                    userId: 'me',
-                    id: msg.id,
-                    format: 'metadata',
-                    metadataHeaders: ['From', 'Subject', 'Date', 'List-Unsubscribe']
-                });
+            // Se houver query, usa 'q', caso contrário, restringe à INBOX
+            if (query) {
+                listParams.q = query;
+            } else {
+                listParams.labelIds = ['INBOX'];
+            }
 
-                const headers = detail.data.payload?.headers || [];
-                const getHeader = (name) => headers.find(h => h.name.toLowerCase() === name.toLowerCase())?.value || '';
+            const listResponse = await gmail.users.messages.list(listParams);
 
-                return {
-                    id: msg.id,
-                    threadId: msg.threadId,
-                    from: getHeader('From'),
-                    subject: getHeader('Subject'),
-                    date: getHeader('Date'),
-                    snippet: detail.data.snippet,
-                    labelIds: detail.data.labelIds || [],
-                    hasUnsubscribe: !!getHeader('List-Unsubscribe'),
-                    unsubscribeLink: getHeader('List-Unsubscribe')
-                };
-            })
-        );
+            const messages = listResponse.data.messages || [];
+            allMessages = allMessages.concat(messages);
+            nextPageToken = listResponse.data.nextPageToken;
+
+            // Parar se atingir o limite ou não houver mais páginas
+        } while (nextPageToken && allMessages.length < maxResults);
+
+        // Limitar ao número exato solicitado caso tenha passado um pouco
+        allMessages = allMessages.slice(0, maxResults);
+
+        console.log(`[Gmail] Total messages found: ${allMessages.length}`);
+
+        // Buscar detalhes de cada mensagem (limitado a 5 concorrentes por vez para evitar rate limit)
+        // Batch processing para evitar "Rate Limit Exceeded"
+        const emails = [];
+        const BATCH_SIZE = 10;
+
+        for (let i = 0; i < allMessages.length; i += BATCH_SIZE) {
+            const batch = allMessages.slice(i, i + BATCH_SIZE);
+
+            const batchResults = await Promise.all(
+                batch.map(async (msg) => {
+                    try {
+                        const detail = await gmail.users.messages.get({
+                            userId: 'me',
+                            id: msg.id,
+                            format: 'metadata',
+                            metadataHeaders: ['From', 'Subject', 'Date', 'List-Unsubscribe']
+                        });
+
+                        const headers = detail.data.payload?.headers || [];
+                        const getHeader = (name) => headers.find(h => h.name.toLowerCase() === name.toLowerCase())?.value || '';
+
+                        return {
+                            id: msg.id,
+                            threadId: msg.threadId,
+                            from: getHeader('From'),
+                            subject: getHeader('Subject'),
+                            date: getHeader('Date'),
+                            snippet: detail.data.snippet,
+                            labelIds: detail.data.labelIds || [],
+                            hasUnsubscribe: !!getHeader('List-Unsubscribe'),
+                            unsubscribeLink: getHeader('List-Unsubscribe')
+                        };
+                    } catch (err) {
+                        console.warn(`[Gmail] Failed to fetch message ${msg.id}: ${err.message}`);
+                        return null;
+                    }
+                })
+            );
+
+            emails.push(...batchResults.filter(e => e !== null));
+
+            // Pequeno delay para aliviar a API
+            if (i + BATCH_SIZE < allMessages.length) {
+                await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay entre batches
+            }
+        }
 
         return emails;
     } catch (error) {

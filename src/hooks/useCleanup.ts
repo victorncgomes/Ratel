@@ -22,8 +22,16 @@ export interface CleanupAnalysis {
         size: string;
         ids: string[];
     };
+    spam: {
+        count: number;
+        size: string;
+    };
+    trash: {
+        count: number;
+        size: string;
+    };
     totalAnalyzed: number;
-    timestamp: string;
+    timestamp?: string;
 }
 
 interface CleanupState {

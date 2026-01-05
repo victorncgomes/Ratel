@@ -30,11 +30,11 @@ export function useSubscriptions() {
         error: null
     });
 
-    const fetchSubscriptions = useCallback(async () => {
+    const fetchSubscriptions = useCallback(async (limit: number = 10000) => {
         setState(prev => ({ ...prev, loading: true, error: null }));
 
         try {
-            const response = await authFetch('/api/subscriptions');
+            const response = await authFetch(`/api/subscriptions?limit=${limit}`);
 
             if (!response.ok) {
                 const data = await response.json();
