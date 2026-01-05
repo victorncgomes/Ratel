@@ -2,8 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Inter font from Google Fonts - clean, modern, no italic appearance */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Mapear Medium (500) e SemiBold (600) para Bold para atender pedido da Sidebar */
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Bold.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Bold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Extra Bold para Títulos */
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Heavy.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Nexa';
+  src: url('/Nexa-Heavy.ttf') format('truetype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: block;
+}
 
 @layer base {
   :root {
@@ -78,7 +133,7 @@
 
   /* Forçar fonte em TODOS os elementos para corrigir herança (buttons, inputs, etc) */
   * {
-    font-family: "Inter", system-ui, sans-serif;
+    font-family: "Nexa", system-ui, sans-serif;
     font-style: normal !important;
     /* Garantir que nada fique itálico acidentalmente */
   }
@@ -86,7 +141,7 @@
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: "Inter", system-ui, sans-serif;
+    font-family: "Nexa", system-ui, sans-serif;
     font-feature-settings: 'rlig' 1, 'calt' 1;
   }
 
@@ -96,8 +151,8 @@
   h4,
   h5,
   h6 {
-    font-family: "Inter", system-ui, sans-serif;
-    font-weight: 700;
+    font-family: "Nexa", system-ui, sans-serif;
+    font-weight: 900;
     /* Forçar Extra Bold/Heavy para títulos */
   }
 
