@@ -1,58 +1,65 @@
 import { useEffect, useState } from 'react';
-import { TrendingUp, Users, Clock, Mail, AlertCircle, CheckCircle2, Loader2, RefreshCw } from 'lucide-react';
+import { Mail, Trash2, Shield, Zap, ArrowRight, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { Button } from '../ui/Button';
-
-import { useLanguage } from '../../contexts/LanguageContext';
 import { useStats } from '../../hooks/useStats';
-import { useAnalytics } from '../../hooks/useAnalytics';
-import { mockStats, mockAnalytics } from '../../lib/mockData';
+import { mockStats } from '../../lib/mockData';
 import { getAccessToken } from '../../lib/api';
 
 export function DashboardPage() {
-    const { t } = useLanguage();
-    const { stats, loading: statsLoading, fetchStats } = useStats();
-    const { analytics, loading: analyticsLoading, fetchAnalytics } = useAnalytics();
+    const { stats, loading, fetchStats } = useStats();
     const [isDemoMode, setIsDemoMode] = useState(false);
 
     useEffect(() => {
-        // Detectar modo demo (sem token de acesso)
         const hasToken = getAccessToken();
         setIsDemoMode(!hasToken);
-
         if (hasToken) {
             fetchStats();
-            fetchAnalytics();
         }
-    }, [fetchStats, fetchAnalytics]);
+    }, [fetchStats]);
 
-    const loading = statsLoading || analyticsLoading;
-
-    // Usar dados mockados em modo demo, senão dados reais
-    const weeklyData = isDemoMode ? mockAnalytics.weeklyVolume : (analytics?.weeklyVolume || []);
-    const hourlyData = isDemoMode ? mockAnalytics.hourlyActivity : (analytics?.hourlyActivity || []);
-    const categoriesData = isDemoMode ? mockAnalytics.categories : (analytics?.categories || []);
-    const metrics = isDemoMode ? mockAnalytics.metrics : analytics?.metrics;
-
-    // Stats
     const inboxCount = isDemoMode ? mockStats.inboxCount : (stats?.inboxCount || 0);
     const unreadCount = isDemoMode ? mockStats.unreadCount : (stats?.unreadCount || 0);
     const spamCount = isDemoMode ? mockStats.spamCount : (stats?.spamCount || 0);
 
-    const handleRefresh = () => {
-        if (isDemoMode) {
-            // Em modo demo, simular refresh
-            window.location.reload();
-        } else {
-            fetchStats();
-            fetchAnalytics();
+    const quickActions = [
+        {
+            title: 'Listas de Email',
+            description: 'Gerencie suas inscrições',
+            icon: Mail,
+            color: 'bg-blue-500',
+            count: 12,
+            action: 'subscriptions'
+        },
+        {
+            title: 'Limpeza Rápida',
+            description: 'Libere espaço na caixa',
+            icon: Trash2,
+            color: 'bg-green-500',
+            count: unreadCount,
+            action: 'cleanup'
+        },
+        {
+            title: 'Ratel Furioso',
+            description: 'Cancelar tudo de uma vez',
+            icon: Zap,
+            color: 'bg-red-500',
+            count: null,
+            action: 'ratel'
+        },
+        {
+            title: 'Shield',
+            description: 'Remetentes bloqueados',
+            icon: Shield,
+            color: 'bg-purple-500',
+            count: 3,
+            action: 'shield'
         }
-    };
+    ];
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Header com Badge Demo */}
+            {/* Demo Mode Banner */}
             {isDemoMode && (
                 <div className="flex items-center justify-between p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
                     <div className="flex items-center gap-2">
@@ -60,251 +67,131 @@ export function DashboardPage() {
                         <div>
                             <p className="font-medium text-yellow-900 dark:text-yellow-100">Modo Demonstração</p>
                             <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                                Você está visualizando dados simulados. Faça login para ver seus dados reais.
+                                Dados simulados. Faça login para ver seus dados reais.
                             </p>
                         </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-2">
+                    <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="gap-2">
                         <RefreshCw className="h-4 w-4" />
                         Atualizar
                     </Button>
                 </div>
             )}
 
-            {/* Top Stats - Dados Reais ou Mockados */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t('dashboard.received_emails')}</CardTitle>
-                        <Mail className="h-4 w-4 text-blue-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">
-                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : inboxCount}
-                        </div>
-                        <p className="text-xs text-muted-foreground">Total na Caixa de Entrada</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-red-500">Não Lidos</CardTitle>
-                        <Clock className="h-4 w-4 text-red-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">
-                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : unreadCount}
-                        </div>
-                        <p className="text-xs text-muted-foreground">Emails precisam de atenção</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t('dashboard.spam_blocked')}</CardTitle>
-                        <TrendingUp className="h-4 w-4 text-green-500" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">
-                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : spamCount}
-                        </div>
-                        <p className="text-xs text-muted-foreground">Identificados como Spam</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{t('dashboard.reading_time')}</CardTitle>
-                        <AlertCircle className="h-4 w-4 text-fluent-orange" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">
-                            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (metrics?.estimatedReadingTime || '--')}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                            {metrics ? `${metrics.avgDailyEmails} emails/dia em média` : 'Tempo médio estimado'}
-                        </p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Charts Section - DADOS REAIS */}
-            <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
-                {/* Main Chart - Volume Semanal Colorido */}
-                <Card className="col-span-1 lg:col-span-4">
-                    <CardHeader>
-                        <CardTitle>{t('dashboard.weekly_volume')}</CardTitle>
-                        <CardDescription>
-                            {metrics ? `${metrics.last7Days} emails nos últimos 7 dias` : t('dashboard.processed_emails_7_days')}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pl-2">
-                        <div className="h-[300px] w-full">
-                            {loading ? (
-                                <div className="h-full flex items-center justify-center">
-                                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                                </div>
-                            ) : weeklyData.length > 0 ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={weeklyData}>
-                                        <XAxis
-                                            dataKey="name"
-                                            stroke="#888888"
-                                            fontSize={12}
-                                            tickLine={false}
-                                            axisLine={false}
-                                        />
-                                        <YAxis
-                                            stroke="#888888"
-                                            fontSize={12}
-                                            tickLine={false}
-                                            axisLine={false}
-                                            tickFormatter={(value) => `${value}`}
-                                        />
-                                        <Tooltip
-                                            cursor={{ fill: 'transparent' }}
-                                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                        />
-                                        <Bar dataKey="emails" radius={[4, 4, 0, 0]}>
-                                            {weeklyData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            ) : (
-                                <div className="h-full flex items-center justify-center text-muted-foreground">
-                                    Sem dados disponíveis
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Categorias Chart */}
-                <Card className="col-span-1 lg:col-span-3">
-                    <CardHeader>
-                        <CardTitle>{t('dashboard.categories')}</CardTitle>
-                        <CardDescription>{t('dashboard.distribution_received')}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="h-[300px] w-full flex items-center justify-center">
-                            {loading ? (
-                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                            ) : categoriesData.length > 0 ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={categoriesData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={60}
-                                            outerRadius={80}
-                                            paddingAngle={5}
-                                            dataKey="value"
-                                        >
-                                            {categoriesData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            ) : (
-                                <div className="text-muted-foreground">Sem dados</div>
-                            )}
-                        </div>
-                        <div className="mt-4 flex justify-center gap-4 text-sm text-muted-foreground flex-wrap">
-                            {categoriesData.map((item) => (
-                                <div key={item.name} className="flex items-center gap-1">
-                                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                                    {item.name} ({item.value})
-                                </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Atividade Horária & Saúde */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>{t('dashboard.hourly_activity')}</CardTitle>
-                        <CardDescription>{t('dashboard.peak_reception')}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="h-[200px] w-full">
-                            {loading ? (
-                                <div className="h-full flex items-center justify-center">
-                                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                                </div>
-                            ) : hourlyData.length > 0 ? (
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={hourlyData}>
-                                        <XAxis dataKey="name" stroke="#888888" fontSize={10} />
-                                        <Line
-                                            type="monotone"
-                                            dataKey="value"
-                                            stroke="hsl(var(--primary))"
-                                            strokeWidth={2}
-                                            dot={{ fill: 'hsl(var(--primary))' }}
-                                        />
-                                        <Tooltip />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            ) : (
-                                <div className="h-full flex items-center justify-center text-muted-foreground">
-                                    Sem dados
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>{t('dashboard.inbox_health')}</CardTitle>
-                        <CardDescription>{t('dashboard.current_status')}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex items-center justify-between p-4 border rounded-lg bg-card/50">
-                            <div className="flex items-center gap-4">
-                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${unreadCount === 0 ? 'bg-green-100 dark:bg-green-900/20' : 'bg-orange-100 dark:bg-orange-900/20'}`}>
-                                    {unreadCount === 0 ? (
-                                        <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-500" />
-                                    ) : (
-                                        <AlertCircle className="h-6 w-6 text-orange-600 dark:text-orange-500" />
-                                    )}
-                                </div>
-                                <div>
-                                    <p className="font-medium">
-                                        {unreadCount === 0 ? t('dashboard.inbox_zero') : `${unreadCount} não lidos`}
-                                    </p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {unreadCount === 0 ? t('dashboard.keeping_rhythm') : 'Você tem emails pendentes'}
-                                    </p>
-                                </div>
+            {/* Main Stats - Clean and Simple */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Na Caixa de Entrada</p>
+                                <p className="text-3xl font-bold">
+                                    {loading ? <Loader2 className="h-8 w-8 animate-spin" /> : inboxCount}
+                                </p>
                             </div>
-                            <span className={`font-bold ${unreadCount === 0 ? 'text-green-600' : 'text-orange-600'}`}>
-                                {unreadCount === 0 ? '100%' : `${Math.round((1 - unreadCount / Math.max(inboxCount, 1)) * 100)}%`}
+                            <div className="p-3 bg-blue-500/20 rounded-xl">
+                                <Mail className="h-6 w-6 text-blue-600" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border-orange-500/20">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Não Lidos</p>
+                                <p className="text-3xl font-bold text-orange-600">
+                                    {loading ? <Loader2 className="h-8 w-8 animate-spin" /> : unreadCount}
+                                </p>
+                            </div>
+                            <div className="p-3 bg-orange-500/20 rounded-xl">
+                                <AlertCircle className="h-6 w-6 text-orange-600" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-red-500/10 to-red-600/5 border-red-500/20">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Spam</p>
+                                <p className="text-3xl font-bold text-red-600">
+                                    {loading ? <Loader2 className="h-8 w-8 animate-spin" /> : spamCount}
+                                </p>
+                            </div>
+                            <div className="p-3 bg-red-500/20 rounded-xl">
+                                <Trash2 className="h-6 w-6 text-red-600" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Quick Actions - Inbox Zapper Style */}
+            <div>
+                <h2 className="text-xl font-bold mb-4">Ações Rápidas</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {quickActions.map((action) => {
+                        const Icon = action.icon;
+                        return (
+                            <Card
+                                key={action.action}
+                                className="group cursor-pointer hover:shadow-lg transition-all hover:-translate-y-1"
+                            >
+                                <CardContent className="pt-6">
+                                    <div className="flex flex-col gap-4">
+                                        <div className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center`}>
+                                            <Icon className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold flex items-center gap-2">
+                                                {action.title}
+                                                {action.count !== null && (
+                                                    <span className="text-xs bg-secondary px-2 py-0.5 rounded-full">{action.count}</span>
+                                                )}
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground">{action.description}</p>
+                                        </div>
+                                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Inbox Health - Simple Progress */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Saúde da Caixa de Entrada</CardTitle>
+                    <CardDescription>Quanto mais limpa, melhor sua produtividade</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between text-sm">
+                            <span>Progresso para Inbox Zero</span>
+                            <span className="font-bold text-green-600">
+                                {Math.round((1 - unreadCount / Math.max(inboxCount, 1)) * 100)}%
                             </span>
                         </div>
-
-                        <div className="flex items-center justify-between p-4 border rounded-lg bg-card/50">
-                            <div className="flex items-center gap-4">
-                                <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
-                                    <Users className="h-6 w-6 text-blue-600 dark:text-blue-500" />
-                                </div>
-                                <div>
-                                    <p className="font-medium">Emails Processados</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {metrics ? `${metrics.last30Days} nos últimos 30 dias` : 'Calculando...'}
-                                    </p>
-                                </div>
-                            </div>
-                            <span className="text-blue-600 font-bold">{metrics?.totalEmails || '--'}</span>
+                        <div className="h-3 bg-secondary rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-gradient-to-r from-green-500 to-teal-500 transition-all duration-500"
+                                style={{ width: `${Math.round((1 - unreadCount / Math.max(inboxCount, 1)) * 100)}%` }}
+                            />
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
+                        <p className="text-sm text-muted-foreground">
+                            {unreadCount === 0
+                                ? '🎉 Parabéns! Você atingiu o Inbox Zero!'
+                                : `Você tem ${unreadCount} emails não lidos para processar.`
+                            }
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }

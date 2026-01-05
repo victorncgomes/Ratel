@@ -104,11 +104,21 @@ function RatelApp() {
     }
 
     const navItems = [
-        { id: 'dashboard', icon: '📊', label: t('menu.dashboard'), badge: null },
-        { id: 'subscriptions', icon: '📬', label: t('menu.subscriptions'), badge: '12' },
-        { id: 'cleanup', icon: '🧹', label: 'Limpeza', badge: 'NOVO' },
-        { id: 'labels', icon: '🏷️', label: t('menu.labels'), badge: null },
-        { id: 'activity', icon: '⚡', label: t('menu.activity'), badge: null },
+        { id: 'subscriptions', icon: '📬', label: 'Listas de Email', badge: String(12) },
+        { id: 'cleanup', icon: '🧹', label: 'Limpeza Rápida', badge: null },
+    ];
+
+    const smartViews = [
+        { id: 'by-sender', icon: '👤', label: 'Por Remetente', count: 156 },
+        { id: 'by-size', icon: '📦', label: 'Por Tamanho', count: 34 },
+        { id: 'by-date', icon: '📅', label: 'Por Data', count: 89 },
+        { id: 'newsletters', icon: '📰', label: 'Newsletters', count: 45 },
+        { id: 'promotions', icon: '🛒', label: 'Promoções', count: 78 },
+    ];
+
+    const actionItems = [
+        { id: 'shield', icon: '🛡️', label: 'Shield (Bloqueados)', count: 3 },
+        { id: 'rollup', icon: '📦', label: 'Rollup (Agrupados)', count: 5 },
     ];
 
     const renderContent = () => {
@@ -223,12 +233,12 @@ function RatelApp() {
                     sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
                 )}
             >
-                <nav className="flex flex-col h-full p-4 gap-2">
-                    <div className="space-y-1 flex-1">
-                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{t('common.main_menu')}</p>
+                <nav className="flex flex-col h-full p-4 gap-2 overflow-y-auto">
+                    {/* Main Actions */}
+                    <div className="space-y-1">
+                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Ações Principais</p>
                         {navItems.map((item) => {
                             const isActive = activeTab === item.id;
-
                             return (
                                 <button
                                     key={item.id}
@@ -243,20 +253,65 @@ function RatelApp() {
                                             : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                                     )}
                                 >
-                                    <span className={cn(
-                                        "text-lg transition-transform group-hover:scale-110",
-                                        isActive && "scale-105"
-                                    )}>{item.icon}</span>
+                                    <span className="text-lg">{item.icon}</span>
                                     <span className="flex-1 text-left">{item.label}</span>
                                     {item.badge && (
-                                        <Badge variant={isActive ? 'secondary' : 'outline'} className={cn(isActive && "bg-primary-foreground text-primary hover:bg-primary-foreground")}>
-                                            {item.badge}
-                                        </Badge>
+                                        <Badge variant={isActive ? 'secondary' : 'outline'}>{item.badge}</Badge>
                                     )}
                                 </button>
                             );
                         })}
                     </div>
+
+                    {/* Smart Views - Mailstrom Style */}
+                    <div className="space-y-1 pt-4 border-t border-border/50">
+                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Visualizações</p>
+                        {smartViews.map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => {
+                                    setActiveTab(item.id);
+                                    setSidebarOpen(false);
+                                }}
+                                className={cn(
+                                    'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all',
+                                    activeTab === item.id
+                                        ? 'bg-secondary text-foreground'
+                                        : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
+                                )}
+                            >
+                                <span className="text-base">{item.icon}</span>
+                                <span className="flex-1 text-left">{item.label}</span>
+                                <span className="text-xs text-muted-foreground">{item.count}</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Shield & Rollup - Leave Me Alone Style */}
+                    <div className="space-y-1 pt-4 border-t border-border/50">
+                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Proteção</p>
+                        {actionItems.map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => {
+                                    setActiveTab(item.id);
+                                    setSidebarOpen(false);
+                                }}
+                                className={cn(
+                                    'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all',
+                                    activeTab === item.id
+                                        ? 'bg-secondary text-foreground'
+                                        : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
+                                )}
+                            >
+                                <span className="text-base">{item.icon}</span>
+                                <span className="flex-1 text-left">{item.label}</span>
+                                <span className="text-xs text-muted-foreground">{item.count}</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="flex-1" />
 
                     {/* Bottom Section */}
                     <div className="pt-4 space-y-1 border-t border-border/50">

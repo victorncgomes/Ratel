@@ -12,7 +12,7 @@ import { useRatelFurioso } from '../../hooks/useRatelFurioso';
 import { RatelFuriosoModal } from '../RatelFuriosoModal';
 
 export function SubscriptionsPage() {
-    const { subscriptions: realSubscriptions, loading, error, fetchSubscriptions, archiveAll, deleteAll, unsubscribe, removeSubscription } = useSubscriptions();
+    const { subscriptions: realSubscriptions, loading, error, fetchSubscriptions, deleteAll, unsubscribe, removeSubscription } = useSubscriptions();
 
     const [isDemoMode, setIsDemoMode] = useState(false);
     const [demoSubscriptions, setDemoSubscriptions] = useState(mockSubscriptions);
@@ -73,10 +73,10 @@ export function SubscriptionsPage() {
         setActionLoading(null);
     };
 
-    const handleRatelFurioso = async () => {
-        const allIds = allSubscriptions.map(s => s.id.toString());
+    const handleRatelFurioso = async (deleteHistory: boolean) => {
+        const allIds = allSubscriptions.map(s => s.id);
         try {
-            await ratelFurioso.execute(allIds, true);
+            await ratelFurioso.execute(allIds, deleteHistory);
             if (isDemoMode) {
                 setDemoSubscriptions([]);
             }
@@ -255,8 +255,9 @@ export function SubscriptionsPage() {
                 isOpen={showRatelFurioso}
                 onClose={() => setShowRatelFurioso(false)}
                 onConfirm={handleRatelFurioso}
-                subscriptionCount={allSubscriptions.length}
+                selectedCount={allSubscriptions.length}
                 loading={ratelFurioso.loading}
+                progress={ratelFurioso.progress || 0}
             />
         </div>
     );
