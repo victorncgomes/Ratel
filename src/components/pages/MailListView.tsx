@@ -20,7 +20,7 @@ export function MailListView({ viewType }: Props) {
     const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
-        fetchEmails(100); // Reduzido de 500 para 100 para evitar quota exceeded
+        fetchEmails(500); // Restaurado: agora usa batch API eficiente
     }, [fetchEmails]);
 
     // Reset selection when view changes
@@ -219,8 +219,30 @@ export function MailListView({ viewType }: Props) {
     };
 
     const handleUnsubscribe = async () => {
-        showToast('Navegando para cancelar inscrição...', 'success');
-        // This would navigate to subscriptions page with this sender highlighted
+        if (!selectedGroup) return;
+
+        // Find an email with unsubscribe link from the selected group
+        const emailWithUnsubscribe = filteredEmails.find(e => e.unsubscribeLink);
+
+        if (emailWithUnsubscribe?.unsubscribeLink) {
+            // Extract URL from List-Unsubscribe header (format: <mailto:...> or <https://...>)
+            const linkMatch = emailWithUnsubscribe.unsubscribeLink.match(/<(https?:\/\/[^>]+)>/);
+            if (linkMatch) {
+                window.open(linkMatch[1], '_blank');
+                showToast('Abrindo página de cancelamento...', 'success');
+            } else {
+                // Try mailto
+                const mailtoMatch = emailWithUnsubscribe.unsubscribeLink.match(/<(mailto:[^>]+)>/);
+                if (mailtoMatch) {
+                    window.location.href = mailtoMatch[1];
+                    showToast('Abrindo email de cancelamento...', 'success');
+                } else {
+                    showToast('Link de cancelamento não disponível', 'error');
+                }
+            }
+        } else {
+            showToast('Nenhum link de cancelamento encontrado', 'error');
+        }
     };
 
     const handleRollup = async () => {

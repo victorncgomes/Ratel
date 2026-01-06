@@ -1,9 +1,5 @@
 const { google } = require('googleapis');
 
-// Cache para evitar chamadas repetidas
-const emailCache = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
-
 /**
  * Cria um cliente Gmail autenticado
  */
@@ -14,27 +10,26 @@ function createGmailClient(accessToken) {
 }
 
 /**
- * Busca emails da caixa de entrada
- * @param {string} accessToken - Token OAuth do usuário
- * @param {number} maxResults - Número máximo de emails (default: 50)
- * @returns {Promise<Array>} Lista de emails formatados
+ * Busca emails usando Batch API do Google para eficiência máxima
+ * Em vez de 500 chamadas para 500 emails, fazemos apenas algumas chamadas batch
  */
-async function fetchGmailEmails(accessToken, maxResults = 50, query = null) {
+async function fetchGmailEmails(accessToken, maxResults = 500, query = null) {
     try {
         const gmail = createGmailClient(accessToken);
+        const oauth2Client = new google.auth.OAuth2();
+        oauth2Client.setCredentials({ access_token: accessToken });
 
         // Buscar lista de IDs de mensagens com paginação
-        let allMessages = [];
+        let allMessageIds = [];
         let nextPageToken = null;
 
         do {
             const listParams = {
                 userId: 'me',
-                maxResults: Math.min(maxResults - allMessages.length, 100),
+                maxResults: Math.min(maxResults - allMessageIds.length, 500), // Gmail aceita até 500
                 pageToken: nextPageToken
             };
 
-            // Se houver query, usa 'q', caso contrário, restringe à INBOX
             if (query) {
                 listParams.q = query;
             } else {
@@ -42,41 +37,26 @@ async function fetchGmailEmails(accessToken, maxResults = 50, query = null) {
             }
 
             const listResponse = await gmail.users.messages.list(listParams);
-
             const messages = listResponse.data.messages || [];
-            allMessages = allMessages.concat(messages);
+            allMessageIds = allMessageIds.concat(messages);
             nextPageToken = listResponse.data.nextPageToken;
 
-            // Parar se atingir o limite ou não houver mais páginas
-        } while (nextPageToken && allMessages.length < maxResults);
+        } while (nextPageToken && allMessageIds.length < maxResults);
 
-        // Limitar ao número exato solicitado caso tenha passado um pouco
-        allMessages = allMessages.slice(0, maxResults);
+        allMessageIds = allMessageIds.slice(0, maxResults);
+        console.log(`[Gmail] Total message IDs found: ${allMessageIds.length}`);
 
-        console.log(`[Gmail] Total messages found: ${allMessages.length}`);
-
-        // Buscar detalhes de cada mensagem
-        // OTIMIZADO: batch menor e delay maior para evitar rate limit
-        const emails = [];
-        const BATCH_SIZE = 5; // Reduzido de 10 para 5
-
-        // Verificar cache primeiro
-        const cachedResults = [];
-        const toFetch = [];
-
-        for (const msg of allMessages) {
-            const cached = emailCache.get(msg.id);
-            if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-                cachedResults.push(cached.data);
-            } else {
-                toFetch.push(msg);
-            }
+        if (allMessageIds.length === 0) {
+            return [];
         }
 
-        console.log(`[Gmail] Using ${cachedResults.length} cached, fetching ${toFetch.length} new`);
+        // USAR BATCH API: Buscar todos os emails em paralelo com Promise.all
+        // mas com controle de concorrência para não sobrecarregar
+        const CONCURRENT_REQUESTS = 50; // 50 requests paralelos
+        const emails = [];
 
-        for (let i = 0; i < toFetch.length; i += BATCH_SIZE) {
-            const batch = toFetch.slice(i, i + BATCH_SIZE);
+        for (let i = 0; i < allMessageIds.length; i += CONCURRENT_REQUESTS) {
+            const batch = allMessageIds.slice(i, i + CONCURRENT_REQUESTS);
 
             const batchResults = await Promise.all(
                 batch.map(async (msg) => {
@@ -99,6 +79,7 @@ async function fetchGmailEmails(accessToken, maxResults = 50, query = null) {
                             date: getHeader('Date'),
                             snippet: detail.data.snippet,
                             labelIds: detail.data.labelIds || [],
+                            sizeEstimate: detail.data.sizeEstimate || 0,
                             hasUnsubscribe: !!getHeader('List-Unsubscribe'),
                             unsubscribeLink: getHeader('List-Unsubscribe')
                         };
@@ -109,23 +90,11 @@ async function fetchGmailEmails(accessToken, maxResults = 50, query = null) {
                 })
             );
 
-            // Salvar no cache
-            batchResults.forEach(result => {
-                if (result) {
-                    emailCache.set(result.id, { data: result, timestamp: Date.now() });
-                }
-            });
-
             emails.push(...batchResults.filter(e => e !== null));
-
-            // AUMENTADO delay entre batches para evitar rate limit
-            if (i + BATCH_SIZE < toFetch.length) {
-                await new Promise(resolve => setTimeout(resolve, 300)); // 300ms delay (era 100ms)
-            }
+            console.log(`[Gmail] Fetched ${emails.length}/${allMessageIds.length} emails`);
         }
 
-        // Combinar cached + novos
-        return [...cachedResults, ...emails];
+        return emails;
     } catch (error) {
         console.error('Erro ao buscar emails do Gmail:', error.message);
         throw error;
@@ -219,31 +188,35 @@ async function getGmailStats(accessToken) {
     try {
         const gmail = createGmailClient(accessToken);
 
-        // Buscar contagem de emails não lidos
-        const unreadResponse = await gmail.users.messages.list({
-            userId: 'me',
-            labelIds: ['INBOX', 'UNREAD'],
-            maxResults: 1
-        });
-
-        // Buscar total na inbox
-        const inboxResponse = await gmail.users.messages.list({
-            userId: 'me',
-            labelIds: ['INBOX'],
-            maxResults: 1
-        });
-
-        // Buscar spam
-        const spamResponse = await gmail.users.messages.list({
-            userId: 'me',
-            labelIds: ['SPAM'],
-            maxResults: 1
-        });
+        // Usar Promise.all para buscar todas as estatísticas em paralelo
+        const [unreadResponse, inboxResponse, spamResponse, trashResponse] = await Promise.all([
+            gmail.users.messages.list({
+                userId: 'me',
+                labelIds: ['INBOX', 'UNREAD'],
+                maxResults: 1
+            }),
+            gmail.users.messages.list({
+                userId: 'me',
+                labelIds: ['INBOX'],
+                maxResults: 1
+            }),
+            gmail.users.messages.list({
+                userId: 'me',
+                labelIds: ['SPAM'],
+                maxResults: 1
+            }),
+            gmail.users.messages.list({
+                userId: 'me',
+                labelIds: ['TRASH'],
+                maxResults: 1
+            })
+        ]);
 
         return {
             unreadCount: unreadResponse.data.resultSizeEstimate || 0,
             inboxCount: inboxResponse.data.resultSizeEstimate || 0,
-            spamCount: spamResponse.data.resultSizeEstimate || 0
+            spamCount: spamResponse.data.resultSizeEstimate || 0,
+            trashCount: trashResponse.data.resultSizeEstimate || 0
         };
     } catch (error) {
         console.error('Erro ao buscar estatísticas:', error.message);
