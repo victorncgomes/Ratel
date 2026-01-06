@@ -7,6 +7,7 @@ import { mockStats } from '../../lib/mockData';
 import { getAccessToken } from '../../lib/api';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { showToast } from '../../lib/toast';
+import { useEmailLoader } from '../../hooks/useEmailLoader';
 
 interface DashboardProps {
     onNavigate?: (tab: string) => void;
@@ -16,6 +17,9 @@ export function DashboardPage({ onNavigate }: DashboardProps) {
     const { t } = useLanguage();
     const { stats, loading, fetchStats } = useStats();
     const [isDemoMode, setIsDemoMode] = useState(false);
+
+    // Start progressive email loading in background
+    useEmailLoader();
 
     useEffect(() => {
         const hasToken = getAccessToken();

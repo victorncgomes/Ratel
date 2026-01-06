@@ -227,22 +227,36 @@ app.get('/api/messages', requireAuth, async (req, res) => {
 });
 
 // GET /api/emails - Lista emails (Legado/Atalho para Inbox)
+// Supports: limit, offset for progressive loading
 app.get('/api/emails', requireAuth, async (req, res) => {
     try {
         const { accessToken, provider } = req.user;
-        const maxResults = parseInt(req.query.limit) || 50;
-        // Default behavior: fetch inbox
+        const maxResults = parseInt(req.query.limit) || 500;
+        const offset = parseInt(req.query.offset) || 0;
+
+        console.log(`[API] Fetching emails: limit=${maxResults}, offset=${offset}`);
 
         let emails;
         if (provider === 'google') {
+            // fetchGmailEmails now supports up to 10K with better batching
             emails = await fetchGmailEmails(accessToken, maxResults);
+
+            // Apply offset manually (Gmail API doesn't have native offset)
+            if (offset > 0) {
+                emails = emails.slice(offset);
+            }
         } else if (provider === 'microsoft') {
             emails = await fetchOutlookEmails(accessToken, maxResults);
         } else {
             return res.status(400).json({ error: 'Provedor não suportado' });
         }
 
-        res.json({ emails, count: emails.length });
+        res.json({
+            emails,
+            count: emails.length,
+            offset,
+            hasMore: emails.length === maxResults
+        });
     } catch (error) {
         console.error('Erro ao buscar emails:', error);
         res.status(500).json({ error: error.message });

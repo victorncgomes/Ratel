@@ -9,6 +9,8 @@ import { Input } from './components/ui/input';
 import { cn } from './lib/utils';
 import { LandingPage } from './components/LandingPage';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { ProgressProvider } from './contexts/ProgressContext';
+import { ProgressBar } from './components/ProgressBar';
 
 import { FlagBR, FlagES, FlagUK } from './components/icons/Flags';
 
@@ -153,6 +155,9 @@ function RatelApp() {
 
     return (
         <div className="min-h-screen gradient-bg font-sans antialiased">
+            {/* Progress Bar - Fixed below header */}
+            <ProgressBar />
+
             {/* Header */}
             <header className="sticky top-0 z-50 w-full glass border-b border-white/10">
                 <div className="flex h-16 items-center px-4 gap-4">
@@ -398,7 +403,9 @@ function RatelApp() {
 export default function App() {
     return (
         <LanguageProvider>
-            <RatelApp />
+            <ProgressProvider>
+                <RatelApp />
+            </ProgressProvider>
         </LanguageProvider>
     );
 }
