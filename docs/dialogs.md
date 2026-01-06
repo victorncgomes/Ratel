@@ -247,3 +247,61 @@
 - Labels com classificação via Gemini AI
 - Testes end-to-end
 
+---
+
+## [2026-01-06 05:30] Release v0.2.7 - Melhorias Técnicas
+
+**Contexto**: Implementação de melhorias técnicas, documentação e completude de funcionalidades pendentes.
+
+**Decisões e Ações**:
+
+### Backend
+- ✅ **Suporte Completo ao Outlook**: Implementada função `getOutlookSpamTrashCount` em `cleanupService.js`
+  - Usa Microsoft Graph API para buscar contagens de spam (`/me/mailFolders/junkemail/messages`) e lixeira (`/me/mailFolders/deleteditems/messages`)
+  - Integrada com `analyzeInbox` para paridade com Gmail
+  - Resolve TODO pendente desde v0.2.6
+
+### Frontend
+- ✅ **Favicon**: Adicionado `favicon.png` para resolver erro 404
+  - Gerado baseado no logo Ratel (honey badger minimalista)
+  - Já estava configurado no `index.html`
+
+### Documentação
+- ✅ **ARCHITECTURE.md**: Criado documento completo (400+ linhas) com:
+  - Stack tecnológica detalhada
+  - Estrutura de pastas do projeto
+  - Fluxos de autenticação OAuth (Google/Microsoft)
+  - Integração com APIs (Gmail/Outlook)
+  - Sistema de temas (NOIR/Aurora)
+  - Componentes principais e responsabilidades
+  - Serviços backend e rotas da API
+  - Sistema RATE (IA) e internacionalização
+  - Performance, segurança e deploy
+
+- ✅ **README.md**: Completamente reescrito com:
+  - Descrição profissional do projeto
+  - Features detalhadas (RATE, visualizações, limpeza, Shield/Rollup)
+  - Stack tecnológica
+  - Instruções de instalação completas
+  - Estrutura do projeto
+  - Modo demo
+  - Links para documentação
+  - Badges de versão e deploy
+
+- ✅ **CHANGELOG.md**: Adicionada entrada para v0.2.7 com todas as melhorias
+
+### Progresso
+- 13/46 tarefas completadas (28%)
+- Alta Prioridade: 5/13 (38%)
+- Média Prioridade: 7/17 (41%)
+- Deploy: 1/6 (17%)
+
+**Próximos passos**:
+- Otimizações de performance (paginação, debounce, React.memo)
+- Limpeza de código (console.logs, JSDoc)
+- Melhorias de UX (animações, gráficos)
+- Build e deploy para produção
+
+---
+
+*Este arquivo é atualizado automaticamente a cada interação significativa*

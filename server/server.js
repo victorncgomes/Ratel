@@ -12,7 +12,7 @@ const { fetchOutlookEmails, archiveOutlookEmail, trashOutlookEmail, deleteOutloo
 const { detectSubscriptions } = require('./services/subscriptionDetector');
 const { generateAnalytics } = require('./services/analyticsService');
 const { classifyEmails, generateClassificationStats, groupByLabel } = require('./services/geminiService');
-const { analyzeInbox, getOldDrafts, emptyTrash, emptySpam } = require('./services/cleanupService');
+const { analyzeInbox, getOldDrafts, emptyTrash, emptySpam, getEmailsBySize, getEmailsByDate } = require('./services/cleanupService');
 const { loadRules, addToShield, addToRollup, removeRule } = require('./services/rulesService');
 const { calculateRates } = require('./services/rateService');
 
@@ -633,6 +633,34 @@ app.post('/api/cleanup/empty-spam', requireAuth, async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Erro ao esvaziar spam:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET /api/cleanup/by-size - Deep Cleaning por tamanho
+app.get('/api/cleanup/by-size', requireAuth, async (req, res) => {
+    try {
+        const { accessToken, provider } = req.user;
+        const minSizeMB = parseInt(req.query.minSize) || 5;
+
+        const result = await getEmailsBySize(accessToken, provider, minSizeMB);
+        res.json(result);
+    } catch (error) {
+        console.error('Erro ao buscar emails por tamanho:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET /api/cleanup/by-date - Deep Cleaning por data
+app.get('/api/cleanup/by-date', requireAuth, async (req, res) => {
+    try {
+        const { accessToken, provider } = req.user;
+        const beforeDate = req.query.before || new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
+
+        const result = await getEmailsByDate(accessToken, provider, beforeDate);
+        res.json(result);
+    } catch (error) {
+        console.error('Erro ao buscar emails por data:', error);
         res.status(500).json({ error: error.message });
     }
 });

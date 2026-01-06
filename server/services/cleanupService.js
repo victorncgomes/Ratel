@@ -22,8 +22,14 @@ async function analyzeInbox(accessToken, provider) {
             draftsData = await getGmailDrafts(accessToken, 7);
         } else if (provider === 'microsoft') {
             emails = await fetchOutlookForAnalysis(accessToken);
-            // TODO: Implementar contagem para Outlook
+            // Buscar contagem de spam e lixeira
+            const spamTrashData = await getOutlookSpamTrashCount(accessToken);
+            spamCount = spamTrashData.spam;
+            trashCount = spamTrashData.trash;
+            // Buscar rascunhos
+            draftsData = await getOutlookDrafts(accessToken, 7);
         }
+
 
         const now = new Date();
         const sixMonthsAgo = new Date(now.setMonth(now.getMonth() - 6));
@@ -162,6 +168,37 @@ async function getGmailSpamTrashCount(accessToken) {
         return { spam: 0, trash: 0 };
     }
 }
+
+/**
+ * Busca contagem de spam e lixeira do Outlook
+ */
+async function getOutlookSpamTrashCount(accessToken) {
+    const client = Client.init({
+        authProvider: (done) => done(null, accessToken)
+    });
+
+    try {
+        const [spamResponse, trashResponse] = await Promise.all([
+            client.api('/me/mailFolders/junkemail/messages')
+                .count(true)
+                .top(1)
+                .get(),
+            client.api('/me/mailFolders/deleteditems/messages')
+                .count(true)
+                .top(1)
+                .get()
+        ]);
+
+        return {
+            spam: spamResponse['@odata.count'] || 0,
+            trash: trashResponse['@odata.count'] || 0
+        };
+    } catch (error) {
+        console.error('Erro ao buscar contagem de spam/trash do Outlook:', error);
+        return { spam: 0, trash: 0 };
+    }
+}
+
 
 /**
  * Busca emails do Outlook para análise
@@ -379,9 +416,199 @@ function formatBytes(bytes) {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
 }
 
+/**
+ * Busca emails por tamanho mínimo (Deep Cleaning)
+ */
+async function getEmailsBySize(accessToken, provider, minSizeMB = 5) {
+    try {
+        const minSizeBytes = minSizeMB * 1024 * 1024;
+
+        if (provider === 'google') {
+            const oauth2Client = new google.auth.OAuth2();
+            oauth2Client.setCredentials({ access_token: accessToken });
+            const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+            // Usar query do Gmail para buscar emails grandes
+            const query = `larger:${minSizeMB}M`;
+            const response = await gmail.users.messages.list({
+                userId: 'me',
+                maxResults: 500,
+                q: query
+            });
+
+            if (!response.data.messages) {
+                return { emails: [], totalSize: '0 MB', count: 0 };
+            }
+
+            // Buscar detalhes dos emails
+            const emailPromises = response.data.messages.map(async (msg) => {
+                const detail = await gmail.users.messages.get({
+                    userId: 'me',
+                    id: msg.id,
+                    format: 'metadata',
+                    metadataHeaders: ['From', 'Subject', 'Date']
+                });
+
+                const headers = detail.data.payload.headers;
+                const getHeader = (name) => headers.find(h => h.name === name)?.value || '';
+
+                return {
+                    id: msg.id,
+                    from: getHeader('From'),
+                    subject: getHeader('Subject'),
+                    date: getHeader('Date'),
+                    size: detail.data.sizeEstimate || 0,
+                    sizeFormatted: formatBytes(detail.data.sizeEstimate || 0),
+                    hasAttachment: detail.data.payload.parts?.some(p => p.filename) || false
+                };
+            });
+
+            const emails = await Promise.all(emailPromises);
+            const totalSize = emails.reduce((sum, e) => sum + e.size, 0);
+
+            return {
+                emails,
+                totalSize: formatBytes(totalSize),
+                count: emails.length
+            };
+        } else if (provider === 'microsoft') {
+            // Outlook não tem query nativa para tamanho, então filtramos manualmente
+            const client = Client.init({
+                authProvider: (done) => done(null, accessToken)
+            });
+
+            const response = await client
+                .api('/me/messages')
+                .top(500)
+                .select('id,from,subject,receivedDateTime,hasAttachments,body')
+                .get();
+
+            const largeEmails = response.value
+                .map(msg => ({
+                    id: msg.id,
+                    from: msg.from?.emailAddress?.address || '',
+                    subject: msg.subject || '',
+                    date: msg.receivedDateTime,
+                    size: msg.body?.content?.length || 0,
+                    sizeFormatted: formatBytes(msg.body?.content?.length || 0),
+                    hasAttachment: msg.hasAttachments
+                }))
+                .filter(e => e.size >= minSizeBytes);
+
+            const totalSize = largeEmails.reduce((sum, e) => sum + e.size, 0);
+
+            return {
+                emails: largeEmails,
+                totalSize: formatBytes(totalSize),
+                count: largeEmails.length
+            };
+        }
+
+        return { emails: [], totalSize: '0 MB', count: 0 };
+    } catch (error) {
+        console.error('Erro ao buscar emails por tamanho:', error);
+        throw error;
+    }
+}
+
+/**
+ * Busca emails por data (antes de uma data específica)
+ */
+async function getEmailsByDate(accessToken, provider, beforeDate) {
+    try {
+        const cutoffDate = new Date(beforeDate);
+
+        if (provider === 'google') {
+            const oauth2Client = new google.auth.OAuth2();
+            oauth2Client.setCredentials({ access_token: accessToken });
+            const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+            // Formatar data para query do Gmail (YYYY/MM/DD)
+            const dateStr = cutoffDate.toISOString().split('T')[0].replace(/-/g, '/');
+            const query = `before:${dateStr}`;
+
+            const response = await gmail.users.messages.list({
+                userId: 'me',
+                maxResults: 500,
+                q: query
+            });
+
+            if (!response.data.messages) {
+                return { emails: [], totalSize: '0 MB', count: 0 };
+            }
+
+            // Buscar detalhes dos emails
+            const emailPromises = response.data.messages.map(async (msg) => {
+                const detail = await gmail.users.messages.get({
+                    userId: 'me',
+                    id: msg.id,
+                    format: 'metadata',
+                    metadataHeaders: ['From', 'Subject', 'Date']
+                });
+
+                const headers = detail.data.payload.headers;
+                const getHeader = (name) => headers.find(h => h.name === name)?.value || '';
+
+                return {
+                    id: msg.id,
+                    from: getHeader('From'),
+                    subject: getHeader('Subject'),
+                    date: getHeader('Date'),
+                    size: detail.data.sizeEstimate || 0,
+                    sizeFormatted: formatBytes(detail.data.sizeEstimate || 0)
+                };
+            });
+
+            const emails = await Promise.all(emailPromises);
+            const totalSize = emails.reduce((sum, e) => sum + e.size, 0);
+
+            return {
+                emails,
+                totalSize: formatBytes(totalSize),
+                count: emails.length
+            };
+        } else if (provider === 'microsoft') {
+            const client = Client.init({
+                authProvider: (done) => done(null, accessToken)
+            });
+
+            const response = await client
+                .api('/me/messages')
+                .top(500)
+                .filter(`receivedDateTime lt ${cutoffDate.toISOString()}`)
+                .select('id,from,subject,receivedDateTime,body')
+                .get();
+
+            const emails = response.value.map(msg => ({
+                id: msg.id,
+                from: msg.from?.emailAddress?.address || '',
+                subject: msg.subject || '',
+                date: msg.receivedDateTime,
+                size: msg.body?.content?.length || 0,
+                sizeFormatted: formatBytes(msg.body?.content?.length || 0)
+            }));
+
+            const totalSize = emails.reduce((sum, e) => sum + e.size, 0);
+
+            return {
+                emails,
+                totalSize: formatBytes(totalSize),
+                count: emails.length
+            };
+        }
+
+        return { emails: [], totalSize: '0 MB', count: 0 };
+    } catch (error) {
+        console.error('Erro ao buscar emails por data:', error);
+        throw error;
+    }
+}
+
 module.exports = {
     analyzeInbox,
     getOldDrafts,
     emptyTrash,
-    emptySpam
+    emptySpam,
+    getEmailsBySize,
+    getEmailsByDate
 };

@@ -35,7 +35,8 @@ export const es = {
             terms_privacy_prefix: 'Acepto los',
             terms: 'Términos',
             privacy: 'Privacidad',
-            and: 'y'
+            and: 'y',
+            or: 'o'
         },
         features: {
             title_badge: '✨ Funciones Potentes',

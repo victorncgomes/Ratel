@@ -2,7 +2,25 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [0.2.7] - 2026-01-06
+
+### 🔧 Melhorias
+- **Suporte Completo ao Outlook** - Implementada contagem de spam e lixeira para Microsoft Graph API
+  - Função `getOutlookSpamTrashCount` em `cleanupService.js`
+  - Integração com `analyzeInbox` para Outlook
+- **Favicon** - Adicionado favicon.png para resolver erro 404
+- **Documentação** - Criado `docs/ARCHITECTURE.md` com arquitetura completa do projeto
+  - Estrutura de pastas detalhada
+  - Fluxos de autenticação OAuth
+  - Integração com APIs (Gmail/Outlook)
+  - Sistema de temas e componentes
+  - Rotas da API e serviços backend
+- **README** - Atualizado com informações completas do projeto
+
+---
+
 ## [0.2.6] - 2026-01-05
+
 
 ### ✨ Novidades
 - **Sistema RATE (IA)** - Pontuação inteligente 0-100 para cada email baseada em comportamento

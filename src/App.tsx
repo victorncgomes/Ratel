@@ -25,6 +25,8 @@ import { TermsPage } from './components/pages/TermsPage';
 import { PrivacyPage } from './components/pages/PrivacyPage';
 import { MailListView } from './components/pages/MailListView';
 import { RulesPage } from './components/pages/RulesPage';
+import { ProcessingScreen } from './components/ProcessingScreen';
+import { DeepCleaning } from './components/pages/DeepCleaning';
 
 interface UserData {
     name: string;
@@ -44,6 +46,7 @@ function RatelApp() {
     const [user, setUser] = useState<UserData | null>(null);
     const [showLegalPage, setShowLegalPage] = useState<'terms' | 'privacy' | null>(null);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const [showProcessing, setShowProcessing] = useState(false);
 
     // Verificar parâmetros de URL para login OAuth
     useEffect(() => {
@@ -55,7 +58,7 @@ function RatelApp() {
             try {
                 const parsedUser = JSON.parse(decodeURIComponent(userData));
                 setUser(parsedUser);
-                setIsAuthenticated(true);
+                setShowProcessing(true); // Mostrar tela de processamento
                 // Limpa URL sem recarregar a página
                 window.history.replaceState({}, document.title, window.location.pathname);
             } catch (e) {
@@ -94,6 +97,17 @@ function RatelApp() {
 
     if (showLegalPage === 'privacy') {
         return <PrivacyPage onBack={() => setShowLegalPage(null)} />;
+    }
+
+    if (showProcessing) {
+        return (
+            <ProcessingScreen
+                onComplete={() => {
+                    setShowProcessing(false);
+                    setIsAuthenticated(true);
+                }}
+            />
+        );
     }
 
     if (!isAuthenticated) {
@@ -148,6 +162,8 @@ function RatelApp() {
                 return <RulesPage type="shield" />;
             case 'rollup':
                 return <RulesPage type="rollup" />;
+            case 'deep-cleaning':
+                return <DeepCleaning />;
             default: return <DashboardPage />;
         }
     };
