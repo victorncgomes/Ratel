@@ -30,12 +30,10 @@ export function useEmailLoader(): UseEmailLoaderReturn {
         const token = getAccessToken();
 
         if (!token) {
-            console.log('[useEmailLoader] No token, skipping');
             return;
         }
 
         if (loadingRef.current) {
-            console.log('[useEmailLoader] Already loading');
             return;
         }
 
@@ -46,8 +44,7 @@ export function useEmailLoader(): UseEmailLoaderReturn {
             onProgress: (loaded, total, phase) => {
                 updateProgress(loaded, total, phase);
             },
-            onBatchComplete: (emails) => {
-                console.log(`[useEmailLoader] Batch complete: ${emails.length} emails`);
+            onBatchComplete: () => {
             },
             onComplete: () => {
                 loadingRef.current = false;
@@ -68,10 +65,8 @@ export function useEmailLoader(): UseEmailLoaderReturn {
             emailStore.getLastLoadTime().then(lastLoad => {
                 const oneHour = 60 * 60 * 1000;
                 if (!lastLoad || Date.now() - lastLoad > oneHour) {
-                    console.log('[useEmailLoader] Starting fresh load');
                     startLoading();
                 } else {
-                    console.log('[useEmailLoader] Using cached data');
                     emailStore.getEmailCount().then(count => {
                         if (count > 0) {
                             updateProgress(count, count, 'complete');

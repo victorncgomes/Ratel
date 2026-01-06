@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Menu, Bell, Search, HelpCircle, LogOut, Settings } from 'lucide-react';
 import { useTheme } from './hooks/useTheme';
 import { Button } from './components/ui/Button';
@@ -13,20 +13,20 @@ import { ProgressProvider } from './contexts/ProgressContext';
 
 import { FlagBR, FlagES, FlagUK } from './components/icons/Flags';
 
-// Pages
-import { DashboardPage } from './components/pages/Dashboard';
-import { HelpPage } from './components/pages/Help';
-import { NotificationsPage } from './components/pages/Notifications';
-import { ProfilePage } from './components/pages/Profile';
-import { SubscriptionsPage } from './components/pages/Subscriptions';
-import { ActivityPage } from './components/pages/Activity';
-import { CleanupPage } from './components/pages/Cleanup';
-import { TermsPage } from './components/pages/TermsPage';
-import { PrivacyPage } from './components/pages/PrivacyPage';
-import { MailListView } from './components/pages/MailListView';
-import { RulesPage } from './components/pages/RulesPage';
-import { ProcessingScreen } from './components/ProcessingScreen';
-import { DeepCleaning } from './components/pages/DeepCleaning';
+// Lazy load pages for better performance
+const DashboardPage = lazy(() => import('./components/pages/Dashboard').then(m => ({ default: m.DashboardPage })));
+const HelpPage = lazy(() => import('./components/pages/Help').then(m => ({ default: m.HelpPage })));
+const NotificationsPage = lazy(() => import('./components/pages/Notifications').then(m => ({ default: m.NotificationsPage })));
+const ProfilePage = lazy(() => import('./components/pages/Profile').then(m => ({ default: m.ProfilePage })));
+const SubscriptionsPage = lazy(() => import('./components/pages/Subscriptions').then(m => ({ default: m.SubscriptionsPage })));
+const ActivityPage = lazy(() => import('./components/pages/Activity').then(m => ({ default: m.ActivityPage })));
+const CleanupPage = lazy(() => import('./components/pages/Cleanup').then(m => ({ default: m.CleanupPage })));
+const TermsPage = lazy(() => import('./components/pages/TermsPage').then(m => ({ default: m.TermsPage })));
+const PrivacyPage = lazy(() => import('./components/pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
+const MailListView = lazy(() => import('./components/pages/MailListView').then(m => ({ default: m.MailListView })));
+const RulesPage = lazy(() => import('./components/pages/RulesPage').then(m => ({ default: m.RulesPage })));
+const ProcessingScreen = lazy(() => import('./components/ProcessingScreen').then(m => ({ default: m.ProcessingScreen })));
+const DeepCleaning = lazy(() => import('./components/pages/DeepCleaning').then(m => ({ default: m.DeepCleaning })));
 
 interface UserData {
     name: string;
@@ -401,7 +401,13 @@ function RatelApp() {
             {/* Main Content */}
             <main className="pt-0 lg:pl-64 min-h-screen transition-all duration-300">
                 <div className="p-6 max-w-7xl mx-auto space-y-6">
-                    {renderContent()}
+                    <Suspense fallback={
+                        <div className="flex items-center justify-center py-20">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                        </div>
+                    }>
+                        {renderContent()}
+                    </Suspense>
                 </div>
             </main>
 

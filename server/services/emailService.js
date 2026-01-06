@@ -44,7 +44,7 @@ async function fetchGmailEmails(accessToken, maxResults = 500, query = null) {
         } while (nextPageToken && allMessageIds.length < maxResults);
 
         allMessageIds = allMessageIds.slice(0, maxResults);
-        console.log(`[Gmail] Total message IDs found: ${allMessageIds.length}`);
+
 
         if (allMessageIds.length === 0) {
             return [];
@@ -91,7 +91,7 @@ async function fetchGmailEmails(accessToken, maxResults = 500, query = null) {
             );
 
             emails.push(...batchResults.filter(e => e !== null));
-            console.log(`[Gmail] Fetched ${emails.length}/${allMessageIds.length} emails`);
+
         }
 
         return emails;

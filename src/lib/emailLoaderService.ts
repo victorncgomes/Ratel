@@ -41,7 +41,6 @@ export async function startProgressiveLoading(callbacks: LoaderCallbacks): Promi
     }
 
     if (loaderState.isLoading) {
-        console.log('[EmailLoader] Already loading, skipping');
         return;
     }
 
@@ -119,7 +118,7 @@ export async function startProgressiveLoading(callbacks: LoaderCallbacks): Promi
 
     } catch (error: any) {
         if (error.name === 'AbortError') {
-            console.log('[EmailLoader] Loading aborted');
+            return;
         } else {
             console.error('[EmailLoader] Error:', error);
             callbacks.onError(error.message || 'Erro ao carregar emails');

@@ -233,8 +233,6 @@ app.get('/api/emails', requireAuth, async (req, res) => {
         const maxResults = parseInt(req.query.limit) || 500;
         const offset = parseInt(req.query.offset) || 0;
 
-        console.log(`[API] Fetching emails: limit=${maxResults}, offset=${offset}`);
-
         let emails;
         if (provider === 'google') {
             // fetchGmailEmails now supports up to 10K with better batching
