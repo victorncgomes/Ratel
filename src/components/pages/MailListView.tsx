@@ -20,7 +20,7 @@ export function MailListView({ viewType }: Props) {
     const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
-        fetchEmails(500);
+        fetchEmails(100); // Reduzido de 500 para 100 para evitar quota exceeded
     }, [fetchEmails]);
 
     // Reset selection when view changes

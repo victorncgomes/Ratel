@@ -1,5 +1,9 @@
 const { google } = require('googleapis');
 
+// Cache para evitar chamadas repetidas
+const emailCache = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+
 /**
  * Cria um cliente Gmail autenticado
  */
@@ -51,13 +55,28 @@ async function fetchGmailEmails(accessToken, maxResults = 50, query = null) {
 
         console.log(`[Gmail] Total messages found: ${allMessages.length}`);
 
-        // Buscar detalhes de cada mensagem (limitado a 5 concorrentes por vez para evitar rate limit)
-        // Batch processing para evitar "Rate Limit Exceeded"
+        // Buscar detalhes de cada mensagem
+        // OTIMIZADO: batch menor e delay maior para evitar rate limit
         const emails = [];
-        const BATCH_SIZE = 10;
+        const BATCH_SIZE = 5; // Reduzido de 10 para 5
 
-        for (let i = 0; i < allMessages.length; i += BATCH_SIZE) {
-            const batch = allMessages.slice(i, i + BATCH_SIZE);
+        // Verificar cache primeiro
+        const cachedResults = [];
+        const toFetch = [];
+
+        for (const msg of allMessages) {
+            const cached = emailCache.get(msg.id);
+            if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+                cachedResults.push(cached.data);
+            } else {
+                toFetch.push(msg);
+            }
+        }
+
+        console.log(`[Gmail] Using ${cachedResults.length} cached, fetching ${toFetch.length} new`);
+
+        for (let i = 0; i < toFetch.length; i += BATCH_SIZE) {
+            const batch = toFetch.slice(i, i + BATCH_SIZE);
 
             const batchResults = await Promise.all(
                 batch.map(async (msg) => {
@@ -90,15 +109,23 @@ async function fetchGmailEmails(accessToken, maxResults = 50, query = null) {
                 })
             );
 
+            // Salvar no cache
+            batchResults.forEach(result => {
+                if (result) {
+                    emailCache.set(result.id, { data: result, timestamp: Date.now() });
+                }
+            });
+
             emails.push(...batchResults.filter(e => e !== null));
 
-            // Pequeno delay para aliviar a API
-            if (i + BATCH_SIZE < allMessages.length) {
-                await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay entre batches
+            // AUMENTADO delay entre batches para evitar rate limit
+            if (i + BATCH_SIZE < toFetch.length) {
+                await new Promise(resolve => setTimeout(resolve, 300)); // 300ms delay (era 100ms)
             }
         }
 
-        return emails;
+        // Combinar cached + novos
+        return [...cachedResults, ...emails];
     } catch (error) {
         console.error('Erro ao buscar emails do Gmail:', error.message);
         throw error;
