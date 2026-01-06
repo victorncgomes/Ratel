@@ -35,7 +35,8 @@ export const en = {
             terms_privacy_prefix: 'I agree to the',
             terms: 'Terms',
             privacy: 'Privacy',
-            and: 'and'
+            and: 'and',
+            or: 'or'
         },
         features: {
             title_badge: '✨ Powerful Features',

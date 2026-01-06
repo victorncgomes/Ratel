@@ -27,7 +27,7 @@ export function useRatelFurioso() {
         setState({ loading: true, progress: 0, error: null, result: null });
 
         try {
-            const response = await authFetch('/api/subscriptions/ratel-furioso', {
+            const response = await authFetch('/api/subscriptions/bulk-unsubscribe', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -36,7 +36,7 @@ export function useRatelFurioso() {
             });
 
             if (!response.ok) {
-                throw new Error('Erro ao executar Ratel Furioso');
+                throw new Error('Erro ao executar cancelamento em massa');
             }
 
             const result: RatelFuriosoResult = await response.json();

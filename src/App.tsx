@@ -10,7 +10,6 @@ import { cn } from './lib/utils';
 import { LandingPage } from './components/LandingPage';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { ProgressProvider } from './contexts/ProgressContext';
-import { ProgressBar } from './components/ProgressBar';
 
 import { FlagBR, FlagES, FlagUK } from './components/icons/Flags';
 
@@ -155,9 +154,6 @@ function RatelApp() {
 
     return (
         <div className="min-h-screen gradient-bg font-sans antialiased">
-            {/* Progress Bar - Fixed below header */}
-            <ProgressBar />
-
             {/* Header */}
             <header className="sticky top-0 z-50 w-full glass border-b border-white/10">
                 <div className="flex h-16 items-center px-4 gap-4">
@@ -346,34 +342,38 @@ function RatelApp() {
                             {userMenuOpen && (
                                 <div className="absolute bottom-full left-0 right-0 mb-2 bg-popover border rounded-lg shadow-xl py-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
                                     <button
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal not-italic hover:bg-muted transition-colors"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
+                                        style={{ fontStyle: 'normal' }}
                                         onClick={() => { setActiveTab('notifications'); setUserMenuOpen(false); }}
                                     >
                                         <Bell className="h-4 w-4" />
-                                        <span className="not-italic">{t('user_menu.notifications')}</span>
+                                        <span style={{ fontStyle: 'normal' }}>{t('user_menu.notifications')}</span>
                                         <Badge className="ml-auto h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px]">3</Badge>
                                     </button>
                                     <button
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal not-italic hover:bg-muted transition-colors"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
+                                        style={{ fontStyle: 'normal' }}
                                         onClick={() => { setActiveTab('help'); setUserMenuOpen(false); }}
                                     >
                                         <HelpCircle className="h-4 w-4" />
-                                        <span className="not-italic">{t('user_menu.help')}</span>
+                                        <span style={{ fontStyle: 'normal' }}>{t('user_menu.help')}</span>
                                     </button>
                                     <button
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal not-italic hover:bg-muted transition-colors"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
+                                        style={{ fontStyle: 'normal' }}
                                         onClick={() => { setActiveTab('profile'); setUserMenuOpen(false); }}
                                     >
                                         <Settings className="h-4 w-4" />
-                                        <span className="not-italic">{t('user_menu.settings')}</span>
+                                        <span style={{ fontStyle: 'normal' }}>{t('user_menu.settings')}</span>
                                     </button>
                                     <hr className="my-1 border-border" />
                                     <button
                                         className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                        style={{ fontStyle: 'normal' }}
                                         onClick={handleLogout}
                                     >
                                         <LogOut className="h-4 w-4" />
-                                        {t('user_menu.logout')}
+                                        <span style={{ fontStyle: 'normal' }}>{t('user_menu.logout')}</span>
                                     </button>
                                 </div>
                             )}

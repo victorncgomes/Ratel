@@ -35,7 +35,8 @@ export const pt = {
             terms_privacy_prefix: 'Concordo com os',
             terms: 'Termos',
             privacy: 'Privacidade',
-            and: 'e'
+            and: 'e',
+            or: 'ou'
         },
         features: {
             title_badge: '✨ Recursos Poderosos',
@@ -48,8 +49,8 @@ export const pt = {
             card_2_desc: 'O Ratel utiliza a poderosa Gemini AI do Google para analisar e categorizar automaticamente cada email que chega. Newsletters, promoções, trabalho, social — tudo organizado instantaneamente.',
             card_3_title: 'Limpeza na sua Caixa de Entrada',
             card_3_desc: 'Visualize exatamente o que está ocupando espaço. Analise por remetente, tamanho, data de recebimento. Limpe spam e lixeira com um clique. Inbox Zero nunca foi tão fácil.',
-            card_4_title: 'Ratel Furioso: Cancelamento em Massa',
-            card_4_desc: 'Chega de procurar links escondidos. Quando a bagunça está grande demais, solte o Ratel Furioso! Cancele dezenas de inscrições de uma só vez com ferocidade. Recupere o controle.',
+            card_4_title: 'Não Me Perturbe Mais!: Cancelamento em Massa',
+            card_4_desc: 'Chega de procurar links escondidos. Quando a bagunça está grande demais, use o cancelamento em massa! Cancele dezenas de inscrições de uma só vez. Recupere o controle.',
             card_5_title: 'Compras & Blindagem Anti-spam',
             card_5_desc: 'Organize automaticamente seus recibos e rastreie encomendas. Ao mesmo tempo, bloqueie remetentes persistentes e marketing agressivo. Só o que importa chega até você.',
             card_6_title: 'Newsletters Reunidos (Rollup)',
@@ -118,7 +119,7 @@ export const pt = {
         quick_actions: {
             email_lists: { title: 'Listas de Email', desc: 'Gerencie suas inscrições' },
             quick_cleanup: { title: 'Limpeza Rápida', desc: 'Libere espaço na caixa' },
-            ratel_furious: { title: 'Ratel Furioso', desc: 'Cancelar tudo de uma vez' },
+            ratel_furious: { title: 'Não Me Perturbe Mais!', desc: 'Cancelar tudo de uma vez' },
             shield: { title: 'Shield', desc: 'Remetentes bloqueados' },
         }
     },
@@ -229,7 +230,7 @@ export const pt = {
         releases: [
             {
                 version: '0.3.0', date: '04/01/2026', type: 'major', changes: [
-                    '🦡 RATEL FURIOSO: Cancelamento de múltiplas inscrições de uma só vez com som de rugido',
+                    '🦡 NÃO ME PERTURBE MAIS!: Cancelamento de múltiplas inscrições de uma só vez',
                     '🧹 Limpeza Funcional: Análise real da caixa via Gmail/Outlook API',
                     '🎭 Modo Demo: Versão funcional com dados mockados sem necessidade de login',
                     '🔧 Correção de Etiquetas: Modo demo funcionando corretamente',
