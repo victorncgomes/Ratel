@@ -372,7 +372,9 @@ export function MailListView({ viewType }: Props) {
                                                 <Square className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                                             )}
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-medium text-sm truncate">{email.subject}</p>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <p className="font-medium text-sm truncate flex-1">{email.subject}</p>
+                                                </div>
                                                 <p className="text-xs text-muted-foreground truncate">{email.snippet}</p>
                                                 <p className="text-xs text-muted-foreground mt-1">
                                                     {new Date(email.date).toLocaleDateString('pt-BR')}

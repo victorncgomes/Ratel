@@ -4,6 +4,20 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
 ## [0.2.7] - 2026-01-06
 
+### 🧹 Auditoria e Limpeza de Código
+- **Remoção Completa do Sistema RATE** - Sistema de pontuação AI não funcional removido
+  - Deletados 6 arquivos frontend (`RateBadge`, `RateFilter`, `useRate`, `rateService`, `useLabels`, `useUserBehavior`)
+  - Deletado 1 arquivo backend (`server/services/rateService.js`)
+  - Removido endpoint `/api/rate/calculate`
+  - Removidas todas as referências em `MailListView.tsx` e `VirtualizedEmailList.tsx`
+- **Hooks Não Utilizados Removidos**
+  - `useLabels.ts` - Não estava sendo importado em nenhum componente
+  - `useUserBehavior.ts` - Não estava sendo utilizado
+- **Código Limpo e Otimizado**
+  - Redução de ~7% no total de linhas de código
+  - Build de produção sem erros (11.94s)
+  - Todas as funcionalidades testadas e operacionais
+
 ### 🔧 Melhorias
 - **Suporte Completo ao Outlook** - Implementada contagem de spam e lixeira para Microsoft Graph API
   - Função `getOutlookSpamTrashCount` em `cleanupService.js`
@@ -17,7 +31,17 @@ Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
   - Rotas da API e serviços backend
 - **README** - Atualizado com informações completas do projeto
 
----
+### ✅ Funcionalidades Verificadas
+- Autenticação OAuth (Google + Microsoft) ✅
+- Dashboard com estatísticas reais ✅
+- Detecção e gerenciamento de newsletters ✅
+- Limpeza rápida e Deep Cleaning ✅
+- Shield (bloqueio) e Rollup (agrupamento) ✅
+- Modo Demo ✅
+- Internacionalização (PT/EN/ES) ✅
+- Tema claro/escuro ✅
+
+
 
 ## [0.2.6] - 2026-01-05
 

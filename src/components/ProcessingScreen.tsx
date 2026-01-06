@@ -32,7 +32,7 @@ export function ProcessingScreen({ onComplete }: ProcessingScreenProps) {
 
         // Atualizar step baseado no progresso
         const stepInterval = setInterval(() => {
-            setCurrentStep(prev => {
+            setCurrentStep(() => {
                 const newStep = Math.floor(progress / 20);
                 return Math.min(newStep, steps.length - 1);
             });

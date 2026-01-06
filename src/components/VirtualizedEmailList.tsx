@@ -4,9 +4,8 @@
 
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useRef } from 'react';
-import { CheckSquare, Square, Clock } from 'lucide-react';
+import { CheckSquare, Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { RateBadge } from './RateBadge';
 
 interface Email {
     id: string;
@@ -82,7 +81,6 @@ export function VirtualizedEmailList({
                     {items.map(virtualRow => {
                         const email = emails[virtualRow.index];
                         const isSelected = selectedIds.has(email.id);
-                        const hasScore = typeof email.rateScore === 'number';
 
                         return (
                             <div
@@ -119,15 +117,6 @@ export function VirtualizedEmailList({
                                             <p className="font-medium text-sm truncate flex-1">
                                                 {email.subject || '(Sem assunto)'}
                                             </p>
-
-                                            {/* RATE Score Badge */}
-                                            {hasScore ? (
-                                                <RateBadge score={email.rateScore!} size="sm" showEmoji={false} />
-                                            ) : (
-                                                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                                                    <Clock className="h-3 w-3 animate-pulse" />
-                                                </span>
-                                            )}
                                         </div>
 
                                         <p className="text-xs text-muted-foreground truncate">
