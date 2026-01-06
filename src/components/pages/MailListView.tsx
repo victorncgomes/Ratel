@@ -125,7 +125,26 @@ export function MailListView({ viewType }: Props) {
             if (viewType === 'by-sender' || viewType === 'newsletters' || viewType === 'promotions') {
                 return email.from === selectedGroup.id;
             } else if (viewType === 'by-date') {
-                return new Date(email.date).toISOString().split('T')[0] === selectedGroup.id;
+                // Use same logic as grouping
+                const emailDate = new Date(email.date);
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+                let emailGroupId: string;
+                if (emailDate >= yesterday) {
+                    emailGroupId = 'yesterday';
+                } else if (emailDate >= weekAgo) {
+                    emailGroupId = 'this-week';
+                } else if (emailDate >= twoWeeksAgo) {
+                    emailGroupId = 'last-week';
+                } else {
+                    emailGroupId = `${emailDate.getFullYear()}-${emailDate.getMonth()}`;
+                }
+
+                return emailGroupId === selectedGroup.id;
             } else if (viewType === 'by-size') {
                 const size = (email as any).size || 0;
                 if (selectedGroup.id === 'large') return size > 5 * 1024 * 1024;
@@ -220,18 +239,38 @@ export function MailListView({ viewType }: Props) {
 
     return (
         <div className="h-[calc(100vh-8rem)] flex flex-col animate-in fade-in duration-300">
+            {/* Mobile Header with Back Button (only when group selected) */}
+            {selectedGroup && (
+                <div className="lg:hidden flex items-center gap-3 mb-4 p-2 glass-card rounded-sm">
+                    <button
+                        onClick={() => setSelectedGroup(null)}
+                        className="p-2 hover:bg-secondary/50 rounded-sm transition-colors"
+                    >
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <div className="flex-1">
+                        <p className="font-semibold truncate">{selectedGroup.name}</p>
+                        <p className="text-xs text-muted-foreground">{filteredEmails.length} emails</p>
+                    </div>
+                </div>
+            )}
 
             {error && (
-                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-600 mb-4">
+                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-sm flex items-center gap-3 text-red-600 mb-4">
                     <AlertCircle className="h-5 w-5" />
                     <p>{error}</p>
                 </div>
             )}
 
-            {/* Three Column Layout */}
+            {/* Responsive Layout */}
             <div className="flex-1 flex gap-4 min-h-0">
-                {/* Groups Column (Middle in Mailstrom, but left here since sidebar is already on left) */}
-                <div className="w-80 glass-card rounded-sm overflow-hidden flex-shrink-0">
+                {/* Groups Column - hidden on mobile when group is selected */}
+                <div className={cn(
+                    "w-full lg:w-80 glass-card rounded-sm overflow-hidden flex-shrink-0",
+                    selectedGroup ? "hidden lg:block" : "block"
+                )}>
                     <GroupsColumn
                         items={groupedItems}
                         selectedId={selectedGroup?.id || null}
@@ -241,8 +280,11 @@ export function MailListView({ viewType }: Props) {
                     />
                 </div>
 
-                {/* Emails Column */}
-                <div className="flex-1 flex flex-col min-w-0">
+                {/* Emails Column - hidden on mobile when no group selected */}
+                <div className={cn(
+                    "flex-1 flex flex-col min-w-0",
+                    !selectedGroup ? "hidden lg:flex" : "flex"
+                )}>
                     {selectedGroup ? (
                         <>
                             {/* Bulk Actions Toolbar */}
@@ -262,69 +304,61 @@ export function MailListView({ viewType }: Props) {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <input
                                     type="text"
-                                    placeholder="Filtrar neste grupo..."
+                                    placeholder="Filtrar emails..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border bg-background/50 backdrop-blur text-sm focus:ring-2 focus:ring-primary/50 outline-none"
+                                    className="w-full pl-10 pr-4 py-2.5 rounded-sm border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm transition-all"
                                 />
                             </div>
 
-                            {/* Select All */}
-                            <button
-                                onClick={toggleSelectAll}
-                                className="flex items-center gap-2 mb-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                                {selectedEmailIds.size === filteredEmails.length ? (
-                                    <CheckSquare className="h-4 w-4 text-primary" />
-                                ) : (
-                                    <Square className="h-4 w-4" />
-                                )}
-                                <span>
-                                    {selectedEmailIds.size === filteredEmails.length ? 'Desmarcar todos' : 'Selecionar todos'}
-                                </span>
-                            </button>
-
                             {/* Email List */}
-                            <div className="flex-1 overflow-y-auto space-y-2">
-                                {filteredEmails.map((email) => (
-                                    <div
-                                        key={email.id}
-                                        onClick={() => toggleEmailSelection(email.id)}
-                                        className={cn(
-                                            'glass-card rounded-xl p-4 cursor-pointer transition-all duration-200',
-                                            selectedEmailIds.has(email.id)
-                                                ? 'border-primary/50 bg-primary/5'
-                                                : 'hover:bg-white/50 dark:hover:bg-white/5'
-                                        )}
+                            <div className="flex-1 glass-card rounded-sm overflow-hidden">
+                                <div className="h-full overflow-y-auto p-2 space-y-1">
+                                    {/* Select All */}
+                                    <button
+                                        onClick={toggleSelectAll}
+                                        className="w-full flex items-center gap-3 p-3 hover:bg-secondary/50 rounded-sm transition-colors text-left"
                                     >
-                                        <div className="flex items-start gap-3">
-                                            <div className={cn(
-                                                'mt-1 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
+                                        {selectedEmailIds.size === filteredEmails.length ? (
+                                            <CheckSquare className="h-5 w-5 text-primary" />
+                                        ) : (
+                                            <Square className="h-5 w-5 text-muted-foreground" />
+                                        )}
+                                        <span className="text-sm font-medium">
+                                            {selectedEmailIds.size === filteredEmails.length ? 'Desmarcar todos' : 'Selecionar todos'}
+                                        </span>
+                                        <span className="ml-auto text-xs text-muted-foreground">
+                                            {filteredEmails.length} emails
+                                        </span>
+                                    </button>
+
+                                    {/* Email Items */}
+                                    {filteredEmails.map((email) => (
+                                        <div
+                                            key={email.id}
+                                            className={cn(
+                                                "flex items-start gap-3 p-3 rounded-sm cursor-pointer transition-all",
                                                 selectedEmailIds.has(email.id)
-                                                    ? 'bg-primary border-primary'
-                                                    : 'border-muted-foreground/30'
-                                            )}>
-                                                {selectedEmailIds.has(email.id) && (
-                                                    <CheckSquare className="h-3 w-3 text-primary-foreground" />
-                                                )}
-                                            </div>
+                                                    ? "bg-primary/10 border border-primary/30"
+                                                    : "hover:bg-secondary/50"
+                                            )}
+                                            onClick={() => toggleEmailSelection(email.id)}
+                                        >
+                                            {selectedEmailIds.has(email.id) ? (
+                                                <CheckSquare className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                                            ) : (
+                                                <Square className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                                            )}
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className="font-semibold text-sm truncate">
-                                                        {(email as any).fromName || email.from}
-                                                    </span>
-                                                    <span className="text-xs text-muted-foreground">
-                                                        {new Date(email.date).toLocaleDateString('pt-BR')}
-                                                    </span>
-                                                </div>
-                                                <h4 className="font-medium text-sm truncate">{email.subject}</h4>
-                                                <p className="text-xs text-muted-foreground truncate mt-1">
-                                                    {email.snippet}
+                                                <p className="font-medium text-sm truncate">{email.subject}</p>
+                                                <p className="text-xs text-muted-foreground truncate">{email.snippet}</p>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    {new Date(email.date).toLocaleDateString('pt-BR')}
                                                 </p>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
                         </>
                     ) : (

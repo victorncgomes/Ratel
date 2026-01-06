@@ -6,8 +6,13 @@ import { useStats } from '../../hooks/useStats';
 import { mockStats } from '../../lib/mockData';
 import { getAccessToken } from '../../lib/api';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { showToast } from '../../lib/toast';
 
-export function DashboardPage() {
+interface DashboardProps {
+    onNavigate?: (tab: string) => void;
+}
+
+export function DashboardPage({ onNavigate }: DashboardProps) {
     const { t } = useLanguage();
     const { stats, loading, fetchStats } = useStats();
     const [isDemoMode, setIsDemoMode] = useState(false);
@@ -137,12 +142,26 @@ export function DashboardPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {quickActions.map((action) => {
                         const Icon = action.icon;
+                        const handleClick = () => {
+                            if (action.action === 'ratel') {
+                                // Navigate to subscriptions for Ratel Furioso
+                                if (onNavigate) onNavigate('subscriptions');
+                                showToast('Ratel Furioso ativado! Navegando para inscrições...', 'success');
+                            } else if (action.action === 'shield') {
+                                if (onNavigate) onNavigate('rules');
+                                showToast('Abrindo Shield...', 'success');
+                            } else if (onNavigate) {
+                                onNavigate(action.action);
+                            }
+                        };
+
                         return (
                             <Card
                                 key={action.action}
                                 variant="clay"
                                 hover="lift"
                                 className="group cursor-pointer"
+                                onClick={handleClick}
                             >
                                 <CardContent className="pt-6">
                                     <div className="flex flex-col gap-4">

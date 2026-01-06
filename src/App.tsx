@@ -125,7 +125,7 @@ function RatelApp() {
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'dashboard': return <DashboardPage />;
+            case 'dashboard': return <DashboardPage onNavigate={setActiveTab} />;
             case 'subscriptions': return <SubscriptionsPage />;
             case 'cleanup': return <CleanupPage />;
             case 'activity': return <ActivityPage />;
@@ -166,12 +166,12 @@ function RatelApp() {
                         <Menu className="h-5 w-5" />
                     </Button>
 
-                    {/* Logo */}
-                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
+                    {/* Logo - aligned with sidebar menus */}
+                    <div className="flex items-center gap-3 cursor-pointer ml-4" onClick={() => setActiveTab('dashboard')}>
                         <img
                             src="/name-ratel.svg?v=3"
                             alt="Ratel"
-                            className="h-8 object-contain" // Slightly increased height since it's alone
+                            className="h-8 object-contain"
                         />
                     </div>
 
@@ -341,26 +341,26 @@ function RatelApp() {
                             {userMenuOpen && (
                                 <div className="absolute bottom-full left-0 right-0 mb-2 bg-popover border rounded-lg shadow-xl py-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
                                     <button
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-muted transition-colors"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal not-italic hover:bg-muted transition-colors"
                                         onClick={() => { setActiveTab('notifications'); setUserMenuOpen(false); }}
                                     >
                                         <Bell className="h-4 w-4" />
-                                        {t('user_menu.notifications')}
+                                        <span className="not-italic">{t('user_menu.notifications')}</span>
                                         <Badge className="ml-auto h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px]">3</Badge>
                                     </button>
                                     <button
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-muted transition-colors"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal not-italic hover:bg-muted transition-colors"
                                         onClick={() => { setActiveTab('help'); setUserMenuOpen(false); }}
                                     >
                                         <HelpCircle className="h-4 w-4" />
-                                        {t('user_menu.help')}
+                                        <span className="not-italic">{t('user_menu.help')}</span>
                                     </button>
                                     <button
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-muted transition-colors"
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal not-italic hover:bg-muted transition-colors"
                                         onClick={() => { setActiveTab('profile'); setUserMenuOpen(false); }}
                                     >
                                         <Settings className="h-4 w-4" />
-                                        {t('user_menu.settings')}
+                                        <span className="not-italic">{t('user_menu.settings')}</span>
                                     </button>
                                     <hr className="my-1 border-border" />
                                     <button

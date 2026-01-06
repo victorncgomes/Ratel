@@ -14,6 +14,7 @@ const { generateAnalytics } = require('./services/analyticsService');
 const { classifyEmails, generateClassificationStats, groupByLabel } = require('./services/geminiService');
 const { analyzeInbox, getOldDrafts, emptyTrash, emptySpam } = require('./services/cleanupService');
 const { loadRules, addToShield, addToRollup, removeRule } = require('./services/rulesService');
+const { calculateRates } = require('./services/rateService');
 
 // Load env vars
 dotenv.config();
@@ -676,10 +677,41 @@ app.delete('/api/rules', requireAuth, (req, res) => {
 });
 
 // ========================================
+// RATE API (AI Scoring)
+// ========================================
+
+// POST /api/rate/calculate - Calculate RATE scores for emails
+app.post('/api/rate/calculate', requireAuth, async (req, res) => {
+    try {
+        const { emails, senderBehavior } = req.body;
+
+        if (!emails || !Array.isArray(emails)) {
+            return res.status(400).json({ error: 'emails array is required' });
+        }
+
+        const rates = await calculateRates(emails, senderBehavior);
+        res.json(rates);
+    } catch (error) {
+        console.error('Erro ao calcular RATE:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET /api/health - Health check
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        version: '0.2.6'
+    });
+});
+
+// ========================================
 // START SERVER
 // ========================================
 app.listen(PORT, () => {
     console.log(`🚀 Ratel Server running on http://localhost:${PORT}`);
     console.log(`📧 Gmail API: Ready`);
     console.log(`📧 Outlook API: Ready`);
+    console.log(`🤖 RATE API: Ready`);
 });
