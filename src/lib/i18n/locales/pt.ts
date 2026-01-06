@@ -17,6 +17,61 @@ export const pt = {
         cancel: 'Cancelar',
         confirm: 'Confirmar',
     },
+    user_menu: {
+        notifications: 'Notificações',
+        help: 'Ajuda',
+        settings: 'Configurações',
+        logout: 'Sair',
+        demo_user: 'Usuário Demo'
+    },
+    landing: {
+        hero: {
+            title: 'Inteligência artificial para sua caixa de email.',
+            subtitle: 'Limpe, organize e respire.',
+            login_google: 'Continuar com Google',
+            login_microsoft: 'Continuar com Hotmail',
+            demo_button: 'Experimentar Demo Grátis',
+            discover_more: 'Descubra mais',
+            terms_privacy_prefix: 'Concordo com os',
+            terms: 'Termos',
+            privacy: 'Privacidade',
+            and: 'e'
+        },
+        features: {
+            title_badge: '✨ Recursos Poderosos',
+            title_main: 'Funcionalidades que',
+            title_accent: 'transformam sua inbox',
+            subtitle: 'Tudo o que você precisa para dominar sua caixa de entrada e nunca mais perder tempo com emails inúteis',
+            card_1_title: 'A Filosofia Ratel',
+            card_1_desc: 'Sua caixa de entrada não deveria ser um campo de batalha. O Ratel cuida de tudo automaticamente: filtra, organiza e mantém apenas o que importa. Email é ferramenta, não estresse.',
+            card_2_title: 'Classificação Inteligente com IA',
+            card_2_desc: 'O Ratel utiliza a poderosa Gemini AI do Google para analisar e categorizar automaticamente cada email que chega. Newsletters, promoções, trabalho, social — tudo organizado instantaneamente.',
+            card_3_title: 'Limpeza na sua Caixa de Entrada',
+            card_3_desc: 'Visualize exatamente o que está ocupando espaço. Analise por remetente, tamanho, data de recebimento. Limpe spam e lixeira com um clique. Inbox Zero nunca foi tão fácil.',
+            card_4_title: 'Ratel Furioso: Cancelamento em Massa',
+            card_4_desc: 'Chega de procurar links escondidos. Quando a bagunça está grande demais, solte o Ratel Furioso! Cancele dezenas de inscrições de uma só vez com ferocidade. Recupere o controle.',
+            card_5_title: 'Compras & Blindagem Anti-spam',
+            card_5_desc: 'Organize automaticamente seus recibos e rastreie encomendas. Ao mesmo tempo, bloqueie remetentes persistentes e marketing agressivo. Só o que importa chega até você.',
+            card_6_title: 'Newsletters Reunidos (Rollup)',
+            card_6_desc: 'Sua própria revista digital. Todas as suas newsletters favoritas reunidas em uma interface limpa e sem distrações. Redescubra o prazer de ler conteúdo de qualidade.',
+            feature_badge: 'Funcionalidade'
+        },
+        testimonials: {
+            title: 'O que dizem nossos usuários',
+            subtitle: 'Milhares de profissionais já transformaram sua produtividade',
+            quote_1: 'O Ratel transformou completamente minha rotina de emails. Economizo pelo menos 2 horas por dia.',
+            author_1_role: 'Product Manager @ Nubank',
+            quote_2: 'A melhor ferramenta de gestão de emails que já experimentei. Inbox Zero finalmente é possível.',
+            author_2_role: 'Análise de Produto',
+            quote_3: 'Mais de 2.5 milhões de emails organizados por nossos usuários no último mês.',
+            quote_4: 'Interface limpa, IA poderosa. O Ratel é o que faltava para o Gmail.',
+            author_4_role: '#1 Product of the Day',
+            quote_5: 'Cancelei 47 inscrições inúteis em menos de 5 minutos. Impressionante!',
+            author_5_role: 'Software Engineer @ Globo',
+            quote_6: 'Finalmente uma ferramenta que entende o caos da minha caixa de entrada.',
+            author_6_role: 'Designer @ iFood'
+        }
+    },
     menu: {
         dashboard: 'Painel',
         subscriptions: 'Inscrições',
@@ -58,6 +113,13 @@ export const pt = {
             social: 'Social',
             promotions: 'Promoções',
             updates: 'Updates',
+        },
+        quick_actions_title: 'Ações Rápidas',
+        quick_actions: {
+            email_lists: { title: 'Listas de Email', desc: 'Gerencie suas inscrições' },
+            quick_cleanup: { title: 'Limpeza Rápida', desc: 'Libere espaço na caixa' },
+            ratel_furious: { title: 'Ratel Furioso', desc: 'Cancelar tudo de uma vez' },
+            shield: { title: 'Shield', desc: 'Remetentes bloqueados' },
         }
     },
     labels_page: {
@@ -272,5 +334,19 @@ export const pt = {
                 ]
             }
         ]
+    },
+    sidebar: {
+        main_actions: 'Ações Principais',
+        email_lists: 'Listas de Email',
+        quick_cleanup: 'Limpeza Rápida',
+        smart_views: 'Visualizações',
+        by_sender: 'Por Remetente',
+        by_size: 'Por Tamanho',
+        by_date: 'Por Data',
+        newsletters: 'Newsletters',
+        promotions: 'Promoções',
+        protection: 'Proteção',
+        shield: 'Shield (Bloqueados)',
+        rollup: 'Rollup (Agrupados)',
     }
 };

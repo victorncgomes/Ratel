@@ -5,17 +5,23 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 import {
     Mail, RefreshCw, Loader2, AlertCircle, Search, Zap, Check, X
 } from 'lucide-react';
-import { mockSubscriptions } from '../../lib/mockData';
 import { getAccessToken } from '../../lib/api';
 import { showToast } from '../../lib/toast';
 import { useRatelFurioso } from '../../hooks/useRatelFurioso';
 import { RatelFuriosoModal } from '../RatelFuriosoModal';
 
 export function SubscriptionsPage() {
-    const { subscriptions: realSubscriptions, loading, error, fetchSubscriptions, deleteAll, unsubscribe, removeSubscription } = useSubscriptions();
+    const {
+        subscriptions: allSubscriptions,
+        loading,
+        error,
+        fetchSubscriptions,
+        deleteAll,
+        unsubscribe,
+        removeSubscription
+    } = useSubscriptions();
 
     const [isDemoMode, setIsDemoMode] = useState(false);
-    const [demoSubscriptions, setDemoSubscriptions] = useState(mockSubscriptions);
     const [showRatelFurioso, setShowRatelFurioso] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
@@ -27,12 +33,8 @@ export function SubscriptionsPage() {
     useEffect(() => {
         const hasToken = getAccessToken();
         setIsDemoMode(!hasToken);
-        if (hasToken) {
-            fetchSubscriptions().catch(console.error);
-        }
+        fetchSubscriptions().catch(console.error);
     }, [fetchSubscriptions]);
-
-    const allSubscriptions = isDemoMode ? demoSubscriptions : realSubscriptions;
 
     // Filter and sort
     const filteredSubscriptions = allSubscriptions
@@ -56,16 +58,12 @@ export function SubscriptionsPage() {
     const handleUnsubscribe = async (sub: Subscription) => {
         setActionLoading(`unsub-${sub.id}`);
         try {
-            if (isDemoMode) {
-                await new Promise(resolve => setTimeout(resolve, 800));
-                setDemoSubscriptions(prev => prev.filter(s => s.id !== sub.id));
-                showToast(`Inscrição cancelada: ${sub.name}`, 'success');
-            } else {
-                await unsubscribe(sub);
+            await unsubscribe(sub);
+            if (!isDemoMode) {
                 await deleteAll(sub.emailIds);
-                removeSubscription(sub.id);
-                showToast(`Inscrição cancelada e emails removidos: ${sub.name}`, 'success');
             }
+            removeSubscription(sub.id);
+            showToast(`Inscrição cancelada: ${sub.name}`, 'success');
         } catch (e) {
             console.error(e);
             showToast('Erro ao cancelar inscrição', 'error');
@@ -77,9 +75,8 @@ export function SubscriptionsPage() {
         const allIds = allSubscriptions.map(s => s.id);
         try {
             await ratelFurioso.execute(allIds, deleteHistory);
-            if (isDemoMode) {
-                setDemoSubscriptions([]);
-            }
+            // Re-fetch or clear local state
+            fetchSubscriptions();
             showToast('🦡 Ratel Furioso completado! Todas as inscrições removidas.', 'success');
         } catch (e) {
             showToast('Erro ao executar Ratel Furioso', 'error');
@@ -88,7 +85,7 @@ export function SubscriptionsPage() {
     };
 
     // Loading
-    if (loading && subscriptions.length === 0) {
+    if (loading && allSubscriptions.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-20 animate-in fade-in duration-500">
                 <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -99,7 +96,7 @@ export function SubscriptionsPage() {
     }
 
     // Error
-    if (error && subscriptions.length === 0) {
+    if (error && allSubscriptions.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-20 animate-in fade-in duration-500">
                 <AlertCircle className="h-12 w-12 text-destructive mb-4" />
@@ -126,29 +123,7 @@ export function SubscriptionsPage() {
 
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold">Listas de e-mail</h1>
-                    <p className="text-muted-foreground text-sm">
-                        {allSubscriptions.length} listas encontradas
-                    </p>
-                </div>
-                <Button
-                    onClick={() => setShowRatelFurioso(true)}
-                    className="bg-red-600 hover:bg-red-700 text-white gap-2"
-                    disabled={ratelFurioso.loading}
-                >
-                    {ratelFurioso.loading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                        <Zap className="h-4 w-4" />
-                    )}
-                    Cancelar inscrição de TUDO
-                </Button>
-            </div>
-
-            {/* Search & Sort Bar */}
+            {/* Search & Actions Bar */}
             <div className="flex gap-3 items-center">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -157,31 +132,44 @@ export function SubscriptionsPage() {
                         placeholder="Procurar..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-sm border bg-background/50 backdrop-blur focus:outline-none focus:ring-2 focus:ring-primary/50 focus:bg-background text-sm transition-all"
                     />
                 </div>
                 <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as 'recent' | 'emails')}
-                    className="px-3 py-2 rounded-lg border bg-background text-sm"
+                    className="px-4 py-2.5 rounded-sm border bg-background/50 backdrop-blur text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                 >
-                    <option value="emails">↓ Mais recente</option>
-                    <option value="recent">↑ Mais antigo</option>
+                    <option value="emails">↓ Mais relevante</option>
+                    <option value="recent">↑ Ordem alfabética</option>
                 </select>
-                <Button variant="outline" size="sm" onClick={() => fetchSubscriptions()} disabled={loading}>
+                <Button variant="glass" size="icon" onClick={() => fetchSubscriptions()} disabled={loading}>
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                </Button>
+                <Button
+                    onClick={() => setShowRatelFurioso(true)}
+                    variant="destructive"
+                    className="gap-2"
+                    disabled={ratelFurioso.loading}
+                >
+                    {ratelFurioso.loading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                        <Zap className="h-4 w-4" />
+                    )}
+                    Cancelar Tudo
                 </Button>
             </div>
 
-            {/* Subscription List - Clean Inbox Zapper Style */}
+            {/* Subscription List */}
             <div className="space-y-2">
                 {subscriptions.map((sub) => (
                     <div
                         key={sub.id}
-                        className="flex items-center gap-4 p-4 bg-card border rounded-xl hover:shadow-md transition-all"
+                        className="flex items-center gap-4 p-4 glass-card rounded-sm hover:shadow-lg transition-all"
                     >
                         {/* Avatar */}
-                        <Avatar className={`h-12 w-12 ${sub.color}`}>
+                        <Avatar className={`h-12 w-12 ${sub.color} shadow-lg`}>
                             <AvatarFallback className="text-white font-bold bg-transparent text-lg">
                                 {sub.name.substring(0, 2).toUpperCase()}
                             </AvatarFallback>
@@ -189,7 +177,7 @@ export function SubscriptionsPage() {
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold truncate">{sub.name}</h3>
+                            <h3 className="font-bold truncate">{sub.name}</h3>
                             <p className="text-sm text-muted-foreground truncate">{sub.email}</p>
                             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                                 <Mail className="h-3 w-3" />
@@ -197,11 +185,12 @@ export function SubscriptionsPage() {
                             </p>
                         </div>
 
-                        {/* Action Buttons - Prominent like Inbox Zapper */}
+                        {/* Action Buttons */}
                         <div className="flex gap-2">
                             <Button
                                 variant="outline"
-                                className="gap-2 border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700"
+                                size="sm"
+                                className="gap-1.5 border-green-500/50 text-green-600 hover:bg-green-500/10 hover:text-green-700 hover:border-green-500"
                                 onClick={() => handleKeep(sub)}
                             >
                                 <Check className="h-4 w-4" />
@@ -209,7 +198,8 @@ export function SubscriptionsPage() {
                             </Button>
                             <Button
                                 variant="outline"
-                                className="gap-2 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                size="sm"
+                                className="gap-1.5 border-red-500/50 text-red-600 hover:bg-red-500/10 hover:text-red-700 hover:border-red-500"
                                 onClick={() => handleUnsubscribe(sub)}
                                 disabled={actionLoading === `unsub-${sub.id}`}
                             >
@@ -218,7 +208,7 @@ export function SubscriptionsPage() {
                                 ) : (
                                     <X className="h-4 w-4" />
                                 )}
-                                Cancelar inscrição
+                                Cancelar
                             </Button>
                         </div>
                     </div>

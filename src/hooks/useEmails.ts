@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react';
+import { mockEmails } from '../lib/mockData';
+import { getAccessToken } from '../lib/api';
 
 const API_BASE = 'http://localhost:3109';
 
-interface Email {
+export interface Email {
     id: string;
     from: string;
     subject: string;
@@ -10,6 +12,7 @@ interface Email {
     snippet: string;
     hasUnsubscribe: boolean;
     unsubscribeLink?: string;
+    size?: number;
 }
 
 interface EmailsState {
@@ -26,11 +29,26 @@ export function useEmails() {
     });
 
     const fetchEmails = useCallback(async (limit: number = 50) => {
+        const token = getAccessToken();
+
+        if (!token) {
+            // Mode Demo
+            setState({
+                emails: mockEmails.slice(0, limit) as unknown as Email[],
+                loading: false,
+                error: null
+            });
+            return mockEmails.slice(0, limit);
+        }
+
         setState(prev => ({ ...prev, loading: true, error: null }));
 
         try {
             const response = await fetch(`${API_BASE}/api/emails?limit=${limit}`, {
-                credentials: 'include'
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
             if (!response.ok) {
@@ -48,10 +66,20 @@ export function useEmails() {
     }, []);
 
     const archiveEmail = useCallback(async (emailId: string) => {
+        const token = getAccessToken();
+        if (!token) {
+            setState(prev => ({
+                ...prev,
+                emails: prev.emails.filter(e => e.id !== emailId)
+            }));
+            return true;
+        }
+
         try {
             const response = await fetch(`${API_BASE}/api/emails/${emailId}/archive`, {
                 method: 'POST',
-                credentials: 'include'
+                credentials: 'include',
+                headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (!response.ok) {
@@ -59,7 +87,6 @@ export function useEmails() {
                 throw new Error(data.error || 'Erro ao arquivar email');
             }
 
-            // Remover da lista local
             setState(prev => ({
                 ...prev,
                 emails: prev.emails.filter(e => e.id !== emailId)
@@ -73,10 +100,20 @@ export function useEmails() {
     }, []);
 
     const trashEmail = useCallback(async (emailId: string) => {
+        const token = getAccessToken();
+        if (!token) {
+            setState(prev => ({
+                ...prev,
+                emails: prev.emails.filter(e => e.id !== emailId)
+            }));
+            return true;
+        }
+
         try {
             const response = await fetch(`${API_BASE}/api/emails/${emailId}/trash`, {
                 method: 'POST',
-                credentials: 'include'
+                credentials: 'include',
+                headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (!response.ok) {
@@ -97,10 +134,20 @@ export function useEmails() {
     }, []);
 
     const deleteEmail = useCallback(async (emailId: string) => {
+        const token = getAccessToken();
+        if (!token) {
+            setState(prev => ({
+                ...prev,
+                emails: prev.emails.filter(e => e.id !== emailId)
+            }));
+            return true;
+        }
+
         try {
             const response = await fetch(`${API_BASE}/api/emails/${emailId}`, {
                 method: 'DELETE',
-                credentials: 'include'
+                credentials: 'include',
+                headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (!response.ok) {
@@ -120,11 +167,46 @@ export function useEmails() {
         }
     }, []);
 
+    const trashEmails = useCallback(async (emailIds: string[]) => {
+        const token = getAccessToken();
+        if (!token) {
+            setState(prev => ({
+                ...prev,
+                emails: prev.emails.filter(e => !emailIds.includes(e.id))
+            }));
+            return true;
+        }
+
+        try {
+            // Process in parallel for speed
+            await Promise.all(
+                emailIds.map(id =>
+                    fetch(`${API_BASE}/api/emails/${id}/trash`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    })
+                )
+            );
+
+            setState(prev => ({
+                ...prev,
+                emails: prev.emails.filter(e => !emailIds.includes(e.id))
+            }));
+
+            return true;
+        } catch (error: any) {
+            console.error('Erro ao excluir emails em massa:', error);
+            throw error;
+        }
+    }, []);
+
     return {
         ...state,
         fetchEmails,
         archiveEmail,
         trashEmail,
+        trashEmails,
         deleteEmail
     };
 }

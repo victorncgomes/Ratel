@@ -1,19 +1,43 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
+import { cva, type VariantProps } from 'class-variance-authority';
 
-const Card = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-    <div
-        ref={ref}
-        className={cn(
-            'rounded-lg border bg-card text-card-foreground shadow-sm',
-            className
-        )}
-        {...props}
-    />
-));
+const cardVariants = cva(
+    'rounded-sm text-card-foreground transition-all duration-300',
+    {
+        variants: {
+            variant: {
+                default: 'bg-card border border-border shadow-sm',
+                glass: 'glass-card',
+                clay: 'clay-card',
+                ghost: 'bg-transparent',
+            },
+            hover: {
+                none: '',
+                lift: 'hover-lift',
+                glow: 'hover-glow',
+            }
+        },
+        defaultVariants: {
+            variant: 'default',
+            hover: 'none',
+        },
+    }
+);
+
+export interface CardProps
+    extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> { }
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+    ({ className, variant, hover, ...props }, ref) => (
+        <div
+            ref={ref}
+            className={cn(cardVariants({ variant, hover, className }))}
+            {...props}
+        />
+    )
+);
 Card.displayName = 'Card';
 
 const CardHeader = React.forwardRef<
@@ -35,7 +59,7 @@ const CardTitle = React.forwardRef<
     <h3
         ref={ref}
         className={cn(
-            'text-2xl font-semibold leading-none tracking-tight',
+            'text-xl font-bold leading-none tracking-tight',
             className
         )}
         {...props}
@@ -75,4 +99,4 @@ const CardFooter = React.forwardRef<
 ));
 CardFooter.displayName = 'CardFooter';
 
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent };
+export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent, cardVariants };

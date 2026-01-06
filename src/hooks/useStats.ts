@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { authFetch } from '../lib/api';
+import { authFetch, getAccessToken } from '../lib/api';
+import { mockStats } from '../lib/mockData';
 
 export interface Stats {
     unreadCount: number;
@@ -21,6 +22,14 @@ export function useStats() {
     });
 
     const fetchStats = useCallback(async () => {
+        const token = getAccessToken();
+
+        if (!token) {
+            // Mode Demo
+            setState({ stats: mockStats, loading: false, error: null });
+            return mockStats;
+        }
+
         setState(prev => ({ ...prev, loading: true, error: null }));
 
         try {

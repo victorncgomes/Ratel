@@ -17,6 +17,61 @@ export const en = {
         cancel: 'Cancel',
         confirm: 'Confirm',
     },
+    user_menu: {
+        notifications: 'Notifications',
+        help: 'Help',
+        settings: 'Settings',
+        logout: 'Logout',
+        demo_user: 'Demo User'
+    },
+    landing: {
+        hero: {
+            title: 'Artificial intelligence for your email inbox.',
+            subtitle: 'Clean, organize and breathe.',
+            login_google: 'Continue with Google',
+            login_microsoft: 'Continue with Hotmail',
+            demo_button: 'Try Free Demo',
+            discover_more: 'Discover more',
+            terms_privacy_prefix: 'I agree to the',
+            terms: 'Terms',
+            privacy: 'Privacy',
+            and: 'and'
+        },
+        features: {
+            title_badge: '✨ Powerful Features',
+            title_main: 'Features that',
+            title_accent: 'transform your inbox',
+            subtitle: 'Everything you need to master your inbox and never waste time on useless emails again',
+            card_1_title: 'The Ratel Philosophy',
+            card_1_desc: 'Your inbox shouldn\'t be a battlefield. Ratel takes care of everything automatically: filters, organizes and keeps only what matters. Email is a tool, not stress.',
+            card_2_title: 'Smart Classification with AI',
+            card_2_desc: 'Ratel uses Google\'s powerful Gemini AI to automatically analyze and categorize every incoming email. Newsletters, promotions, work, social — everything instantly organized.',
+            card_3_title: 'Cleanup Your Inbox',
+            card_3_desc: 'See exactly what\'s taking up space. Analyze by sender, size, date received. Clear spam and trash with one click. Inbox Zero has never been easier.',
+            card_4_title: 'Ratel Furious: Mass Unsubscribe',
+            card_4_desc: 'No more searching for hidden links. When the mess is too big, release Ratel Furious! Cancel dozens of subscriptions at once with ferocity. Reclaim control.',
+            card_5_title: 'Shopping & Spam Shield',
+            card_5_desc: 'Automatically organize your receipts and track packages. At the same time, block persistent senders and aggressive marketing. Only what matters reaches you.',
+            card_6_title: 'Newsletters Rollup',
+            card_6_desc: 'Your own digital magazine. All your favorite newsletters gathered in a clean, distraction-free interface. Rediscover the joy of reading quality content.',
+            feature_badge: 'Feature'
+        },
+        testimonials: {
+            title: 'What our users say',
+            subtitle: 'Thousands of professionals have already transformed their productivity',
+            quote_1: 'Ratel completely transformed my email routine. I save at least 2 hours a day.',
+            author_1_role: 'Product Manager @ Nubank',
+            quote_2: 'The best email management tool I have ever tried. Inbox Zero is finally possible.',
+            author_2_role: 'Product Analytics',
+            quote_3: 'More than 2.5 million emails organized by our users last month.',
+            quote_4: 'Clean interface, powerful AI. Ratel is what was missing for Gmail.',
+            author_4_role: '#1 Product of the Day',
+            quote_5: 'I cancelled 47 useless subscriptions in less than 5 minutes. Impressive!',
+            author_5_role: 'Software Engineer @ Globo',
+            quote_6: 'Finally a tool that understands the chaos of my inbox.',
+            author_6_role: 'Designer @ iFood'
+        }
+    },
     menu: {
         dashboard: 'Dashboard',
         subscriptions: 'Subscriptions',
@@ -58,6 +113,13 @@ export const en = {
             social: 'Social',
             promotions: 'Promotions',
             updates: 'Updates',
+        },
+        quick_actions_title: 'Quick Actions',
+        quick_actions: {
+            email_lists: { title: 'Email Lists', desc: 'Manage your subscriptions' },
+            quick_cleanup: { title: 'Quick Cleanup', desc: 'Free up inbox space' },
+            ratel_furious: { title: 'Ratel Furious', desc: 'Unsubscribe from everything' },
+            shield: { title: 'Shield', desc: 'Blocked senders' },
         }
     },
     labels_page: {
@@ -272,5 +334,19 @@ export const en = {
                 ]
             }
         ]
+    },
+    sidebar: {
+        main_actions: 'Main Actions',
+        email_lists: 'Email Lists',
+        quick_cleanup: 'Quick Cleanup',
+        smart_views: 'Smart Views',
+        by_sender: 'By Sender',
+        by_size: 'By Size',
+        by_date: 'By Date',
+        newsletters: 'Newsletters',
+        promotions: 'Promotions',
+        protection: 'Protection',
+        shield: 'Shield (Blocked)',
+        rollup: 'Rollup (Grouped)',
     }
 };

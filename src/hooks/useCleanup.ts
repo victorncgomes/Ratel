@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { authFetch } from '../lib/api';
+import { authFetch, getAccessToken } from '../lib/api';
+import { mockCleanupData } from '../lib/mockData';
 
 export interface CleanupAnalysis {
     oldEmails: {
@@ -50,6 +51,24 @@ export function useCleanup() {
     });
 
     const analyze = useCallback(async () => {
+        const token = getAccessToken();
+
+        if (!token) {
+            // Mode Demo
+            const demoAnalysis: CleanupAnalysis = {
+                oldEmails: { count: mockCleanupData.inbox_old.count, size: mockCleanupData.inbox_old.size, ids: [] },
+                oldUnread: { count: mockCleanupData.unread_old.count, size: mockCleanupData.unread_old.size, ids: [] },
+                largeAttachments: { count: mockCleanupData.large_attachments.count, size: mockCleanupData.large_attachments.size, ids: [] },
+                drafts: { count: mockCleanupData.drafts.count, size: mockCleanupData.drafts.size, ids: [] },
+                spam: { count: mockCleanupData.spam.count, size: mockCleanupData.spam.size },
+                trash: { count: mockCleanupData.trash.count, size: mockCleanupData.trash.size },
+                totalAnalyzed: 200,
+                timestamp: new Date().toISOString()
+            };
+            setState({ analysis: demoAnalysis, loading: false, error: null, progress: 100 });
+            return demoAnalysis;
+        }
+
         setState(prev => ({ ...prev, loading: true, error: null, progress: 0 }));
 
         try {

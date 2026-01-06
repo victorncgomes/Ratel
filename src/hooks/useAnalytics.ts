@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { authFetch } from '../lib/api';
+import { authFetch, getAccessToken } from '../lib/api';
+import { mockAnalytics } from '../lib/mockData';
 
 interface WeeklyData {
     name: string;
@@ -47,6 +48,14 @@ export function useAnalytics() {
     });
 
     const fetchAnalytics = useCallback(async (limit: number = 10000) => {
+        const token = getAccessToken();
+
+        if (!token) {
+            // Mode Demo
+            setState({ analytics: mockAnalytics as unknown as Analytics, loading: false, error: null });
+            return mockAnalytics;
+        }
+
         setState(prev => ({ ...prev, loading: true, error: null }));
 
         try {

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Button } from './ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/Card';
-import { Badge } from './ui/badge';
-import { AlertTriangle, Loader2, Zap } from 'lucide-react';
+import { AlertTriangle, Loader2, Trash2 } from 'lucide-react';
 
 interface RatelFuriosoModalProps {
     isOpen: boolean;
@@ -21,7 +20,7 @@ export function RatelFuriosoModal({
     loading,
     progress
 }: RatelFuriosoModalProps) {
-    const [deleteHistory, setDeleteHistory] = useState(false);
+    const [deleteHistory, setDeleteHistory] = useState(true);
 
     if (!isOpen) return null;
 
@@ -31,106 +30,80 @@ export function RatelFuriosoModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <Card className="w-full max-w-md mx-4 border-red-500/50 shadow-2xl">
-                <CardHeader className="bg-gradient-to-r from-red-600 to-orange-600 text-white">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-white/20 rounded-lg">
-                            <img src="/ratel.svg" className="h-8 w-8" alt="Ratel" />
-                        </div>
-                        <div>
-                            <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                                🦡 Ratel Furioso
-                                <Badge className="bg-yellow-500 text-black">EXTREMO</Badge>
-                            </CardTitle>
-                            <CardDescription className="text-white/90">
-                                Modo de limpeza em massa
-                            </CardDescription>
-                        </div>
-                    </div>
+            <Card variant="glass" className="w-full max-w-md mx-4 shadow-2xl">
+                <CardHeader>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                        <Trash2 className="h-5 w-5 text-destructive" />
+                        Cancelar Todas as Inscrições
+                    </CardTitle>
+                    <CardDescription>
+                        Confirme para remover {selectedCount} inscrições da sua caixa
+                    </CardDescription>
                 </CardHeader>
 
-                <CardContent className="p-6 space-y-6">
+                <CardContent className="space-y-5">
                     {!loading ? (
                         <>
-                            {/* Aviso */}
-                            <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
-                                <AlertTriangle className="h-6 w-6 text-red-600 shrink-0 mt-0.5" />
+                            {/* Warning */}
+                            <div className="flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-xl">
+                                <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="font-semibold text-red-900 dark:text-red-100">
-                                        Atenção! Esta ação é irreversível.
+                                    <p className="font-medium text-destructive">
+                                        Esta ação não pode ser desfeita.
                                     </p>
-                                    <p className="text-sm text-red-700 dark:text-red-300 mt-1">
-                                        Você está prestes a cancelar <strong>{selectedCount} inscrições</strong> de uma só vez.
-                                        O Ratel não negocia. O que não serve, sai.
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        Você será removido de <strong>{selectedCount} listas</strong> de email.
                                     </p>
                                 </div>
                             </div>
 
-                            {/* Opção de deletar histórico */}
-                            <label className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors">
+                            {/* Delete history option */}
+                            <label className="flex items-start gap-3 p-4 border rounded-xl cursor-pointer hover:bg-secondary/30 transition-colors">
                                 <input
                                     type="checkbox"
                                     checked={deleteHistory}
                                     onChange={(e) => setDeleteHistory(e.target.checked)}
-                                    className="mt-1"
+                                    className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                                 />
                                 <div>
-                                    <p className="font-medium">Deletar histórico de emails também</p>
+                                    <p className="font-medium">Deletar emails antigos também</p>
                                     <p className="text-sm text-muted-foreground">
-                                        Remove todos os emails antigos dessas inscrições (recomendado)
+                                        Remove todos os emails dessas inscrições (recomendado)
                                     </p>
                                 </div>
                             </label>
 
-                            {/* Estatísticas */}
-                            <div className="grid grid-cols-2 gap-4 p-4 bg-secondary/30 rounded-lg">
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Inscrições</p>
-                                    <p className="text-2xl font-bold text-red-600">{selectedCount}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Tempo estimado</p>
-                                    <p className="text-2xl font-bold">{Math.ceil(selectedCount * 0.5)}s</p>
-                                </div>
-                            </div>
-
-                            {/* Botões */}
-                            <div className="flex gap-3">
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 pt-2">
                                 <Button
                                     variant="outline"
                                     onClick={onClose}
                                     className="flex-1"
                                 >
-                                    Cancelar
+                                    Voltar
                                 </Button>
                                 <Button
                                     onClick={handleConfirm}
-                                    className="flex-1 bg-red-600 hover:bg-red-700 text-white gap-2"
+                                    variant="destructive"
+                                    className="flex-1 gap-2"
                                 >
-                                    <Zap className="h-4 w-4" />
-                                    Executar Fúria
+                                    <Trash2 className="h-4 w-4" />
+                                    Confirmar
                                 </Button>
                             </div>
                         </>
                     ) : (
                         <>
                             {/* Progress */}
-                            <div className="space-y-4">
+                            <div className="space-y-4 py-4">
                                 <div className="flex items-center justify-center">
-                                    <div className="relative">
-                                        <Loader2 className="h-16 w-16 text-red-600 animate-spin" />
-                                        <img
-                                            src="/ratel.svg"
-                                            className="h-8 w-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                                            alt="Ratel"
-                                        />
-                                    </div>
+                                    <Loader2 className="h-12 w-12 text-primary animate-spin" />
                                 </div>
 
                                 <div className="text-center">
-                                    <p className="text-lg font-semibold">Ratel em ação...</p>
+                                    <p className="text-lg font-semibold">Processando...</p>
                                     <p className="text-sm text-muted-foreground">
-                                        Cancelando inscrições indesejadas
+                                        Cancelando inscrições selecionadas
                                     </p>
                                 </div>
 
@@ -140,16 +113,16 @@ export function RatelFuriosoModal({
                                         <span>Progresso</span>
                                         <span className="font-medium">{progress}%</span>
                                     </div>
-                                    <div className="h-3 bg-secondary rounded-full overflow-hidden">
+                                    <div className="h-3 bg-secondary/50 rounded-full overflow-hidden">
                                         <div
-                                            className="h-full bg-gradient-to-r from-red-600 to-orange-600 transition-all duration-300"
+                                            className="h-full bg-gradient-to-r from-primary to-blue-500 transition-all duration-300 rounded-full"
                                             style={{ width: `${progress}%` }}
                                         />
                                     </div>
                                 </div>
 
                                 <p className="text-xs text-center text-muted-foreground">
-                                    Não feche esta janela...
+                                    Por favor, aguarde...
                                 </p>
                             </div>
                         </>

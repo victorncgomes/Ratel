@@ -6,7 +6,6 @@ import {
     Trash2, Mail, FileText, AlertTriangle, Sparkles,
     Loader2, HardDrive, Clock, Paperclip
 } from 'lucide-react';
-import { mockCleanupData } from '../../lib/mockData';
 import { showToast } from '../../lib/toast';
 import { useCleanup } from '../../hooks/useCleanup';
 import { getAccessToken } from '../../lib/api';
@@ -24,16 +23,19 @@ interface CleanupCategory {
 
 export function CleanupPage() {
     const [isDemoMode, setIsDemoMode] = useState(false);
-    const [demoData, setDemoData] = useState(mockCleanupData);
     const { analysis, loading, analyze, emptyTrash, emptySpam } = useCleanup();
 
     useEffect(() => {
         const hasToken = getAccessToken();
         setIsDemoMode(!hasToken);
-    }, []);
+        // Em modo demo ou real, vamos disparar a análise inicial se não houver
+        if (!analysis) {
+            analyze().catch(console.error);
+        }
+    }, [analyze, analysis]);
 
-    // Usar dados reais ou mockados
-    const cleanupData = isDemoMode ? demoData : (analysis ? {
+    // Usar dados da análise do hook (que já lida com demo mode)
+    const cleanupData = analysis ? {
         inbox_old: { count: analysis.oldEmails.count, size: analysis.oldEmails.size },
         unread_old: { count: analysis.oldUnread.count, size: analysis.oldUnread.size },
         drafts: { count: analysis.drafts.count, size: analysis.drafts.size },
@@ -47,7 +49,7 @@ export function CleanupPage() {
         large_attachments: { count: 0, size: '...' },
         spam: { count: 0, size: '...' },
         trash: { count: 0, size: '...' }
-    });
+    };
 
     const cleanupCategories: CleanupCategory[] = [
         {
@@ -113,62 +115,39 @@ export function CleanupPage() {
     ];
 
     const handleAnalyze = async () => {
-        if (isDemoMode) {
-            showToast('Analisando sua caixa de entrada...', 'info');
-            setTimeout(() => {
-                showToast('Análise concluída! Encontramos oportunidades de limpeza.', 'success');
-            }, 2000);
-        } else {
-            try {
-                await analyze();
-                showToast('Análise concluída!', 'success');
-            } catch (error) {
-                showToast('Erro ao analisar. Faça login novamente.', 'error');
-            }
+        try {
+            await analyze();
+            showToast('Análise concluída!', 'success');
+        } catch (error) {
+            showToast('Erro ao analisar.', 'error');
         }
     };
 
     const handleEmptyTrash = async () => {
-        if (isDemoMode) {
-            showToast('Esvaziando lixeira...', 'info');
-            setTimeout(() => {
-                setDemoData(prev => ({ ...prev, trash: { ...prev.trash, count: 0, size: '0 MB' } }));
-                showToast('Lixeira esvaziada!', 'success');
-            }, 1500);
-        } else {
-            try {
-                await emptyTrash();
-                showToast('Lixeira esvaziada!', 'success');
-                await analyze();
-            } catch (error) {
-                showToast('Erro ao esvaziar lixeira', 'error');
-            }
+        try {
+            await emptyTrash();
+            showToast('Lixeira esvaziada!', 'success');
+            if (!isDemoMode) await analyze();
+        } catch (error) {
+            showToast('Erro ao esvaziar lixeira', 'error');
         }
     };
 
     const handleEmptySpam = async () => {
-        if (isDemoMode) {
-            showToast('Esvaziando spam...', 'info');
-            setTimeout(() => {
-                setDemoData(prev => ({ ...prev, spam: { ...prev.spam, count: 0, size: '0 MB' } }));
-                showToast('Spam esvaziado!', 'success');
-            }, 1500);
-        } else {
-            try {
-                await emptySpam();
-                showToast('Spam esvaziado!', 'success');
-                await analyze();
-            } catch (error) {
-                showToast('Erro ao esvaziar spam', 'error');
-            }
+        try {
+            await emptySpam();
+            showToast('Spam esvaziado!', 'success');
+            if (!isDemoMode) await analyze();
+        } catch (error) {
+            showToast('Erro ao esvaziar spam', 'error');
         }
     };
 
     const totalItems = cleanupCategories.reduce((sum, cat) => sum + cat.count, 0);
-    const totalSize = cleanupCategories.reduce((sum, cat) => {
+    const totalSizeStr = cleanupCategories.reduce((sum, cat) => {
         const sizeNum = parseFloat(cat.size.replace(/[^0-9.]/g, ''));
         return sum + (isNaN(sizeNum) ? 0 : sizeNum);
-    }, 0);
+    }, 0).toFixed(1);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -176,8 +155,7 @@ export function CleanupPage() {
             <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
                     <h2 className="text-3xl font-heading font-bold tracking-tight flex items-center gap-3">
-                        🧹 Limpeza
-                        <Badge className="bg-green-500 text-xs">NOVO</Badge>
+                        <span className="gradient-text">🧹 Limpeza</span>
                     </h2>
                     <p className="text-muted-foreground">
                         O que não serve, sai. Sem negociação.
@@ -194,12 +172,12 @@ export function CleanupPage() {
             </div>
 
             {/* Score de Limpeza */}
-            <Card className="bg-gradient-to-r from-green-500/10 to-teal-500/10 border-green-500/20">
+            <Card variant="glass" className="border-green-500/20">
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="p-3 bg-green-500/20 rounded-xl">
-                                <HardDrive className="h-8 w-8 text-green-600" />
+                            <div className="p-3 bg-gradient-to-br from-green-400 to-teal-500 rounded-2xl shadow-lg">
+                                <HardDrive className="h-8 w-8 text-white" />
                             </div>
                             <div>
                                 <CardTitle className="text-xl">Resumo de Limpeza</CardTitle>
@@ -211,14 +189,14 @@ export function CleanupPage() {
                 <CardContent>
                     <div className="flex items-center gap-6 text-sm">
                         <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-green-500" />
+                            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-teal-500" />
                             <span className="text-muted-foreground">Espaço recuperável:</span>
-                            <span className="font-medium">{totalSize.toFixed(0)} MB</span>
+                            <span className="font-bold text-green-600">{totalSizeStr} MB</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-blue-500" />
+                            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-400 to-violet-500" />
                             <span className="text-muted-foreground">Total de itens:</span>
-                            <span className="font-medium">{totalItems}</span>
+                            <span className="font-bold text-blue-600">{totalItems}</span>
                         </div>
                     </div>
                 </CardContent>
@@ -226,31 +204,33 @@ export function CleanupPage() {
 
             {/* Categorias de Limpeza */}
             <div>
-                <h3 className="text-lg font-semibold mb-4">Categorias de Limpeza</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <h3 className="text-lg font-bold mb-4">Categorias de Limpeza</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {cleanupCategories.map((category) => {
                         const Icon = category.icon;
                         return (
                             <Card
                                 key={category.id}
-                                className="hover:shadow-md transition-all"
+                                variant="clay"
+                                hover="lift"
+                                className="group cursor-pointer"
                             >
                                 <CardContent className="p-6">
                                     <div className="flex items-start justify-between mb-4">
-                                        <div className={`p-2 rounded-lg bg-secondary ${category.color}`}>
-                                            <Icon className="h-5 w-5" />
+                                        <div className={`p-3 rounded-2xl bg-gradient-to-br ${category.color === 'text-blue-500' ? 'from-blue-400 to-blue-600' : category.color === 'text-orange-500' ? 'from-orange-400 to-orange-600' : category.color === 'text-yellow-500' ? 'from-yellow-400 to-yellow-600' : category.color === 'text-purple-500' ? 'from-purple-400 to-purple-600' : category.color === 'text-red-500' ? 'from-red-400 to-red-600' : 'from-gray-400 to-gray-600'} shadow-lg`}>
+                                            <Icon className="h-6 w-6 text-white" />
                                         </div>
-                                        <Badge variant="secondary" className="text-xs">
+                                        <Badge variant="secondary" className="text-xs font-semibold">
                                             {category.count} itens
                                         </Badge>
                                     </div>
-                                    <h4 className="font-semibold mb-1">{category.title}</h4>
+                                    <h4 className="font-bold text-lg mb-1">{category.title}</h4>
                                     <p className="text-sm text-muted-foreground mb-4">
                                         {category.description}
                                     </p>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-sm font-medium">{category.size}</span>
-                                        <span className="text-xs text-muted-foreground">{category.action}</span>
+                                        <span className="text-sm font-bold">{category.size}</span>
+                                        <span className="text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">{category.action} →</span>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -260,7 +240,7 @@ export function CleanupPage() {
             </div>
 
             {/* Ações Rápidas */}
-            <Card>
+            <Card variant="glass">
                 <CardHeader>
                     <CardTitle className="text-lg">Ações Rápidas</CardTitle>
                     <CardDescription>Limpe sua caixa com um clique</CardDescription>
@@ -268,7 +248,7 @@ export function CleanupPage() {
                 <CardContent className="flex flex-wrap gap-3">
                     <Button
                         variant="outline"
-                        className="gap-2"
+                        className="gap-2 border-red-500/50 text-red-600 hover:bg-red-500/10 hover:border-red-500"
                         onClick={handleEmptySpam}
                         disabled={loading || cleanupData.spam.count === 0}
                     >
@@ -277,7 +257,7 @@ export function CleanupPage() {
                     </Button>
                     <Button
                         variant="outline"
-                        className="gap-2"
+                        className="gap-2 border-gray-500/50 text-gray-600 hover:bg-gray-500/10 hover:border-gray-500"
                         onClick={handleEmptyTrash}
                         disabled={loading || cleanupData.trash.count === 0}
                     >

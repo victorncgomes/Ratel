@@ -5,8 +5,10 @@ import { Button } from '../ui/Button';
 import { useStats } from '../../hooks/useStats';
 import { mockStats } from '../../lib/mockData';
 import { getAccessToken } from '../../lib/api';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export function DashboardPage() {
+    const { t } = useLanguage();
     const { stats, loading, fetchStats } = useStats();
     const [isDemoMode, setIsDemoMode] = useState(false);
 
@@ -24,32 +26,32 @@ export function DashboardPage() {
 
     const quickActions = [
         {
-            title: 'Listas de Email',
-            description: 'Gerencie suas inscrições',
+            title: t('dashboard.quick_actions.email_lists.title'),
+            description: t('dashboard.quick_actions.email_lists.desc'),
             icon: Mail,
             color: 'bg-blue-500',
             count: 12,
             action: 'subscriptions'
         },
         {
-            title: 'Limpeza Rápida',
-            description: 'Libere espaço na caixa',
+            title: t('dashboard.quick_actions.quick_cleanup.title'),
+            description: t('dashboard.quick_actions.quick_cleanup.desc'),
             icon: Trash2,
             color: 'bg-green-500',
             count: unreadCount,
             action: 'cleanup'
         },
         {
-            title: 'Ratel Furioso',
-            description: 'Cancelar tudo de uma vez',
+            title: t('dashboard.quick_actions.ratel_furious.title'),
+            description: t('dashboard.quick_actions.ratel_furious.desc'),
             icon: Zap,
             color: 'bg-red-500',
             count: null,
             action: 'ratel'
         },
         {
-            title: 'Shield',
-            description: 'Remetentes bloqueados',
+            title: t('dashboard.quick_actions.shield.title'),
+            description: t('dashboard.quick_actions.shield.desc'),
             icon: Shield,
             color: 'bg-purple-500',
             count: 3,
@@ -78,83 +80,85 @@ export function DashboardPage() {
                 </div>
             )}
 
-            {/* Main Stats - Clean and Simple */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+            {/* Main Stats - Glassmorphism */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card variant="glass" hover="lift" className="border-blue-500/20">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-muted-foreground">Na Caixa de Entrada</p>
-                                <p className="text-3xl font-bold">
+                                <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
                                     {loading ? <Loader2 className="h-8 w-8 animate-spin" /> : inboxCount}
                                 </p>
                             </div>
-                            <div className="p-3 bg-blue-500/20 rounded-xl">
-                                <Mail className="h-6 w-6 text-blue-600" />
+                            <div className="p-3 bg-gradient-to-br from-blue-500 to-violet-500 rounded-2xl shadow-lg">
+                                <Mail className="h-6 w-6 text-white" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border-orange-500/20">
+                <Card variant="glass" hover="lift" className="border-orange-500/20">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-muted-foreground">Não Lidos</p>
-                                <p className="text-3xl font-bold text-orange-600">
+                                <p className="text-3xl font-bold text-orange-500">
                                     {loading ? <Loader2 className="h-8 w-8 animate-spin" /> : unreadCount}
                                 </p>
                             </div>
-                            <div className="p-3 bg-orange-500/20 rounded-xl">
-                                <AlertCircle className="h-6 w-6 text-orange-600" />
+                            <div className="p-3 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl shadow-lg">
+                                <AlertCircle className="h-6 w-6 text-white" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-red-500/10 to-red-600/5 border-red-500/20">
+                <Card variant="glass" hover="lift" className="border-red-500/20">
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-muted-foreground">Spam</p>
-                                <p className="text-3xl font-bold text-red-600">
+                                <p className="text-3xl font-bold text-red-500">
                                     {loading ? <Loader2 className="h-8 w-8 animate-spin" /> : spamCount}
                                 </p>
                             </div>
-                            <div className="p-3 bg-red-500/20 rounded-xl">
-                                <Trash2 className="h-6 w-6 text-red-600" />
+                            <div className="p-3 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl shadow-lg">
+                                <Trash2 className="h-6 w-6 text-white" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Quick Actions - Inbox Zapper Style */}
+            {/* Quick Actions - Claymorphism Style */}
             <div>
-                <h2 className="text-xl font-bold mb-4">Ações Rápidas</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <h2 className="text-xl font-bold mb-4">{t('dashboard.quick_actions_title')}</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {quickActions.map((action) => {
                         const Icon = action.icon;
                         return (
                             <Card
                                 key={action.action}
-                                className="group cursor-pointer hover:shadow-lg transition-all hover:-translate-y-1"
+                                variant="clay"
+                                hover="lift"
+                                className="group cursor-pointer"
                             >
                                 <CardContent className="pt-6">
                                     <div className="flex flex-col gap-4">
-                                        <div className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center`}>
-                                            <Icon className="h-6 w-6 text-white" />
+                                        <div className={`w-14 h-14 ${action.color} rounded-2xl flex items-center justify-center shadow-lg`}>
+                                            <Icon className="h-7 w-7 text-white" />
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold flex items-center gap-2">
+                                            <h3 className="font-bold text-lg flex items-center gap-2">
                                                 {action.title}
                                                 {action.count !== null && (
-                                                    <span className="text-xs bg-secondary px-2 py-0.5 rounded-full">{action.count}</span>
+                                                    <span className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-semibold">{action.count}</span>
                                                 )}
                                             </h3>
-                                            <p className="text-sm text-muted-foreground">{action.description}</p>
+                                            <p className="text-sm text-muted-foreground mt-1">{action.description}</p>
                                         </div>
-                                        <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                        <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-2 transition-all" />
                                     </div>
                                 </CardContent>
                             </Card>
@@ -163,23 +167,23 @@ export function DashboardPage() {
                 </div>
             </div>
 
-            {/* Inbox Health - Simple Progress */}
-            <Card>
+            {/* Inbox Health - Glassmorphism Progress */}
+            <Card variant="glass">
                 <CardHeader>
-                    <CardTitle>Saúde da Caixa de Entrada</CardTitle>
+                    <CardTitle className="gradient-text">Saúde da Caixa de Entrada</CardTitle>
                     <CardDescription>Quanto mais limpa, melhor sua produtividade</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
                         <div className="flex items-center justify-between text-sm">
                             <span>Progresso para Inbox Zero</span>
-                            <span className="font-bold text-green-600">
+                            <span className="font-bold text-green-500">
                                 {Math.round((1 - unreadCount / Math.max(inboxCount, 1)) * 100)}%
                             </span>
                         </div>
-                        <div className="h-3 bg-secondary rounded-full overflow-hidden">
+                        <div className="h-4 bg-secondary/50 rounded-full overflow-hidden shadow-inner">
                             <div
-                                className="h-full bg-gradient-to-r from-green-500 to-teal-500 transition-all duration-500"
+                                className="h-full bg-gradient-to-r from-green-400 via-teal-400 to-blue-500 transition-all duration-500 rounded-full"
                                 style={{ width: `${Math.round((1 - unreadCount / Math.max(inboxCount, 1)) * 100)}%` }}
                             />
                         </div>

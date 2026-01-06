@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { authFetch } from '../lib/api';
+import { authFetch, getAccessToken } from '../lib/api';
+import { mockSubscriptions } from '../lib/mockData';
 
 export interface Subscription {
     id: number;
@@ -31,6 +32,18 @@ export function useSubscriptions() {
     });
 
     const fetchSubscriptions = useCallback(async (limit: number = 10000) => {
+        const token = getAccessToken();
+
+        if (!token) {
+            // No demo mode, return the dynamic mocks from mockData.ts
+            setState({
+                subscriptions: mockSubscriptions as unknown as Subscription[],
+                loading: false,
+                error: null
+            });
+            return mockSubscriptions;
+        }
+
         setState(prev => ({ ...prev, loading: true, error: null }));
 
         try {
@@ -51,6 +64,11 @@ export function useSubscriptions() {
     }, []);
 
     const archiveAll = useCallback(async (emailIds: string[]) => {
+        const token = getAccessToken();
+        if (!token) {
+            return { success: true, count: emailIds.length };
+        }
+
         try {
             const response = await authFetch('/api/subscriptions/archive-all', {
                 method: 'POST',
@@ -71,6 +89,11 @@ export function useSubscriptions() {
     }, []);
 
     const deleteAll = useCallback(async (emailIds: string[]) => {
+        const token = getAccessToken();
+        if (!token) {
+            return { success: true, count: emailIds.length };
+        }
+
         try {
             const response = await authFetch('/api/subscriptions/delete-all', {
                 method: 'POST',
@@ -92,9 +115,12 @@ export function useSubscriptions() {
 
     const unsubscribe = useCallback(async (subscription: Subscription) => {
         if (subscription.unsubscribeLink) {
+            // Limpar formato especial do Gmail <url>
             const urlMatch = subscription.unsubscribeLink.match(/<(https?:\/\/[^>]+)>/);
-            if (urlMatch) {
-                window.open(urlMatch[1], '_blank');
+            const actualUrl = urlMatch ? urlMatch[1] : subscription.unsubscribeLink;
+
+            if (actualUrl.startsWith('http')) {
+                window.open(actualUrl, '_blank');
                 return { success: true, method: 'link' };
             }
         }

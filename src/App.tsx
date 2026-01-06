@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 import { Badge } from './components/ui/badge';
 import { Input } from './components/ui/input';
 import { cn } from './lib/utils';
-import { LoginPage } from './components/LoginPage';
+import { LandingPage } from './components/LandingPage';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 
 import { FlagBR, FlagES, FlagUK } from './components/icons/Flags';
@@ -18,11 +18,12 @@ import { HelpPage } from './components/pages/Help';
 import { NotificationsPage } from './components/pages/Notifications';
 import { ProfilePage } from './components/pages/Profile';
 import { SubscriptionsPage } from './components/pages/Subscriptions';
-import { LabelsPage } from './components/pages/Labels';
 import { ActivityPage } from './components/pages/Activity';
 import { CleanupPage } from './components/pages/Cleanup';
 import { TermsPage } from './components/pages/TermsPage';
 import { PrivacyPage } from './components/pages/PrivacyPage';
+import { MailListView } from './components/pages/MailListView';
+import { RulesPage } from './components/pages/RulesPage';
 
 interface UserData {
     name: string;
@@ -96,7 +97,7 @@ function RatelApp() {
 
     if (!isAuthenticated) {
         return (
-            <LoginPage
+            <LandingPage
                 onLogin={() => setIsAuthenticated(true)}
                 onShowTerms={() => setShowLegalPage('terms')}
                 onShowPrivacy={() => setShowLegalPage('privacy')}
@@ -105,42 +106,55 @@ function RatelApp() {
     }
 
     const navItems = [
-        { id: 'subscriptions', icon: '📬', label: 'Listas de Email', badge: String(12) },
-        { id: 'cleanup', icon: '🧹', label: 'Limpeza Rápida', badge: null },
+        { id: 'subscriptions', icon: '📬', label: t('sidebar.email_lists'), badge: String(12) },
+        { id: 'cleanup', icon: '🧹', label: t('sidebar.quick_cleanup'), badge: null },
     ];
 
     const smartViews = [
-        { id: 'by-sender', icon: '👤', label: 'Por Remetente', count: 156 },
-        { id: 'by-size', icon: '📦', label: 'Por Tamanho', count: 34 },
-        { id: 'by-date', icon: '📅', label: 'Por Data', count: 89 },
-        { id: 'newsletters', icon: '📰', label: 'Newsletters', count: 45 },
-        { id: 'promotions', icon: '🛒', label: 'Promoções', count: 78 },
+        { id: 'by-sender', icon: '👤', label: t('sidebar.by_sender'), count: 156 },
+        { id: 'by-size', icon: '📦', label: t('sidebar.by_size'), count: 34 },
+        { id: 'by-date', icon: '📅', label: t('sidebar.by_date'), count: 89 },
+        { id: 'newsletters', icon: '📰', label: t('sidebar.newsletters'), count: 45 },
+        { id: 'promotions', icon: '🛒', label: t('sidebar.promotions'), count: 78 },
     ];
 
     const actionItems = [
-        { id: 'shield', icon: '🛡️', label: 'Shield (Bloqueados)', count: 3 },
-        { id: 'rollup', icon: '📦', label: 'Rollup (Agrupados)', count: 5 },
+        { id: 'shield', icon: '🛡️', label: t('sidebar.shield'), count: 3 },
+        { id: 'rollup', icon: '📦', label: t('sidebar.rollup'), count: 5 },
     ];
 
     const renderContent = () => {
         switch (activeTab) {
             case 'dashboard': return <DashboardPage />;
             case 'subscriptions': return <SubscriptionsPage />;
-            case 'labels': return <LabelsPage />;
             case 'cleanup': return <CleanupPage />;
             case 'activity': return <ActivityPage />;
             case 'settings': return <ProfilePage user={user} />;
             case 'help': return <HelpPage />;
             case 'notifications': return <NotificationsPage />;
             case 'profile': return <ProfilePage user={user} />;
+            case 'by-sender':
+                return <MailListView viewType="by-sender" />;
+            case 'by-size':
+                return <MailListView viewType="by-size" />;
+            case 'by-date':
+                return <MailListView viewType="by-date" />;
+            case 'newsletters':
+                return <MailListView viewType="newsletters" />;
+            case 'promotions':
+                return <MailListView viewType="promotions" />;
+            case 'shield':
+                return <RulesPage type="shield" />;
+            case 'rollup':
+                return <RulesPage type="rollup" />;
             default: return <DashboardPage />;
         }
     };
 
     return (
-        <div className="min-h-screen bg-background font-sans antialiased">
+        <div className="min-h-screen gradient-bg font-sans antialiased">
             {/* Header */}
-            <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <header className="sticky top-0 z-50 w-full glass border-b border-white/10">
                 <div className="flex h-16 items-center px-4 gap-4">
                     {/* Mobile Menu Button */}
                     <Button
@@ -154,17 +168,10 @@ function RatelApp() {
 
                     {/* Logo */}
                     <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
-                        <div className="flex items-center justify-center">
-                            <img
-                                src="/ratel.svg?v=2"
-                                alt="Ratel Logo"
-                                className="h-10 w-10 object-contain"
-                            />
-                        </div>
                         <img
-                            src="/name-ratel.svg?v=2"
+                            src="/name-ratel.svg?v=3"
                             alt="Ratel"
-                            className="h-7 object-contain"
+                            className="h-8 object-contain" // Slightly increased height since it's alone
                         />
                     </div>
 
@@ -230,14 +237,14 @@ function RatelApp() {
             {/* Sidebar */}
             <aside
                 className={cn(
-                    'fixed top-16 left-0 bottom-0 w-64 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-transform duration-300 z-40 flex flex-col',
+                    'fixed top-16 left-0 bottom-0 w-64 glass border-r border-white/10 transition-transform duration-300 z-40 flex flex-col',
                     sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
                 )}
             >
                 <nav className="flex flex-col h-full p-4 gap-2 overflow-y-auto">
                     {/* Main Actions */}
                     <div className="space-y-1">
-                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Ações Principais</p>
+                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{t('sidebar.main_actions')}</p>
                         {navItems.map((item) => {
                             const isActive = activeTab === item.id;
                             return (
@@ -266,7 +273,7 @@ function RatelApp() {
 
                     {/* Smart Views - Mailstrom Style */}
                     <div className="space-y-1 pt-4 border-t border-border/50">
-                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Visualizações</p>
+                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{t('sidebar.smart_views')}</p>
                         {smartViews.map((item) => (
                             <button
                                 key={item.id}
@@ -290,7 +297,7 @@ function RatelApp() {
 
                     {/* Shield & Rollup - Leave Me Alone Style */}
                     <div className="space-y-1 pt-4 border-t border-border/50">
-                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Proteção</p>
+                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{t('sidebar.protection')}</p>
                         {actionItems.map((item) => (
                             <button
                                 key={item.id}
@@ -326,7 +333,7 @@ function RatelApp() {
                                     <AvatarFallback>{user?.name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 text-left overflow-hidden">
-                                    <p className="font-medium truncate">{user?.name || 'Usuário Demo'}</p>
+                                    <p className="font-medium truncate">{user?.name || t('user_menu.demo_user')}</p>
                                 </div>
                             </button>
 
@@ -338,7 +345,7 @@ function RatelApp() {
                                         onClick={() => { setActiveTab('notifications'); setUserMenuOpen(false); }}
                                     >
                                         <Bell className="h-4 w-4" />
-                                        Notificações
+                                        {t('user_menu.notifications')}
                                         <Badge className="ml-auto h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px]">3</Badge>
                                     </button>
                                     <button
@@ -346,14 +353,14 @@ function RatelApp() {
                                         onClick={() => { setActiveTab('help'); setUserMenuOpen(false); }}
                                     >
                                         <HelpCircle className="h-4 w-4" />
-                                        Ajuda
+                                        {t('user_menu.help')}
                                     </button>
                                     <button
                                         className="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-muted transition-colors"
                                         onClick={() => { setActiveTab('profile'); setUserMenuOpen(false); }}
                                     >
                                         <Settings className="h-4 w-4" />
-                                        Configurações
+                                        {t('user_menu.settings')}
                                     </button>
                                     <hr className="my-1 border-border" />
                                     <button
@@ -361,7 +368,7 @@ function RatelApp() {
                                         onClick={handleLogout}
                                     >
                                         <LogOut className="h-4 w-4" />
-                                        Sair
+                                        {t('user_menu.logout')}
                                     </button>
                                 </div>
                             )}
@@ -372,7 +379,7 @@ function RatelApp() {
 
             {/* Main Content */}
             <main className="pt-0 lg:pl-64 min-h-screen transition-all duration-300">
-                <div className="px-4 pt-4 max-w-7xl mx-auto space-y-6">
+                <div className="p-6 max-w-7xl mx-auto space-y-6">
                     {renderContent()}
                 </div>
             </main>
