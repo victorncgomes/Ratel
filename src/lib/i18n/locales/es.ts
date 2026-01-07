@@ -26,8 +26,8 @@ export const es = {
     },
     landing: {
         hero: {
-            title: 'Inteligencia artificial para tu bandeja de entrada.',
-            subtitle: 'Limpia, organiza y respira.',
+            title: 'Un organizador de correos inteligente, rápido y metódico.',
+            subtitle: 'Pero también furioso e intrépido.',
             login_google: 'Continuar con Google',
             login_microsoft: 'Continuar con Hotmail',
             demo_button: 'Prueba Demo Gratis',

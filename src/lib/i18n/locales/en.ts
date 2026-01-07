@@ -26,8 +26,8 @@ export const en = {
     },
     landing: {
         hero: {
-            title: 'Artificial intelligence for your email inbox.',
-            subtitle: 'Clean, organize and breathe.',
+            title: 'A smart, fast, and methodical email organizer.',
+            subtitle: 'But also furious and fearless.',
             login_google: 'Continue with Google',
             login_microsoft: 'Continue with Hotmail',
             demo_button: 'Try Free Demo',
