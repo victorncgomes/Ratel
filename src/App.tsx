@@ -154,11 +154,11 @@ function RatelApp() {
         { id: 'by-size', label: t('sidebar.by_size'), icon: HardDrive, count: 5 },
         { id: 'by-date', label: t('sidebar.by_date'), icon: Calendar, count: 0 },
         { id: 'newsletters', label: t('sidebar.newsletters'), icon: Newspaper, count: 42 },
+        { id: 'promotions', label: t('sidebar.promotions'), icon: Tag, count: 78 },
     ];
 
     // Action Items (Shield & Rollup)
     const actionItems = [
-        { id: 'promotions', label: t('sidebar.promotions'), icon: Tag, count: 78 },
         { id: 'shield', label: t('sidebar.shield'), icon: Shield, count: 3 },
         { id: 'rollup', label: t('sidebar.rollup'), icon: Package, count: 5 },
     ];

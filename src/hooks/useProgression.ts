@@ -1,14 +1,12 @@
 /**
  * RATEL - Hook de Progressão
- * Gerencia progresso do usuário através dos territórios
+ * Gerencia progresso do usuário (Stats e XP apenas, Territórios removidos)
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { TERRITORIES, calculateTerritoryProgress, canAdvanceToNextTerritory } from '../lib/gamification/territories';
 import { getRankByLevel } from '../lib/gamification/ranks';
 
 export interface UserProgress {
-    currentTerritoryIndex: number;
     emailsDeleted: number;
     emailsArchived: number;
     emailsRead: number;
@@ -19,10 +17,11 @@ export interface UserProgress {
     inboxZeroCount: number;
     lastActiveDate: string;
     totalEmailsLoaded: number;
+    // Legacy fields maintained to avoid JSON parse errors if user has old data
+    currentTerritoryIndex?: number;
 }
 
 const DEFAULT_PROGRESS: UserProgress = {
-    currentTerritoryIndex: 0,
     emailsDeleted: 0,
     emailsArchived: 0,
     emailsRead: 0,
@@ -88,46 +87,6 @@ export function useProgression() {
         }));
     }, []);
 
-    // Calcular progresso no território atual
-    const getTerritoryProgress = useCallback(() => {
-        return calculateTerritoryProgress(
-            userProgress.emailsDeleted,
-            userProgress.unsubscribes,
-            userProgress.currentTerritoryIndex
-        );
-    }, [userProgress.emailsDeleted, userProgress.unsubscribes, userProgress.currentTerritoryIndex]);
-
-    // Verificar se pode avançar
-    const checkCanAdvance = useCallback(() => {
-        return canAdvanceToNextTerritory(
-            userProgress.emailsDeleted,
-            userProgress.unsubscribes,
-            userProgress.currentTerritoryIndex
-        );
-    }, [userProgress.emailsDeleted, userProgress.unsubscribes, userProgress.currentTerritoryIndex]);
-
-    // Avançar para próximo território
-    const advanceTerritory = useCallback(() => {
-        if (checkCanAdvance()) {
-            setUserProgress(prev => ({
-                ...prev,
-                currentTerritoryIndex: Math.min(prev.currentTerritoryIndex + 1, TERRITORIES.length - 1),
-            }));
-            return true;
-        }
-        return false;
-    }, [checkCanAdvance]);
-
-    // Obter território atual
-    const getCurrentTerritory = useCallback(() => {
-        return TERRITORIES[userProgress.currentTerritoryIndex];
-    }, [userProgress.currentTerritoryIndex]);
-
-    // Obter próximo território
-    const getNextTerritory = useCallback(() => {
-        return TERRITORIES[userProgress.currentTerritoryIndex + 1];
-    }, [userProgress.currentTerritoryIndex]);
-
     // Registrar inbox zero
     const registerInboxZero = useCallback(() => {
         setUserProgress(prev => ({
@@ -174,14 +133,9 @@ export function useProgression() {
         currentRank,
         incrementStat,
         decrementStat,
-        getTerritoryProgress,
-        checkCanAdvance,
-        advanceTerritory,
-        getCurrentTerritory,
-        getNextTerritory,
         registerInboxZero,
         resetProgress,
-        territories: TERRITORIES,
+        // Removed: territories, getTerritoryProgress, checkCanAdvance, advanceTerritory
     };
 }
 

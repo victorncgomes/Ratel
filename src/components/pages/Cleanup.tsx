@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { PageHeader } from '../ui/PageHeader';
 import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/Card';
 import { Badge } from '../ui/badge';
@@ -151,65 +152,47 @@ export function CleanupPage() {
         return sum + (isNaN(sizeNum) ? 0 : sizeNum);
     }, 0).toFixed(1);
 
+    const stats = [
+        {
+            label: 'Espaço Recuperável',
+            value: `${totalSizeStr} MB`,
+            color: 'text-green-600',
+            bgColor: 'bg-green-100',
+            icon: HardDrive
+        },
+        {
+            label: 'Total de Itens',
+            value: totalItems,
+            color: 'text-blue-600',
+            bgColor: 'bg-blue-100',
+            icon: Mail
+        }
+    ];
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Header (Apenas Mobile para Título) */}
-            <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="md:hidden">
-                    <h2 className="text-3xl font-heading font-black tracking-tight flex items-center gap-3">
-                        <span className="gradient-text">🧹 Limpeza</span>
-                    </h2>
-                    <p className="text-muted-foreground">
-                        O que não serve, sai. Sem negociação.
-                    </p>
-                </div>
-                {/* Botão Analisar (Visível sempre ou ajustado) */}
-                <Button
-                    onClick={handleAnalyze}
-                    disabled={loading}
-                    className={`gap-2 ml-auto ${isNeobrutalist
-                        ? 'font-black uppercase tracking-wide border-4 border-black shadow-[4px_4px_0_0_#000] bg-[#E63946] text-white hover:translate-y-1 hover:shadow-none transition-all'
-                        : ''}`}
-                >
-                    {loading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                        <Sparkles className="h-4 w-4" />
-                    )}
-                    {loading ? 'ANALISANDO...' : 'ANALISAR CAIXA'}
-                </Button>
-            </div>
-
-            {/* Score de Limpeza */}
-            <Card variant="glass" className={`${isNeobrutalist ? 'border-4 border-black shadow-[6px_6px_0_0_#000] rounded-none' : ''}`}>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className={`p-3 ${isNeobrutalist ? 'bg-[#E63946] shadow-[3px_3px_0_0_#000] border-2 border-black' : 'bg-primary/10 rounded-xl'}`}>
-                                <HardDrive className={`h-8 w-8 ${isNeobrutalist ? 'text-white' : 'text-primary'}`} />
-                            </div>
-                            <div>
-                                <CardTitle className={`text-xl ${isNeobrutalist ? 'font-black uppercase' : ''}`}>Resumo de Limpeza</CardTitle>
-                                <CardDescription>Oportunidades identificadas</CardDescription>
-                            </div>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex items-center gap-6 text-sm">
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-400 to-teal-500 border border-black" />
-                            <span className="text-muted-foreground font-bold">Espaço recuperável:</span>
-                            <span className="font-black text-green-600 text-lg">{totalSizeStr} MB</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-400 to-violet-500 border border-black" />
-                            <span className="text-muted-foreground font-bold">Total de itens:</span>
-                            <span className="font-black text-blue-600 text-lg">{totalItems}</span>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+            <PageHeader
+                title="Limpeza"
+                description="O que não serve, sai. Sem negociação."
+                stats={stats}
+                loading={loading}
+                action={
+                    <Button
+                        onClick={handleAnalyze}
+                        disabled={loading}
+                        className={`gap-2 ${isNeobrutalist
+                            ? 'font-black uppercase tracking-wide border-4 border-black shadow-[4px_4px_0_0_#000] bg-[#E63946] text-white hover:translate-y-1 hover:shadow-none transition-all'
+                            : ''}`}
+                    >
+                        {loading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Sparkles className="h-4 w-4" />
+                        )}
+                        {loading ? 'ANALISANDO...' : 'ANALISAR CAIXA'}
+                    </Button>
+                }
+            />
 
             {/* Categorias de Limpeza */}
             <div>

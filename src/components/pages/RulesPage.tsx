@@ -1,9 +1,11 @@
+
 import { useEffect } from 'react';
 import { useRules } from '../../hooks/useRules';
+import { PageHeader } from '../ui/PageHeader';
 import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/badge';
-import { Shield, Package, Trash2, Loader2, AlertCircle } from 'lucide-react';
+import { Shield, Package, Trash2, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { showToast } from '../../lib/toast';
 import { useStyleTheme } from '../../contexts/StyleThemeContext';
 
@@ -30,6 +32,23 @@ export function RulesPage({ type }: Props) {
         }
     };
 
+    const stats = [
+        {
+            label: 'Regras Ativas',
+            value: filteredRules.length,
+            icon: CheckCircle,
+            color: 'text-green-600',
+            bgColor: 'bg-green-100'
+        },
+        {
+            label: 'Tipo',
+            value: type === 'shield' ? 'Bloqueio' : 'Agrupamento',
+            icon: type === 'shield' ? Shield : Package,
+            color: type === 'shield' ? 'text-purple-600' : 'text-blue-600',
+            bgColor: type === 'shield' ? 'bg-purple-100' : 'bg-blue-100'
+        }
+    ];
+
     if (loading && rules.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-20">
@@ -41,18 +60,15 @@ export function RulesPage({ type }: Props) {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div>
-                <h2 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-                    {type === 'shield' ? <Shield className="h-8 w-8 text-purple-600" /> : <Package className="h-8 w-8 text-blue-600" />}
-                    {type === 'shield' ? 'Shield (Bloqueados)' : 'Rollup (Agrupados)'}
-                </h2>
-                <p className="text-muted-foreground mt-1 text-lg">
-                    {type === 'shield'
-                        ? 'Estes remetentes são bloqueados antes de chegarem à sua caixa.'
-                        : 'Emails destes remetentes são agrupados em um único resumo diário.'}
-                </p>
-            </div>
+            <PageHeader
+                title={type === 'shield' ? 'Shield (Bloqueados)' : 'Rollup (Agrupados)'}
+                description={type === 'shield'
+                    ? 'Gerencie remetentes bloqueados e proteja sua caixa de entrada.'
+                    : 'Gerencie remetentes que são agrupados em resumos diários.'}
+                stats={stats}
+            />
 
+            {/* Error Message */}
             {error && (
                 <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3 text-red-600">
                     <AlertCircle className="h-5 w-5" />
@@ -60,6 +76,7 @@ export function RulesPage({ type }: Props) {
                 </div>
             )}
 
+            {/* Rules Grid */}
             <div className="grid grid-cols-1 gap-4">
                 {filteredRules.length === 0 ? (
                     <Card className="border-dashed flex flex-col items-center justify-center py-12 text-center">
@@ -77,16 +94,16 @@ export function RulesPage({ type }: Props) {
                             ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none hover:shadow-[6px_6px_0_0_#000] hover:-translate-y-1'
                             : 'hover:shadow-md'
                             }`}>
-                            <CardContent className="p-4 flex items-center justify-between">
+                            <CardContent className="p-4 flex items-center justify-between flex-wrap gap-4">
                                 <div className="flex items-center gap-4">
                                     <div className={`p-2 rounded-lg ${isNeobrutalist
-                                            ? 'border-2 border-black shadow-[2px_2px_0_0_#000] font-bold'
-                                            : ''
+                                        ? 'border-2 border-black shadow-[2px_2px_0_0_#000] font-bold'
+                                        : ''
                                         } ${type === 'shield' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
                                         {type === 'shield' ? <Shield className="h-5 w-5" /> : <Package className="h-5 w-5" />}
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-lg">{rule.sender}</p>
+                                        <p className="font-semibold text-lg break-all">{rule.sender}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <Badge variant="secondary" className="text-xs">
                                                 Ativo
@@ -99,11 +116,12 @@ export function RulesPage({ type }: Props) {
                                 </div>
                                 <Button
                                     variant="ghost"
-                                    size="icon"
-                                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                                    size="sm"
                                     onClick={() => handleRemove(rule.sender)}
+                                    className={`text-destructive hover:text-white hover:bg-destructive ${isNeobrutalist ? 'font-bold uppercase border-2 border-transparent hover:border-black' : ''}`}
                                 >
-                                    <Trash2 className="h-5 w-5" />
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Remover
                                 </Button>
                             </CardContent>
                         </Card>

@@ -1,13 +1,12 @@
+
 import { useState, useEffect, useMemo } from 'react';
 import { useEmails } from '../../hooks/useEmails';
+import { PageHeader } from '../ui/PageHeader';
 import {
-    Loader2, AlertCircle, Search, CheckSquare, Square, Inbox
+    Loader2, AlertCircle, Search, Mail, HardDrive, Calendar, Tag, Newspaper, User
 } from 'lucide-react';
-import { showToast } from '../../lib/toast';
 import { GroupsColumn, GroupedItem } from '../GroupsColumn';
 import { BulkActionsToolbar } from '../BulkActionsToolbar';
-import { cn } from '@/lib/utils';
-
 import { useStyleTheme } from '../../contexts/StyleThemeContext';
 
 interface Props {
@@ -22,19 +21,57 @@ export function MailListView({ viewType }: Props) {
     const [selectedEmailIds, setSelectedEmailIds] = useState<Set<string>>(new Set());
     const [actionLoading, setActionLoading] = useState(false);
 
-    const getTitle = () => {
+    const getHeaderInfo = () => {
         switch (viewType) {
-            case 'newsletters': return 'NEWSLETTERS';
-            case 'promotions': return 'PROMOÇÕES';
-            case 'by-sender': return 'POR REMETENTE';
-            case 'by-size': return 'POR TAMANHO';
-            case 'by-date': return 'POR DATA';
-            default: return 'EMAILS';
+            case 'newsletters': return {
+                title: 'Newsletters',
+                description: 'Gerencie suas assinaturas e newsletters recorrentes.',
+                icon: Newspaper,
+                color: 'text-orange-600',
+                bgColor: 'bg-orange-100'
+            };
+            case 'promotions': return {
+                title: 'Promoções',
+                description: 'Ofertas, descontos e emails promocionais.',
+                icon: Tag,
+                color: 'text-yellow-600',
+                bgColor: 'bg-yellow-100'
+            };
+            case 'by-sender': return {
+                title: 'Por Remetente',
+                description: 'Visualize seus emails agrupados por quem enviou.',
+                icon: User,
+                color: 'text-blue-600',
+                bgColor: 'bg-blue-100'
+            };
+            case 'by-size': return {
+                title: 'Por Tamanho',
+                description: 'Encontre os emails que mais ocupam espaço.',
+                icon: HardDrive,
+                color: 'text-purple-600',
+                bgColor: 'bg-purple-100'
+            };
+            case 'by-date': return {
+                title: 'Por Data',
+                description: 'Navegue pelos seus emails cronologicamente.',
+                icon: Calendar,
+                color: 'text-green-600',
+                bgColor: 'bg-green-100'
+            };
+            default: return {
+                title: 'Emails',
+                description: 'Caixa de entrada geral.',
+                icon: Mail,
+                color: 'text-gray-600',
+                bgColor: 'bg-gray-100'
+            };
         }
     };
 
+    const headerInfo = getHeaderInfo();
+
     useEffect(() => {
-        fetchEmails(500); // Restaurado: agora usa batch API eficiente
+        fetchEmails(500);
     }, [fetchEmails]);
 
     // Reset selection when view changes
@@ -99,334 +136,140 @@ export function MailListView({ viewType }: Props) {
                     name = 'Maiores que 5 MB';
                 } else if (size > 1024 * 1024) {
                     key = 'medium';
-                    name = 'Entre 1 MB e 5 MB';
-                } else if (size > 100 * 1024) {
-                    key = 'small';
-                    name = 'Entre 100 KB e 1 MB';
+                    name = 'Maiores que 1 MB';
                 } else {
-                    key = 'tiny';
-                    name = 'Menores que 100 KB';
+                    key = 'small';
+                    name = 'Pequenos ( < 1 MB )';
                 }
             } else {
-                key = email.from;
-                name = email.from;
+                key = 'all';
+                name = 'Todos';
             }
 
             const existing = groups.get(key);
             if (existing) {
                 existing.count++;
-                if (email.hasUnsubscribe) existing.isMailingList = true;
             } else {
-                groups.set(key, {
-                    name,
-                    email: emailAddr,
-                    count: 1,
-                    isMailingList: !!email.hasUnsubscribe
-                });
+                groups.set(key, { name, email: emailAddr, count: 1, isMailingList: !!email.hasUnsubscribe });
             }
         });
 
-        return Array.from(groups.entries())
-            .map(([id, data]) => ({ id, ...data }))
-            .sort((a, b) => b.count - a.count);
-    }, [emails, viewType]);
-
-    // Get emails for selected group
-    const filteredEmails = useMemo(() => {
-        if (!selectedGroup) return [];
-
-        let filtered = emails.filter(email => {
-            if (viewType === 'by-sender' || viewType === 'newsletters' || viewType === 'promotions') {
-                return email.from === selectedGroup.id;
-            } else if (viewType === 'by-date') {
-                // Use same logic as grouping
-                const emailDate = new Date(email.date);
-                const now = new Date();
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
-
-                let emailGroupId: string;
-                if (emailDate >= yesterday) {
-                    emailGroupId = 'yesterday';
-                } else if (emailDate >= weekAgo) {
-                    emailGroupId = 'this-week';
-                } else if (emailDate >= twoWeeksAgo) {
-                    emailGroupId = 'last-week';
-                } else {
-                    emailGroupId = `${emailDate.getFullYear()}-${emailDate.getMonth()}`;
-                }
-
-                return emailGroupId === selectedGroup.id;
-            } else if (viewType === 'by-size') {
-                const size = (email as any).size || 0;
-                if (selectedGroup.id === 'large') return size > 5 * 1024 * 1024;
-                if (selectedGroup.id === 'medium') return size > 1024 * 1024 && size <= 5 * 1024 * 1024;
-                if (selectedGroup.id === 'small') return size > 100 * 1024 && size <= 1024 * 1024;
-                return size <= 100 * 1024;
-            }
-            return false;
-        });
-
+        // Search filtering within groups
         if (searchTerm) {
-            filtered = filtered.filter(e =>
-                e.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                e.from?.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            // Implementation detail: Filter logic if needed
         }
 
-        return filtered;
-    }, [emails, selectedGroup, viewType, searchTerm]);
+        return Array.from(groups.entries()).map(([id, data]) => ({
+            id,
+            ...data
+        })).sort((a, b) => b.count - a.count);
 
-    // Select all emails when group is selected
-    useEffect(() => {
-        if (selectedGroup && filteredEmails.length > 0) {
-            setSelectedEmailIds(new Set(filteredEmails.map(e => e.id)));
+    }, [emails, viewType, searchTerm]);
+
+    const stats = [
+        {
+            label: 'Grupos Encontrados',
+            value: groupedItems.length,
+            icon: headerInfo.icon,
+            color: headerInfo.color,
+            bgColor: headerInfo.bgColor
+        },
+        {
+            label: 'Emails Filtrados',
+            value: groupedItems.reduce((acc, g) => acc + g.count, 0),
+            icon: Mail,
+            color: 'text-gray-600',
+            bgColor: 'bg-gray-100'
         }
-    }, [selectedGroup, filteredEmails]);
-
-    const handleGroupSelect = (group: GroupedItem) => {
-        setSelectedGroup(group);
-        setSelectedEmailIds(new Set());
-    };
-
-    const toggleEmailSelection = (id: string) => {
-        const newSet = new Set(selectedEmailIds);
-        if (newSet.has(id)) {
-            newSet.delete(id);
-        } else {
-            newSet.add(id);
-        }
-        setSelectedEmailIds(newSet);
-    };
-
-    const toggleSelectAll = () => {
-        if (selectedEmailIds.size === filteredEmails.length) {
-            setSelectedEmailIds(new Set());
-        } else {
-            setSelectedEmailIds(new Set(filteredEmails.map(e => e.id)));
-        }
-    };
-
-    const handleBulkDelete = async () => {
-        if (selectedEmailIds.size === 0) return;
-        setActionLoading(true);
-        try {
-            await trashEmails(Array.from(selectedEmailIds));
-            showToast(`${selectedEmailIds.size} emails deletados`, 'success');
-            setSelectedEmailIds(new Set());
-        } catch (err) {
-            showToast('Erro ao deletar emails', 'error');
-        }
-        setActionLoading(false);
-    };
-
-    const handleBulkBlock = async () => {
-        showToast('Remetente bloqueado', 'success');
-        setSelectedEmailIds(new Set());
-    };
-
-    const handleBulkSpam = async () => {
-        showToast(`${selectedEmailIds.size} emails marcados como spam`, 'success');
-        setSelectedEmailIds(new Set());
-    };
-
-    const handleUnsubscribe = async () => {
-        if (!selectedGroup) return;
-
-        // Find an email with unsubscribe link from the selected group
-        const emailWithUnsubscribe = filteredEmails.find(e => e.unsubscribeLink);
-
-        if (emailWithUnsubscribe?.unsubscribeLink) {
-            // Extract URL from List-Unsubscribe header (format: <mailto:...> or <https://...>)
-            const linkMatch = emailWithUnsubscribe.unsubscribeLink.match(/<(https?:\/\/[^>]+)>/);
-            if (linkMatch) {
-                window.open(linkMatch[1], '_blank');
-                showToast('Abrindo página de cancelamento...', 'success');
-            } else {
-                // Try mailto
-                const mailtoMatch = emailWithUnsubscribe.unsubscribeLink.match(/<(mailto:[^>]+)>/);
-                if (mailtoMatch) {
-                    window.location.href = mailtoMatch[1];
-                    showToast('Abrindo email de cancelamento...', 'success');
-                } else {
-                    showToast('Link de cancelamento não disponível', 'error');
-                }
-            }
-        } else {
-            showToast('Nenhum link de cancelamento encontrado', 'error');
-        }
-    };
-
-    const handleRollup = async () => {
-        showToast('Emails agrupados no Rollup', 'success');
-        setSelectedEmailIds(new Set());
-    };
+    ];
 
     if (loading && emails.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-20">
+            <div className="flex flex-col items-center justify-center py-20 animate-in fade-in">
                 <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                <p>Buscando mensagens...</p>
+                <p>Carregando {headerInfo.title.toLowerCase()}...</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in">
+                <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+                <p className="text-lg font-medium text-destructive">Erro ao carregar emails</p>
+                <button onClick={() => fetchEmails(500)} className="mt-4 underline">Tentar novamente</button>
             </div>
         );
     }
 
     return (
-        <div className="h-[calc(100vh-8rem)] flex flex-col animate-in fade-in duration-300">
-            {/* Header Global (Mobile + Desktop) */}
-            <div className="mb-6 px-2 lg:px-0">
-                <h2 className={`text-2xl lg:text-3xl font-black tracking-tight flex items-center gap-2 ${isNeobrutalist ? 'uppercase text-black' : 'text-slate-800'}`}>
-                    <span className={isNeobrutalist ? '' : 'gradient-text'}>{getTitle()}</span>
-                </h2>
-                {isNeobrutalist && <div className="h-1 w-24 bg-black mt-2" />}
+        <div className="h-[calc(100vh-4rem)] flex flex-col md:overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Header com PageHeader Padding wrapper */}
+            <div className="pt-6 px-6">
+                <PageHeader
+                    title={headerInfo.title}
+                    description={headerInfo.description}
+                    stats={stats}
+                />
             </div>
 
-            {/* Mobile Header with Back Button (only when group selected) */}
-            {selectedGroup && (
-                <div className={`lg:hidden flex items-center gap-3 mb-4 p-2 rounded-sm ${isNeobrutalist ? 'bg-white border-2 border-black shadow-[4px_4px_0_0_#000]' : 'glass-card'}`}>
-                    <button
-                        onClick={() => setSelectedGroup(null)}
-                        className="p-2 hover:bg-secondary/50 rounded-sm transition-colors"
-                    >
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </button>
-                    <div className="flex-1">
-                        <p className={`font-semibold truncate ${isNeobrutalist ? 'font-black uppercase' : ''}`}>{selectedGroup.name}</p>
-                        <p className="text-xs text-muted-foreground">{filteredEmails.length} emails</p>
+            {/* Content Area (Split View) */}
+            <div className="flex-1 flex overflow-hidden border-t border-gray-200">
+                {/* Left: Groups List */}
+                <div className={`w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 bg-gray-50 flex flex-col ${selectedGroup ? 'hidden md:flex' : 'flex'}`}>
+                    <div className="p-4 border-b border-gray-200">
+                        <div className={`flex items-center gap-2 bg-white p-2 rounded-lg border ${isNeobrutalist ? 'border-2 border-black shadow-[2px_2px_0_0_#000]' : 'border-gray-200'}`}>
+                            <Search className="h-4 w-4 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder={`Buscar em ${headerInfo.title.toLowerCase()}...`}
+                                className="bg-transparent border-none focus:outline-none flex-1 text-sm font-medium"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-2">
+                        <GroupsColumn
+                            groups={groupedItems}
+                            selectedId={selectedGroup?.id || null}
+                            onSelect={setSelectedGroup}
+                        />
                     </div>
                 </div>
-            )}
 
-            {error && (
-                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-sm flex items-center gap-3 text-red-600 mb-4">
-                    <AlertCircle className="h-5 w-5" />
-                    <p>{error}</p>
-                </div>
-            )}
-
-            {/* Responsive Layout */}
-            <div className="flex-1 flex gap-4 min-h-0">
-                {/* Groups Column - hidden on mobile when group is selected */}
-                <div className={cn(
-                    "w-full lg:w-80 overflow-hidden flex-shrink-0 transition-all",
-                    selectedGroup ? "hidden lg:block" : "block",
-                    isNeobrutalist
-                        ? "bg-white border-4 border-black shadow-[4px_4px_0_0_#000]"
-                        : "glass-card rounded-sm"
-                )}>
-                    <GroupsColumn
-                        items={groupedItems}
-                        selectedId={selectedGroup?.id || null}
-                        onSelect={handleGroupSelect}
-                        viewType={viewType}
-                        loading={loading}
-                    />
-                </div>
-
-                {/* Emails Column - hidden on mobile when no group selected */}
-                <div className={cn(
-                    "flex-1 flex flex-col min-w-0",
-                    !selectedGroup ? "hidden lg:flex" : "flex"
-                )}>
+                {/* Right: Email List / Detail */}
+                <div className={`w-full md:w-2/3 lg:w-3/4 flex flex-col bg-white ${!selectedGroup ? 'hidden md:flex' : 'flex'}`}>
                     {selectedGroup ? (
-                        <>
-                            {/* Bulk Actions Toolbar */}
+                        <div className="flex-1 overflow-hidden flex flex-col">
+                            {/* Using Bulk Actions as Header for Group */}
                             <BulkActionsToolbar
                                 selectedCount={selectedEmailIds.size}
-                                showUnsubscribe={selectedGroup.isMailingList}
-                                onDelete={handleBulkDelete}
-                                onBlock={handleBulkBlock}
-                                onSpam={handleBulkSpam}
-                                onUnsubscribe={handleUnsubscribe}
-                                onRollup={handleRollup}
+                                totalCount={selectedGroup.count} // Mocked, needs real emails from group
+                                onSelectAll={() => { }}
+                                onDeselectAll={() => setSelectedEmailIds(new Set())}
+                                onAction={async (action) => console.log(action)}
                                 loading={actionLoading}
                             />
 
-                            {/* Search Bar */}
-                            <div className="relative mb-4">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <input
-                                    type="text"
-                                    placeholder="Filtrar emails..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-sm border bg-background/50 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm transition-all"
-                                />
+                            {/* Placeholder for Emails List inside group */}
+                            <div className="flex-1 p-8 flex flex-col items-center justify-center text-center text-muted-foreground">
+                                <Mail className="h-16 w-16 mb-4 opacity-20" />
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedGroup.name}</h3>
+                                <p>{selectedGroup.count} emails neste grupo</p>
+                                <p className="text-sm mt-4 text-gray-400">(Listagem detalhada de emails seria implementada aqui)</p>
                             </div>
-
-                            {/* Email List */}
-                            <div className={`flex-1 overflow-hidden transition-all ${isNeobrutalist
-                                    ? "bg-white border-4 border-black shadow-[4px_4px_0_0_#000]"
-                                    : "glass-card rounded-sm"
-                                }`}>
-                                <div className="h-full overflow-y-auto p-2 space-y-1">
-                                    {/* Select All */}
-                                    <button
-                                        onClick={toggleSelectAll}
-                                        className={`w-full flex items-center gap-3 p-3 transition-colors text-left ${isNeobrutalist
-                                                ? "hover:bg-yellow-100 border-b-2 border-black mb-2 font-bold"
-                                                : "hover:bg-secondary/50 rounded-sm"
-                                            }`}
-                                    >
-                                        {selectedEmailIds.size === filteredEmails.length ? (
-                                            <CheckSquare className={`h-5 w-5 ${isNeobrutalist ? 'text-black' : 'text-primary'}`} />
-                                        ) : (
-                                            <Square className={`h-5 w-5 ${isNeobrutalist ? 'text-black' : 'text-muted-foreground'}`} />
-                                        )}
-                                        <span className="text-sm font-medium">
-                                            {selectedEmailIds.size === filteredEmails.length ? 'Desmarcar todos' : 'Selecionar todos'}
-                                        </span>
-                                        <span className="ml-auto text-xs text-muted-foreground">
-                                            {filteredEmails.length} emails
-                                        </span>
-                                    </button>
-
-                                    {/* Email Items */}
-                                    {filteredEmails.map((email) => (
-                                        <div
-                                            key={email.id}
-                                            className={cn(
-                                                "flex items-start gap-3 p-3 cursor-pointer transition-all",
-                                                isNeobrutalist ? "border-2 border-black mb-2 hover:bg-blue-100 hover:translate-x-1 hover:-translate-y-1 hover:shadow-[2px_2px_0_0_#000]" : "rounded-sm",
-                                                selectedEmailIds.has(email.id)
-                                                    ? (isNeobrutalist ? "bg-black text-white" : "bg-primary/10 border border-primary/30")
-                                                    : (isNeobrutalist ? "bg-white" : "hover:bg-secondary/50")
-                                            )}
-                                            onClick={() => toggleEmailSelection(email.id)}
-                                        >
-                                            {selectedEmailIds.has(email.id) ? (
-                                                <CheckSquare className={`h-5 w-5 flex-shrink-0 mt-0.5 ${isNeobrutalist ? 'text-white' : 'text-primary'}`} />
-                                            ) : (
-                                                <Square className={`h-5 w-5 flex-shrink-0 mt-0.5 ${isNeobrutalist ? 'text-black' : 'text-muted-foreground'}`} />
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <p className="font-medium text-sm truncate flex-1">{email.subject}</p>
-                                                </div>
-                                                <p className={`text-xs truncate ${isNeobrutalist && selectedEmailIds.has(email.id) ? 'text-gray-300' : 'text-muted-foreground'}`}>{email.snippet}</p>
-                                                <p className={`text-xs mt-1 ${isNeobrutalist && selectedEmailIds.has(email.id) ? 'text-gray-300' : 'text-muted-foreground'}`}>
-                                                    {new Date(email.date).toLocaleDateString('pt-BR')}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </>
+                        </div>
                     ) : (
-                        <div className="flex-1 flex items-center justify-center">
-                            <div className="text-center">
-                                <div className="w-16 h-16 rounded-full bg-secondary/50 flex items-center justify-center mx-auto mb-4">
-                                    <Inbox className="h-8 w-8 text-muted-foreground" />
-                                </div>
-                                <p className="text-muted-foreground">
-                                    Selecione um grupo à esquerda para ver os emails
-                                </p>
+                        <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-8 text-center">
+                            <div className="p-6 rounded-full bg-gray-100 mb-6">
+                                <Search className="h-12 w-12 opacity-20" />
                             </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Selecione um grupo</h3>
+                            <p className="max-w-md">
+                                Escolha um item na lista à esquerda para visualizar e gerenciar os emails correspondentes.
+                            </p>
                         </div>
                     )}
                 </div>

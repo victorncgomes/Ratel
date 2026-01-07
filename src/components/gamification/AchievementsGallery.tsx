@@ -1,8 +1,9 @@
 
-
+import { useState } from 'react';
 import { useAchievements } from '../../hooks/useAchievements';
 import { Achievement, AchievementTier } from '../../lib/gamification/achievements';
 import { useProgression } from '../../hooks/useProgression';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const TIER_COLORS: Record<AchievementTier, string> = {
     bronze: '#CD7F32',
@@ -23,6 +24,11 @@ const TIER_LABELS: Record<AchievementTier, string> = {
 export default function AchievementsGallery() {
     const { achievements, getAchievementStatus } = useAchievements();
     const { userProgress } = useProgression();
+    const [filter, setFilter] = useState<AchievementTier | 'all'>('all');
+
+    const filteredAchievements = filter === 'all'
+        ? achievements
+        : achievements.filter(a => a.tier === filter);
 
     return (
         <div className="brutal-card" style={{ background: '#FFF', padding: '1.5rem', marginTop: '1rem' }}>
@@ -30,120 +36,135 @@ export default function AchievementsGallery() {
                 🏆 CONQUISTAS
             </h3>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                {['bronze', 'silver', 'gold', 'platinum', 'diamond'].map((tier) => (
-                    <TierSection
+            {/* Filtros */}
+            <div className="flex flex-wrap gap-2 justify-center mb-8">
+                <FilterButton
+                    label="Todas"
+                    isActive={filter === 'all'}
+                    onClick={() => setFilter('all')}
+                    color="#000"
+                />
+                {(Object.keys(TIER_LABELS) as AchievementTier[]).map(tier => (
+                    <FilterButton
                         key={tier}
-                        tier={tier as AchievementTier}
-                        achievements={achievements.filter(a => a.tier === tier)}
-                        getStatus={getAchievementStatus}
-                        userProgress={userProgress}
+                        label={TIER_LABELS[tier]}
+                        isActive={filter === tier}
+                        onClick={() => setFilter(tier)}
+                        color={TIER_COLORS[tier]}
                     />
                 ))}
             </div>
+
+            {/* Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <AnimatePresence mode='popLayout'>
+                    {filteredAchievements.map(achievement => (
+                        <AchievementCard
+                            key={achievement.id}
+                            achievement={achievement}
+                            status={getAchievementStatus(achievement.id)}
+                            userProgress={userProgress}
+                        />
+                    ))}
+                </AnimatePresence>
+            </div>
+
+            {filteredAchievements.length === 0 && (
+                <p className="text-center text-gray-500 py-8">Nenhuma conquista encontrada neste nível.</p>
+            )}
         </div>
     );
 }
 
-function TierSection({
-    tier,
-    achievements,
-    getStatus,
+function FilterButton({ label, isActive, onClick, color }: { label: string; isActive: boolean; onClick: () => void; color: string }) {
+    return (
+        <button
+            onClick={onClick}
+            className={`
+                px-4 py-2 text-sm font-bold uppercase tracking-wider border-2 border-black transition-all
+                ${isActive ? 'shadow-[4px_4px_0_0_#000] -translate-y-1' : 'hover:bg-gray-100'}
+            `}
+            style={{
+                backgroundColor: isActive ? color : '#FFF',
+                color: '#000' // Sempre preto para contraste neobrutalista
+            }}
+        >
+            {label}
+        </button>
+    );
+}
+
+function AchievementCard({
+    achievement,
+    status,
     userProgress
 }: {
-    tier: AchievementTier;
-    achievements: Achievement[];
-    getStatus: (id: string) => 'unlocked' | 'locked';
+    achievement: Achievement;
+    status: 'unlocked' | 'locked';
     userProgress: any;
 }) {
-    if (achievements.length === 0) return null;
+    const isUnlocked = status === 'unlocked';
+    const progress = userProgress && typeof userProgress[achievement.statKey] === 'number'
+        ? Math.min(100, (userProgress[achievement.statKey] / achievement.progressRequired) * 100)
+        : 0;
 
     return (
-        <div>
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                marginBottom: '1rem',
-                borderBottom: `4px solid ${TIER_COLORS[tier]}`,
-                paddingBottom: '0.5rem'
-            }}>
-                <h4 className="font-heading font-black text-xl uppercase" style={{ color: '#000' }}>
-                    Nível {TIER_LABELS[tier]}
-                </h4>
+        <motion.div
+            layout
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className={`
+                relative p-4 border-2 transition-all duration-300 flex flex-col items-center text-center
+                ${isUnlocked
+                    ? 'border-black bg-white shadow-[4px_4px_0_0_#000]'
+                    : 'border-gray-300 bg-gray-50 opacity-100 grayscale'
+                }
+            `}
+            style={{
+                minHeight: '140px',
+                // Se bloqueado, deixa grayscale mas visível para ver o progresso
+            }}
+            title={!isUnlocked ? `Progresso: ${Math.round(progress)}%` : 'Conquistado!'}
+        >
+            {/* Tier Badge (Top Right) IF Unlocked */}
+            {isUnlocked && (
+                <div
+                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center border-2 border-black text-xs"
+                    style={{ background: TIER_COLORS[achievement.tier] }}
+                >
+                    ✓
+                </div>
+            )}
+
+            {/* Icon */}
+            <div
+                className="text-4xl mb-3 mt-1"
+                style={{
+                    textShadow: isUnlocked ? `0 0 15px ${TIER_COLORS[achievement.tier]}` : 'none',
+                    filter: isUnlocked ? 'none' : 'grayscale(100%) opacity(0.5)'
+                }}
+            >
+                {achievement.icon}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {achievements.map(achievement => {
-                    const status = getStatus(achievement.id);
-                    const isUnlocked = status === 'unlocked';
-                    const progress = userProgress && typeof userProgress[achievement.statKey] === 'number'
-                        ? Math.min(100, (userProgress[achievement.statKey] / achievement.progressRequired) * 100)
-                        : 0;
+            {/* Title */}
+            <p className="font-bold text-xs leading-tight mb-2">
+                {achievement.title}
+            </p>
 
-                    return (
+            {/* Progress Bar (Locked only) */}
+            {!isUnlocked && (
+                <div className="w-full mt-auto pt-2">
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden border border-black/10">
                         <div
-                            key={achievement.id}
-                            className={`
-                                relative p-4 border-2 transition-all duration-300
-                                ${isUnlocked
-                                    ? 'border-black bg-white shadow-[4px_4px_0_0_#000]'
-                                    : 'border-gray-200 bg-gray-50 opacity-60 grayscale'
-                                }
-                            `}
-                            style={{
-                                borderColor: isUnlocked ? '#000' : '#ccc',
-                                minHeight: '140px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                textAlign: 'center'
-                            }}
-                            title={!isUnlocked ? `Progresso: ${Math.round(progress)}%` : 'Conquistado!'}
-                        >
-                            {/* Icon */}
-                            <div
-                                className="text-4xl mb-2"
-                                style={{
-                                    textShadow: isUnlocked ? `0 0 10px ${TIER_COLORS[tier]}` : 'none',
-                                    filter: isUnlocked ? 'none' : 'grayscale(100%) blur(0.5px)'
-                                }}
-                            >
-                                {achievement.icon}
-                            </div>
-
-                            {/* Title */}
-                            <p className="font-bold text-xs leading-tight mb-1">
-                                {achievement.title}
-                            </p>
-
-                            {/* Description (Hover/Small) */}
-                            <p className="text-[10px] text-muted-foreground leading-tight">
-                                {achievement.description}
-                            </p>
-
-                            {/* Unlock Badge */}
-                            {isUnlocked && (
-                                <div
-                                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center border-2 border-black"
-                                    style={{ background: TIER_COLORS[tier] }}
-                                >
-                                    ✓
-                                </div>
-                            )}
-
-                            {/* Progress Bar (Locked only) */}
-                            {!isUnlocked && (
-                                <div className="absolute bottom-2 left-2 right-2 h-1.5 bg-gray-200 rounded-full overflow-hidden border border-black/10">
-                                    <div
-                                        className="h-full bg-black/50"
-                                        style={{ width: `${progress}%` }}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
+                            className="h-full bg-black/60"
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
+                    <p className="text-[10px] mt-1 font-bold text-gray-500">{Math.round(progress)}%</p>
+                </div>
+            )}
+        </motion.div>
     );
 }

@@ -1,9 +1,12 @@
+
 import { useState, useEffect } from 'react';
 import { useSubscriptions, Subscription } from '../../hooks/useSubscriptions';
 import { Button } from '../ui/Button';
-import { Avatar, AvatarFallback } from '../ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { PageHeader } from '../ui/PageHeader';
 import {
-    Mail, RefreshCw, Loader2, AlertCircle, Search, Zap, Check, X
+    Mail, Loader2, AlertCircle, Search, Zap, Check, X,
+    Trash2
 } from 'lucide-react';
 import { getAccessToken } from '../../lib/api';
 import { showToast } from '../../lib/toast';
@@ -86,6 +89,36 @@ export function SubscriptionsPage() {
         setShowRatelFurioso(false);
     };
 
+    // Calculate Stats for PageHeader
+    const totalEmails = allSubscriptions.reduce((acc, sub) => acc + sub.count, 0);
+    const avgConfidence = allSubscriptions.length > 0
+        ? Math.round(allSubscriptions.reduce((acc, sub) => acc + (sub.confidence || 0), 0) / allSubscriptions.length)
+        : 0;
+
+    const stats = [
+        {
+            label: 'Total de Listas',
+            value: allSubscriptions.length,
+            icon: Mail,
+            color: 'text-blue-600',
+            bgColor: 'bg-blue-100'
+        },
+        {
+            label: 'Emails Afetados',
+            value: totalEmails,
+            icon: Trash2,
+            color: 'text-red-600',
+            bgColor: 'bg-red-100'
+        },
+        {
+            label: 'Precisão Média',
+            value: `${avgConfidence}%`,
+            icon: Zap,
+            color: 'text-yellow-600',
+            bgColor: 'bg-yellow-100'
+        }
+    ];
+
     // Loading
     if (loading && allSubscriptions.length === 0) {
         return (
@@ -98,123 +131,100 @@ export function SubscriptionsPage() {
     }
 
     // Error
-    if (error && allSubscriptions.length === 0) {
+    if (error) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 animate-in fade-in duration-500">
+            <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in duration-500">
                 <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-                <p className="text-lg font-medium">Erro ao carregar inscrições</p>
-                <p className="text-sm text-muted-foreground mb-4">{error}</p>
-                <Button onClick={() => fetchSubscriptions()}>
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Tentar novamente
+                <p className="text-lg font-medium text-destructive">Erro ao carregar listas</p>
+                <Button onClick={() => fetchSubscriptions()} variant="outline" className="mt-4">
+                    Tentar Novamente
                 </Button>
-            </div>
-        );
-    }
-
-    // Empty
-    if (!loading && allSubscriptions.length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 animate-in fade-in duration-500">
-                <Mail className="h-16 w-16 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium">🎉 Inbox Zero!</p>
-                <p className="text-sm text-muted-foreground mb-4">Nenhuma inscrição encontrada. Sua caixa está limpa!</p>
             </div>
         );
     }
 
     return (
-        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Search & Actions Bar */}
-            <div className="flex gap-3 items-center">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <input
-                        type="text"
-                        placeholder="Procurar..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className={`w-full pl-10 pr-4 py-2.5 text-sm transition-all ${isNeobrutalist
-                            ? 'border-2 border-black shadow-[2px_2px_0_0_#000] bg-white focus:shadow-[3px_3px_0_0_#000]'
-                            : 'rounded-sm border bg-background/50 backdrop-blur focus:outline-none focus:ring-2 focus:ring-primary/50 focus:bg-background'}`}
-                    />
-                </div>
-                <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as 'recent' | 'emails')}
-                    className={`px-4 py-2.5 text-sm ${isNeobrutalist
-                        ? 'border-2 border-black shadow-[2px_2px_0_0_#000] bg-white focus:shadow-[3px_3px_0_0_#000]'
-                        : 'rounded-sm border bg-background/50 backdrop-blur focus:outline-none focus:ring-2 focus:ring-primary/50'}`}
-                >
-                    <option value="emails">↓ Mais relevante</option>
-                    <option value="recent">↑ Ordem alfabética</option>
-                </select>
-                <Button variant="glass" size="icon" onClick={() => fetchSubscriptions()} disabled={loading}>
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-                </Button>
-                <Button
-                    onClick={() => setShowRatelFurioso(true)}
-                    variant="destructive"
-                    className="gap-2"
-                    disabled={ratelFurioso.loading}
-                >
-                    {ratelFurioso.loading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <PageHeader
+                title="Listas & Newsletters"
+                description="Gerencie suas inscrições e cancele o que não te interessa."
+                stats={stats}
+                action={
+                    <Button
+                        onClick={() => setShowRatelFurioso(true)}
+                        className={`gap-2 ${isNeobrutalist
+                            ? 'bg-[#E63946] text-white border-4 border-black shadow-[4px_4px_0_0_#000] font-black uppercase hover:shadow-none hover:translate-y-1'
+                            : 'bg-destructive hover:bg-destructive/90 text-white'}`}
+                    >
                         <Zap className="h-4 w-4" />
-                    )}
-                    Cancelar Tudo
-                </Button>
+                        RATEL FURIOSO
+                    </Button>
+                }
+            />
+
+            {/* Content (Search & Grid) */}
+            <div className={`flex items-center gap-4 bg-gray-50 p-4 rounded-lg border ${isNeobrutalist ? 'border-2 border-black shadow-[4px_4px_0_0_#000] rounded-none' : 'border-gray-200'}`}>
+                <Search className="h-5 w-5 text-gray-400" />
+                <input
+                    type="text"
+                    placeholder="Buscar por nome ou email..."
+                    className="bg-transparent border-none focus:outline-none flex-1 font-medium"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
             </div>
 
-            {/* Subscription List */}
-            <div className="space-y-2">
-                {subscriptions.map((sub) => (
+            {/* Subscription Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {subscriptions.map(sub => (
                     <div
                         key={sub.id}
-                        className={`flex items-center gap-4 p-4 transition-all ${isNeobrutalist
-                            ? 'border-4 border-black shadow-[4px_4px_0_0_#000] bg-white hover:shadow-[6px_6px_0_0_#000] hover:-translate-y-1'
-                            : 'glass-card rounded-sm hover:shadow-lg'}`}
+                        className={`
+                            relative group flex flex-col p-6 transition-all duration-300
+                            ${actionLoading === `unsub-${sub.id}` ? 'opacity-50 pointer-events-none' : ''}
+                            ${isNeobrutalist
+                                ? 'bg-white border-4 border-black shadow-[4px_4px_0_0_#000] hover:shadow-[8px_8px_0_0_#000] hover:-translate-y-1 rounded-none'
+                                : 'bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-100'}
+                        `}
                     >
-                        {/* Avatar */}
-                        <Avatar className={`h-12 w-12 ${sub.color} shadow-lg`}>
-                            <AvatarFallback className="text-white font-bold bg-transparent text-lg">
-                                {sub.name.substring(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                        </Avatar>
-
-                        {/* Info */}
-                        <div className="flex-1 min-w-0">
-                            <h3 className="font-bold truncate">{sub.name}</h3>
-                            <p className="text-sm text-muted-foreground truncate">{sub.email}</p>
-                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                                <Mail className="h-3 w-3" />
-                                {sub.count} e-mails
-                            </p>
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <Avatar className={`h-10 w-10 ${isNeobrutalist ? 'border-2 border-black rounded-none' : ''}`}>
+                                    <AvatarImage src={sub.logo} />
+                                    <AvatarFallback className={isNeobrutalist ? 'rounded-none font-bold bg-yellow-300' : ''}>
+                                        {sub.name.substring(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <h3 className="font-bold text-base leading-tight line-clamp-1">{sub.name}</h3>
+                                    <p className="text-xs text-muted-foreground line-clamp-1">{sub.email}</p>
+                                </div>
+                            </div>
+                            <div className={`px-2 py-1 text-xs font-bold rounded ${isNeobrutalist ? 'bg-black text-white' : 'bg-gray-100 text-gray-600'}`}>
+                                {sub.count}
+                            </div>
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex gap-2">
+                        <div className="mt-auto flex gap-2">
                             <Button
-                                variant="outline"
                                 size="sm"
-                                className="gap-1.5 border-green-500/50 text-green-600 hover:bg-green-500/10 hover:text-green-700 hover:border-green-500"
+                                variant="outline"
+                                className={`flex-1 gap-1 ${isNeobrutalist ? 'border-2 border-black shadow-[2px_2px_0_0_#000] hover:shadow-none hover:translate-y-[2px] rounded-none font-bold' : ''}`}
                                 onClick={() => handleKeep(sub)}
                             >
-                                <Check className="h-4 w-4" />
+                                <Check className="h-3 w-3" />
                                 Manter
                             </Button>
                             <Button
-                                variant="outline"
                                 size="sm"
-                                className="gap-1.5 border-red-500/50 text-red-600 hover:bg-red-500/10 hover:text-red-700 hover:border-red-500"
+                                className={`flex-1 gap-1 ${isNeobrutalist ? 'bg-[#E63946] text-white border-2 border-black shadow-[2px_2px_0_0_#000] hover:shadow-none hover:translate-y-[2px] rounded-none font-bold' : 'bg-destructive/10 text-destructive hover:bg-destructive hover:text-white'}`}
                                 onClick={() => handleUnsubscribe(sub)}
-                                disabled={actionLoading === `unsub-${sub.id}`}
+                                disabled={!!actionLoading}
                             >
                                 {actionLoading === `unsub-${sub.id}` ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <Loader2 className="h-3 w-3 animate-spin" />
                                 ) : (
-                                    <X className="h-4 w-4" />
+                                    <X className="h-3 w-3" />
                                 )}
                                 Cancelar
                             </Button>
@@ -223,39 +233,37 @@ export function SubscriptionsPage() {
                 ))}
             </div>
 
-            {/* Pagination */}
+            {/* Pagination if needed */}
             {totalPages > 1 && (
-                <div className="flex justify-center gap-2 py-4">
+                <div className="flex justify-center mt-8 gap-2">
                     <Button
                         variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                         disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(p => p - 1)}
+                        className={isNeobrutalist ? 'border-2 border-black rounded-none font-bold' : ''}
                     >
                         Anterior
                     </Button>
-                    <span className="flex items-center px-4 text-sm text-muted-foreground">
-                        Página {currentPage} de {totalPages}
+                    <span className="flex items-center px-4 font-bold">
+                        {currentPage} / {totalPages}
                     </span>
                     <Button
                         variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                         disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(p => p + 1)}
+                        className={isNeobrutalist ? 'border-2 border-black rounded-none font-bold' : ''}
                     >
                         Próxima
                     </Button>
                 </div>
             )}
 
-            {/* Ratel Furioso Modal */}
+            {/* Modal Ratel Furioso */}
             <RatelFuriosoModal
                 isOpen={showRatelFurioso}
                 onClose={() => setShowRatelFurioso(false)}
-                onConfirm={handleRatelFurioso}
-                selectedCount={allSubscriptions.length}
-                loading={ratelFurioso.loading}
-                progress={ratelFurioso.progress || 0}
+                onWait={handleRatelFurioso}
+                subscriptionCount={allSubscriptions.length}
             />
         </div>
     );
