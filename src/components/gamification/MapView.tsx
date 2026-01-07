@@ -22,7 +22,7 @@ export default function MapView() {
     const { } = useCredits();
     const { language } = useLanguage();
     const [selectedTerritory, setSelectedTerritory] = useState<Territory | null>(null);
-    const [showAchievements, setShowAchievements] = useState(false);
+    const [showAchievements, setShowAchievements] = useState(true);
 
     const lang = (language === 'pt' || language === 'en' || language === 'es') ? language : 'pt';
 
