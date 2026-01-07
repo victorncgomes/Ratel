@@ -9,6 +9,8 @@ interface BulkActionsToolbarProps {
     onSpam: () => void;
     onUnsubscribe?: () => void;
     onRollup?: () => void;
+    onSelectAll?: () => void;
+    onDeselectAll?: () => void;
     loading?: boolean;
 }
 
@@ -20,6 +22,8 @@ export function BulkActionsToolbar({
     onSpam,
     onUnsubscribe,
     onRollup,
+    onSelectAll,
+    onDeselectAll,
     loading = false
 }: BulkActionsToolbarProps) {
     if (selectedCount === 0) return null;

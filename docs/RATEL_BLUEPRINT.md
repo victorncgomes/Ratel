@@ -213,6 +213,8 @@ Ratel/
 │   │   │   ├── Cleanup.tsx
 │   │   │   ├── DeepCleaning.tsx
 │   │   │   ├── MailListView.tsx
+│   │   │   ├── ImportantesView.tsx   # [NOVO] Visão de Importantes (IA)
+│   │   │   ├── ProtectionPage.tsx    # [NOVO] Hub de Proteção
 │   │   │   ├── RulesPage.tsx
 │   │   │   ├── RollupView.tsx
 │   │   │   ├── Activity.tsx
@@ -223,6 +225,18 @@ Ratel/
 │   │   │   └── PrivacyPage.tsx
 │   │   │
 │   │   ├── 📁 ui/                # Componentes UI base
+│   │   │   ├── Button.tsx
+│   │   │   ├── Card.tsx
+│   │   │   ├── avatar.tsx
+│   │   │   ├── badge.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── toast.tsx
+│   │   │   └── toaster.tsx
+│   │   │
+│   │   ├── 📁 dialogs/           # [NOVO] Modais Globais
+│   │   │   └── ConfirmUnsubscribeDialog.tsx
+│   │   │
+│   │   └── 📁 icons/             # Ícones customizados
 │   │   │   ├── Button.tsx
 │   │   │   ├── Card.tsx
 │   │   │   ├── avatar.tsx
@@ -799,10 +813,37 @@ Barra de ações em massa:
 #### Cleanup
 
 **Conteúdo**:
-- Estatísticas de limpeza
-- Botões: Esvaziar Spam, Esvaziar Lixeira
-- Link para Deep Cleaning
-- Cards de categorias (Newsletters, Promoções, Social)
+- Cards de "Quick Wins" (Delete em massa fácil)
+- Análise de armazenamento
+- Sugestões inteligentes
+
+#### Importantes (AI View)
+
+**Conteúdo**:
+- **Tabela Diferenciada**: Colunas para Remetente, Assunto, Data e **Análise IA**.
+- **Métricas IA**:
+  - `IS_IMPORTANT`: Flag booleana.
+  - `AI_SCORE` (0-100): Probabilidade de importância.
+  - `AI_REASON`: Texto justificativo (ex: "Contém termos jurídicos", "Recibo fiscal").
+- **Ações Rápidas**:
+  - `Manter`: Marca como seguro (`isMarkedSafe`) e remove das listas de purge.
+  - `Excluir`: Move para lixeira.
+
+#### Proteção (Protection Hub)
+
+**Conteúdo**:
+- **Abas de Navegação**:
+  1.  **Bloqueados (antigo Shield)**: Lista de remetentes bloqueados automaticamente.
+  2.  **Seguros (Marked Safe)**: Lista de remetentes marcados como confiáveis.
+  3.  **Importantes**: Visão consolidada de emails críticos.
+- **Filtros**: Por data, remetente, score.
+
+#### Subscriptions & Listas
+
+**UX Refinements**:
+- **Botão "APAGAR TUDO"**: Substitui "Ratel Furioso". Ação destrutiva em massa com confirmação.
+- **Cancelamento**: Modal `ConfirmUnsubscribeDialog` (estilo Gmail) para cancelar sem sair da tela.
+- **Layout**: Visualização Split (Lista à esquerda, Detalhes à direita) para newsletters.
 
 #### MailListView
 
@@ -1283,10 +1324,32 @@ interface Rule {
 
 ---
 
+## 17. ATUALIZAÇÕES v0.2.13 (07/01/2026)
+
+### 17.1 Nova Arquitetura de Views
+- **ImportantesView (`/importantes`)**:
+  - Layout de duas colunas (Lista + Detalhes).
+  - Integração com `useEmails` e `aiScore`.
+  - Ações de triagem: "Manter" (Seguro) e "Excluir" (Trash).
+- **ProtectionPage (`/protection`)**:
+  - Hub unificado para regras de bloqueio (Shield), remetentes seguros e itens importantes.
+  - Ações diretas nos cards para modificar status.
+
+### 17.2 Refatoração de Subscriptions
+- **Listas de Email (`/lists`)**:
+  - Migração para Master-Detail view.
+  - Filtros e ordenação no cliente.
+  - Integração visual com emails recentes da lista.
+
+### 17.3 Melhorias de Dados
+- **useEmails Hook**: Adicionado suporte para atualizações locais (`updateEmail`) para simular persistência de flags durante a sessão.
+
+---
+
 **FIM DO BLUEPRINT**
 
 Este documento contém TODAS as informações necessárias para reconstruir o projeto Ratel do zero.
 
-**Última atualização**: 06/01/2026  
-**Versão do documento**: 1.0  
+**Última atualização**: 07/01/2026  
+**Versão do documento**: 1.1  
 **Mantido por**: Antigravity AI

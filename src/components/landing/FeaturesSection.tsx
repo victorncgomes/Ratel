@@ -2,8 +2,10 @@ import { useRef } from 'react';
 import { useScroll, useTransform, motion } from 'framer-motion';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useStyleTheme } from '../../contexts/StyleThemeContext';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { StatsSection } from './StatsSection';
 import { TestimonialsSection } from './TestimonialsSection';
+
 
 interface FeatureMetadata {
     id: string; // Key for translation: landing.features.card_N_title
@@ -20,12 +22,14 @@ const FEATURES_METADATA: FeatureMetadata[] = [
     },
     {
         id: 'card_2', // Classificação Inteligente - smartphone image
+        // Restoring to 15_19_53 as requested for "Classificação Inteligente"
         image: '/images/ChatGPT%20Image%205%20de%20jan.%20de%202026,%2015_19_53.png',
         emoji: '🧠'
     },
     {
         id: 'card_3', // Limpeza na Caixa de Entrada - ratel lendo jornal
-        image: '/images/ChatGPT%20Image%205%20de%20jan.%20de%202026,%2019_27_16.png',
+        // Keeping the updated image for Cleanup
+        image: '/images/ChatGPT%20Image%205%20de%20jan.%20de%202026,%2019_27_16.png?v=2',
         emoji: '🧹'
     },
     {
@@ -50,6 +54,8 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
     const { t } = useLanguage();
     const { isNeobrutalist } = useStyleTheme();
     const containerRef = useRef<HTMLDivElement>(null);
+    const isMobile = useMediaQuery('(max-width: 767px)');
+    const isDesktop = useMediaQuery('(min-width: 1024px)'); // PC = lg breakpoint
 
     // Inverted logic: 
     // index 0 (even) -> flex-row-reverse (Text Left, Image Right)
@@ -57,67 +63,133 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
     const isEven = index % 2 === 0;
 
     // Scroll progress for the card container
+    // offset: center center means the animation is 0.5 when element center is at viewport center
     const { scrollYProgress } = useScroll({
         target: containerRef,
-        offset: ["start end", "end start"]
+        offset: ["start end", "center center", "end start"]
     });
 
     // Parallax effect logic
     const xInput = [0, 0.5, 1];
 
-    const displacement = (index === 2 || index === 3) ? "100%" : "80%";
-    const negDisplacement = (index === 2 || index === 3) ? "-100%" : "-80%";
+    // Reduced displacements as requested
+    const displacement = (index === 2 || index === 3) ? "50%" : "40%";
+    const negDisplacement = (index === 2 || index === 3) ? "-50%" : "-40%";
 
     let centerTarget = "0%";
-    if (index === 2) centerTarget = "-30%";
-    else if (index === 0) centerTarget = "-15%";
-    else if (index === 1) centerTarget = "5%";
+    if (index === 2) centerTarget = "-20%"; // Reduced from -30%
+    else if (index === 0) centerTarget = "-10%";
+    else if (index === 1) centerTarget = "25%";
     else if (index === 5) centerTarget = "10%";
 
     const rightImageOutput = [displacement, centerTarget, displacement];
     const leftImageOutput = [negDisplacement, centerTarget, negDisplacement];
 
+    // Main image transform
     const x = useTransform(
         scrollYProgress,
         xInput,
         isEven ? rightImageOutput : leftImageOutput
     );
 
+    // === CARD 5 (Compras): Transforms distintos para cada imagem ===
+    // BACKUP VALORES ANTERIORES: ambas usavam x (40% → 0% → 40%)
+    // PC (>=1024px): 
+    // Imagem 1: começa 200% direita, centro -90%, termina 200% direita
+    const comprasImg1Output = ["200%", "-90%", "200%"];
+    const xComprasImg1 = useTransform(scrollYProgress, xInput, comprasImg1Output);
+    // Imagem 2: começa 40% direita, centro -50%, termina 40% direita
+    const comprasImg2Output = ["40%", "-50%", "40%"];
+    const xComprasImg2 = useTransform(scrollYProgress, xInput, comprasImg2Output);
+
+    // TABLET (768-1023px): valores intermediários, centralizados no platô
+    // Imagem 1: começa 80% direita, centro 0% (centralizado), termina 80% direita
+    const comprasImg1TabletOutput = ["80%", "0%", "80%"];
+    const xComprasImg1Tablet = useTransform(scrollYProgress, xInput, comprasImg1TabletOutput);
+    // Imagem 2: começa 60% direita, centro 0% (centralizado), termina 60% direita  
+    const comprasImg2TabletOutput = ["60%", "0%", "60%"];
+    const xComprasImg2Tablet = useTransform(scrollYProgress, xInput, comprasImg2TabletOutput);
+
+    // Para card 5: usa transforms específicos por breakpoint
+    const isTablet = !isMobile && !isDesktop; // 768-1023px
+    const firstImageX = (index === 4)
+        ? (isMobile ? x : isDesktop ? xComprasImg1 : xComprasImg1Tablet)
+        : x;
+
+    // Specific transform for 2nd image on mobile (Card 5)
+    // Desktop: Flows with 'x' (Right->Left if isEven)
+    // Mobile: Should go Left->Right ("negDisplacement" -> "displacement")
+    const mobileSecondImageOutput = [negDisplacement, centerTarget, displacement];
+
+    // We can't conditionally call hooks, so we must calculate all transforms
+    const xMobileSecond = useTransform(scrollYProgress, xInput, mobileSecondImageOutput);
+
+    // Final transform for 2nd image: toggle based on breakpoint
+    // Card 5: PC usa xComprasImg2, Tablet usa xComprasImg2Tablet, Mobile usa xMobileSecond
+    const secondImageX = isMobile
+        ? xMobileSecond
+        : (index === 4 ? (isDesktop ? xComprasImg2 : xComprasImg2Tablet) : x);
+
+
     const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
+
+    // Restore Parallax Progress Indicator
+    // Map scrollY [0, 1] to width [0px, 100px] (roughly)
+    const progressWidth = useTransform(scrollYProgress, [0.3, 0.6], ["0%", "100%"]);
 
     return (
         <div
             ref={containerRef}
             className={`flex flex-col ${isEven ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-8 lg:gap-16 py-32 lg:py-48 min-h-screen overflow-hidden w-full max-w-full`}
         >
-            {/* Image section */}
-            <div className="flex-1 w-full relative">
+            {/* Image section: z-0 for cards 0, 1, 2, 3, 5 (behind text), z-20 for card 4 only */}
+            <div className={`flex-1 w-full relative ${index === 4 ? 'z-20' : 'z-0'}`}>
                 <motion.div
-                    style={{ x, opacity }}
+                    // For single images, apply 'x'. For merged card, we handle inside.
+                    style={{ x: feature.secondImage ? 0 : x, opacity }}
                     className="will-change-transform"
                 >
                     {feature.secondImage ? (
-                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-[30px] items-center justify-center -translate-x-20 lg:-translate-x-36">
-                            <img
+                        /* 
+                         * COMPRAS & BLINDAGEM - VALUES SAVED:
+                         * PC (>=1024px): scale=2.25, translateY img1=-1.25rem, img2=3.25rem, gap=10px, translate-x=20
+                         * Mobile (<=767px): scale=0.8, translateY img1=-0.5rem, img2=0.5rem, flex-col
+                         * Tablet (768-1023px): scale=1.2, flex-row, values intermediários
+                         */
+                        <div className={`flex items-center justify-center ${isMobile
+                            ? 'flex-col gap-0'
+                            : isDesktop
+                                ? 'flex-row gap-[10px] translate-x-20'
+                                : 'flex-row gap-[20px] translate-x-10'
+                            }`}>
+                            {/* Image 1 (Left/Top) */}
+                            <motion.img
+                                style={{
+                                    x: firstImageX,
+                                    filter: 'brightness(1.02)',
+                                    scale: isMobile ? 0.8 : isDesktop ? 2.25 : 1.2,
+                                    translateY: isMobile ? '-0.5rem' : isDesktop ? '-1.25rem' : '-0.5rem'
+                                }}
                                 src={feature.secondImage}
                                 alt={t(`landing.features.${feature.id}_title`)}
-                                className="w-full sm:w-1/2 h-auto object-contain contrast-105 scale-[0.8] lg:scale-[1.65] -translate-y-5"
-                                style={{
-                                    minHeight: '200px',
-                                    maxHeight: '500px',
-                                    filter: 'brightness(1.02)'
-                                }}
+                                width="400"
+                                height="400"
+                                className={`h-auto object-contain contrast-105 ${isMobile ? 'w-full' : 'w-1/2'}`}
                                 loading="eager"
                             />
-                            <img
+                            {/* Image 2 (Right/Bottom) */}
+                            <motion.img
+                                style={{
+                                    x: secondImageX,
+                                    filter: 'brightness(1.02)',
+                                    scale: isMobile ? 0.8 : isDesktop ? 2.25 : 1.2,
+                                    translateY: isMobile ? '0.5rem' : isDesktop ? '3.25rem' : '0.5rem'
+                                }}
                                 src={feature.image}
                                 alt={t(`landing.features.${feature.id}_title`)}
-                                className="w-full sm:w-1/2 h-auto object-contain contrast-105 scale-[0.8] lg:scale-[1.65] translate-y-5"
-                                style={{
-                                    minHeight: '200px',
-                                    maxHeight: '500px',
-                                    filter: 'brightness(1.02)'
-                                }}
+                                width="400"
+                                height="400"
+                                className={`h-auto object-contain contrast-105 ${isMobile ? 'w-full' : 'w-1/2'}`}
                                 loading="eager"
                             />
                         </div>
@@ -125,7 +197,9 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
                         <img
                             src={feature.image}
                             alt={t(`landing.features.${feature.id}_title`)}
-                            className={`w-full h-auto object-contain contrast-105 mx-auto ${index === 0 ? 'scale-[1.2]' : ''} ${index === 1 ? 'scale-[1.26]' : ''} ${index === 2 ? 'scale-[1.5]' : ''} ${index === 3 ? 'scale-[1.35]' : ''} ${index === 5 ? 'scale-[1.15]' : ''}`}
+                            width="800"
+                            height="600"
+                            className={`w-full h-auto object-contain contrast-105 mx-auto ${index === 0 ? 'scale-[1.2]' : ''} ${index === 1 ? 'scale-[1.5]' : ''} ${index === 2 ? (isDesktop ? 'scale-[1.5]' : isMobile ? 'scale-[1.5]' : 'scale-[1.2]') : ''} ${index === 3 ? 'scale-[1.35]' : ''} ${index === 5 ? 'scale-[1.15]' : ''}`}
                             style={{
                                 maxHeight: index === 0 ? undefined : '800px',
                                 minHeight: index === 0 ? undefined : '400px',
@@ -137,13 +211,16 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
                 </motion.div>
             </div>
 
-            {/* Text Section */}
-            <div className="flex-1 z-10 w-full px-4 lg:px-8">
+            {/* Text Section: z-30 for card 5 on PC to be on top of image */}
+            <div className={`flex-1 w-full px-4 lg:px-8 ${index === 4 ? 'z-10 lg:z-30' : 'z-10'}`}>
                 <div className={`max-w-2xl ${isEven ? 'mr-auto' : 'ml-auto text-right'}`}>
                     <div className="flex items-center gap-4 mb-6 justify-start">
-                        <span className="text-4xl lg:text-6xl filter drop-shadow-lg animate-bounce-slow">
-                            {feature.emoji}
-                        </span>
+                        {/* HIDE EMOJI IN NEOBRUTALIST */}
+                        {!isNeobrutalist && (
+                            <span className="text-4xl lg:text-6xl filter drop-shadow-lg animate-bounce-slow">
+                                {feature.emoji}
+                            </span>
+                        )}
                         <h3 className={`text-3xl lg:text-5xl font-bold leading-tight ${isNeobrutalist
                             ? 'bg-black text-white px-4 py-2 shadow-[4px_4px_0_0_#000]'
                             : 'bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700'
@@ -171,13 +248,10 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
                         ))}
                     </ul>
 
-                    {/* Progress indicator */}
+                    {/* Parallax Progress Indicator */}
                     <div className={`mt-8 h-1.5 w-full max-w-[100px] bg-slate-100 rounded-full overflow-hidden ${!isEven && 'ml-auto'}`}>
                         <motion.div
-                            initial={{ width: 0, x: 30 }}
-                            whileInView={{ width: "1.25rem", x: 0 }}
-                            viewport={{ once: false }}
-                            transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+                            style={{ width: progressWidth }}
                             className="h-1.5 bg-gradient-to-r from-pink-500 to-orange-500 rounded-full"
                         />
                     </div>
@@ -191,13 +265,6 @@ export function FeaturesSection() {
     const { t } = useLanguage();
     const { isNeobrutalist } = useStyleTheme();
 
-    // Split features to insert StatsSection and TestimonialsSection
-    // First batch: Card 1 (Philosophy) + Card 2 (Intelligence)
-    const firstBatch = FEATURES_METADATA.slice(0, 2);
-    // Middle batch: Card 3 (Limpeza) + Card 4 (Não Me Perturbe) -> Entre Index 1 e 4 (2 e 3)
-    const middleBatch = FEATURES_METADATA.slice(2, 4);
-    // Last batch: Card 5 (Compras) + Card 6 (Newsletters) -> Index 4 em diante
-    const lastBatch = FEATURES_METADATA.slice(4);
 
     return (
         <div className="bg-white overflow-hidden">
@@ -225,49 +292,42 @@ export function FeaturesSection() {
                         </div>
                     </div>
 
-                    <div className="space-y-0">
-                        {firstBatch.map((feature, index) => (
-                            <FeatureCard key={index} feature={feature} index={index} />
-                        ))}
-                    </div>
-                </div>
-            </section>
+                    {/* Features cards 0-1 */}
+                    <section className="relative py-0 bg-white">
+                        <div className="max-w-[1800px] mx-auto">
+                            <div className="space-y-0">
+                                {FEATURES_METADATA.slice(0, 2).map((feature, index) => (
+                                    <FeatureCard key={index} feature={feature} index={index} />
+                                ))}
+                            </div>
+                        </div>
+                    </section>
 
-            {/* Stats Section (Full Width) */}
-            <StatsSection />
+                    {/* Stats Section (Impacto Global) - Between Classificação and Limpeza */}
+                    <StatsSection />
 
-            {/* Middle Features (Limpeza & Não Perturbe) */}
-            <section className="relative py-0 bg-white">
-                <div className="max-w-[1800px] mx-auto">
-                    <div className="space-y-0">
-                        {middleBatch.map((feature, index) => (
-                            <FeatureCard key={index + 2} feature={feature} index={index + 2} />
-                        ))}
-                    </div>
-                </div>
-            </section>
+                    {/* Features cards 2-5 */}
+                    <section className="relative py-0 bg-white">
+                        <div className="max-w-[1800px] mx-auto">
+                            <div className="space-y-0">
+                                {FEATURES_METADATA.slice(2).map((feature, index) => (
+                                    <FeatureCard key={index + 2} feature={feature} index={index + 2} />
+                                ))}
+                            </div>
+                        </div>
+                    </section>
 
-            {/* Testimonials Section (Inserted Here) */}
-            <TestimonialsSection />
+                    {/* Testimonials Section */}
+                    <TestimonialsSection />
 
-            {/* Remaining Features (Compras & Newsletters) */}
-            <section className="relative py-0 bg-white">
-                <div className="max-w-[1800px] mx-auto">
-                    <div className="space-y-0">
-                        {lastBatch.map((feature, index) => (
-                            // Offset is 4 (2 from first + 2 from middle)
-                            <FeatureCard key={index + 4} feature={feature} index={index + 4} />
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <style>{`
+                    <style>{`
                 @keyframes pulse-subtle {
                     0%, 100% { transform: scale(1); }
                     50% { transform: scale(1.05); }
                 }
             `}</style>
+                </div>
+            </section>
         </div>
     );
 }

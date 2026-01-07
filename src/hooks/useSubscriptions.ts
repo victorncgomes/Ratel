@@ -15,6 +15,8 @@ export interface Subscription {
     hasUnsubscribe: boolean;
     unsubscribeLink: string;
     lastEmail: string;
+    logo?: string;
+    confidence?: number;
     emailIds: string[];
 }
 

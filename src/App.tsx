@@ -1,8 +1,8 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import {
     Menu, Bell, HelpCircle, LogOut, Settings,
     Mail, Trash2, User, HardDrive, Calendar, Newspaper, Tag,
-    Shield, Package
+    Package, ShieldAlert, Star // Added Star
 } from 'lucide-react';
 import { useProgress } from './contexts/ProgressContext';
 import { useTheme } from './hooks/useTheme';
@@ -15,9 +15,10 @@ import { LandingPage } from './components/LandingPage';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { ProgressProvider } from './contexts/ProgressContext';
 import { StyleThemeProvider, useStyleTheme } from './contexts/StyleThemeContext';
-import { MapView } from './components/gamification';
 
 import { FlagBR, FlagES, FlagUK } from './components/icons/Flags';
+import { useEmails } from './hooks/useEmails';
+import { mockSubscriptions } from './lib/mockData';
 
 // Lazy load pages for better performance
 const DashboardPage = lazy(() => import('./components/pages/Dashboard').then(m => ({ default: m.DashboardPage })));
@@ -29,8 +30,11 @@ const ActivityPage = lazy(() => import('./components/pages/Activity').then(m => 
 const CleanupPage = lazy(() => import('./components/pages/Cleanup').then(m => ({ default: m.CleanupPage })));
 const TermsPage = lazy(() => import('./components/pages/TermsPage').then(m => ({ default: m.TermsPage })));
 const PrivacyPage = lazy(() => import('./components/pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
+// ... existing lazy loads ...
 const MailListView = lazy(() => import('./components/pages/MailListView').then(m => ({ default: m.MailListView })));
 const RulesPage = lazy(() => import('./components/pages/RulesPage').then(m => ({ default: m.RulesPage })));
+const ProtectionPage = lazy(() => import('./components/pages/ProtectionPage').then(m => ({ default: m.ProtectionPage })));
+const ImportantesView = lazy(() => import('./components/pages/ImportantesView').then(m => ({ default: m.ImportantesView })));
 // const ProcessingScreen = lazy(() => import('./components/ProcessingScreen').then(m => ({ default: m.ProcessingScreen })));
 const DeepCleaning = lazy(() => import('./components/pages/DeepCleaning').then(m => ({ default: m.DeepCleaning })));
 
@@ -46,7 +50,7 @@ function RatelApp() {
     useTheme(); // Inicializa tema
     const { t, language, setLanguage } = useLanguage();
     const { isNeobrutalist } = useStyleTheme();
-    const { isLoading: isGlobalLoading } = useProgress();
+    const { isLoading: isGlobalLoading, progress: globalProgress, currentMessage } = useProgress();
     const [isFlagMenuOpen, setIsFlagMenuOpen] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -54,7 +58,55 @@ function RatelApp() {
     const [user, setUser] = useState<UserData | null>(null);
     const [showLegalPage, setShowLegalPage] = useState<'terms' | 'privacy' | null>(null);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
-    const [showProcessing, setShowProcessing] = useState(false);
+
+    // Fetch emails for sidebar counts AND Dashboard
+    const { emails, fetchEmails } = useEmails();
+
+    useEffect(() => {
+        // Trigger fetch if authenticated (or if force-mocked eventually)
+        // Since we are forcing mock data in useEmails, this will load them.
+        fetchEmails(500);
+    }, [fetchEmails]); // removed isAuthenticated dependency to ensure mock load
+
+    // Calculate dynamic counts from the emails list (Reflecting GROUPS shown in view, not raw emails)
+    const counts = useMemo(() => {
+        // By Date Groups
+        const dateGroups = new Set();
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+        const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+        emails.forEach(email => {
+            const emailDate = new Date(email.date);
+            if (isNaN(emailDate.getTime())) return;
+
+            if (emailDate >= yesterday) dateGroups.add('yesterday');
+            else if (emailDate >= weekAgo) dateGroups.add('this-week');
+            else if (emailDate >= twoWeeksAgo) dateGroups.add('last-week');
+            else dateGroups.add(`${emailDate.getFullYear()}-${emailDate.getMonth()}`);
+        });
+
+        // By Size Groups (Checking which buckets have content)
+        const sizeGroups = new Set();
+        emails.forEach((e: any) => {
+            const size = e.size || 0;
+            if (size > 5 * 1024 * 1024) sizeGroups.add('large');
+            else if (size > 1024 * 1024) sizeGroups.add('medium');
+            else sizeGroups.add('small');
+        });
+
+        return {
+            bySender: new Set(emails.map(e => e.from)).size, // Unique Senders
+            bySize: sizeGroups.size, // Active Size Buckets
+            byDate: dateGroups.size, // Active Date Buckets
+            newsletters: new Set(emails.filter(e => e.hasUnsubscribe).map(e => e.from)).size, // Count Unique Newsletters (Senders), not just emails? User said "groups". Usually Newsletters are grouped by sender.
+            promotions: emails.filter((e: any) => e.category === 'promotions' || e.subject?.toLowerCase().includes('promo') || e.subject?.toLowerCase().includes('oferta')).length, // Promotions usually flat list? Or grouped? MailListView groups by sender for promo too.
+            importantes: emails.filter(e => e.isImportant || (e.aiScore && e.aiScore > 75)).length,
+            lists: mockSubscriptions.length
+        };
+    }, [emails]);
 
     // Verificar parâmetros de URL para login OAuth
     useEffect(() => {
@@ -66,7 +118,6 @@ function RatelApp() {
             try {
                 const parsedUser = JSON.parse(decodeURIComponent(userData));
                 setUser(parsedUser);
-                setShowProcessing(true); // Mostrar tela de processamento
                 // Limpa URL sem recarregar a página
                 window.history.replaceState({}, document.title, window.location.pathname);
             } catch (e) {
@@ -111,12 +162,30 @@ function RatelApp() {
         localStorage.removeItem('ratel_user');
     };
 
+    // URL-based routing for legal pages (needed for Google/Azure verification)
+    useEffect(() => {
+        const pathname = window.location.pathname;
+        if (pathname === '/terms') {
+            setShowLegalPage('terms');
+        } else if (pathname === '/privacy') {
+            setShowLegalPage('privacy');
+        }
+    }, []);
+
+    const handleLegalPageBack = () => {
+        setShowLegalPage(null);
+        // If accessed via URL, redirect to home
+        if (window.location.pathname === '/terms' || window.location.pathname === '/privacy') {
+            window.history.pushState({}, '', '/');
+        }
+    };
+
     if (showLegalPage === 'terms') {
-        return <TermsPage onBack={() => setShowLegalPage(null)} />;
+        return <TermsPage onBack={handleLegalPageBack} />;
     }
 
     if (showLegalPage === 'privacy') {
-        return <PrivacyPage onBack={() => setShowLegalPage(null)} />;
+        return <PrivacyPage onBack={handleLegalPageBack} />;
     }
 
     // Processing Screen removida a pedido do usuário - substituída por Nav Bar Indicator
@@ -144,28 +213,30 @@ function RatelApp() {
     }
 
     const navItems = [
-        { id: 'subscriptions', icon: Mail, label: 'Listas', badge: String(12) },
-        { id: 'cleanup', icon: Trash2, label: 'Limpeza', badge: null },
+        { id: 'subscriptions', icon: Mail, label: t('sidebar.email_lists'), badge: String(counts.lists) },
+        { id: 'importantes', label: t('sidebar.importantes'), icon: Star, badge: String(counts.importantes) },
+        { id: 'cleanup', icon: Trash2, label: t('sidebar.quick_cleanup'), badge: null },
     ];
 
     // Smart Views
     const smartViews = [
-        { id: 'by-sender', label: t('sidebar.by_sender'), icon: User, count: 12 },
-        { id: 'by-size', label: t('sidebar.by_size'), icon: HardDrive, count: 5 },
-        { id: 'by-date', label: t('sidebar.by_date'), icon: Calendar, count: 0 },
-        { id: 'newsletters', label: t('sidebar.newsletters'), icon: Newspaper, count: 42 },
-        { id: 'promotions', label: t('sidebar.promotions'), icon: Tag, count: 78 },
+        { id: 'by-sender', label: t('sidebar.by_sender'), icon: User, count: counts.bySender },
+        { id: 'by-size', label: t('sidebar.by_size'), icon: HardDrive, count: counts.bySize },
+        { id: 'by-date', label: t('sidebar.by_date'), icon: Calendar, count: counts.byDate },
+        { id: 'newsletters', label: t('sidebar.newsletters'), icon: Newspaper, count: counts.newsletters },
+        { id: 'promotions', label: t('sidebar.promotions'), icon: Tag, count: counts.promotions },
     ];
 
     // Action Items (Shield & Rollup)
     const actionItems = [
-        { id: 'shield', label: t('sidebar.shield'), icon: Shield, count: 3 },
+        // Using mock counts for now as these features might need specific backend logic
+        { id: 'protection', label: t('sidebar.protection'), icon: ShieldAlert, count: 3 }, // Renamed from Shield, explicit label override if translation missing
         { id: 'rollup', label: t('sidebar.rollup'), icon: Package, count: 5 },
     ];
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'dashboard': return isNeobrutalist ? <MapView /> : <DashboardPage onNavigate={setActiveTab} />;
+            case 'dashboard': return <DashboardPage onNavigate={setActiveTab} />;
             case 'subscriptions': return <SubscriptionsPage />;
             case 'cleanup': return <CleanupPage />;
             case 'activity': return <ActivityPage />;
@@ -183,8 +254,16 @@ function RatelApp() {
                 return <MailListView viewType="newsletters" />;
             case 'promotions':
                 return <MailListView viewType="promotions" />;
-            case 'shield':
-                return <RulesPage type="shield" />;
+            case 'inbox':
+                return <MailListView viewType="inbox" />;
+            case 'unread':
+                return <MailListView viewType="unread" />;
+            case 'spam':
+                return <MailListView viewType="spam" />;
+            case 'protection':
+                return <ProtectionPage />;
+            case 'importantes':
+                return <ImportantesView />;
             case 'rollup':
                 return <RulesPage type="rollup" />;
             case 'deep-cleaning':
@@ -227,16 +306,17 @@ function RatelApp() {
                                 ? 'bg-yellow-300 border-2 border-black shadow-[2px_2px_0_0_#000]'
                                 : 'bg-muted/50 border border-border'
                                 }`}>
-                                <span className="text-xs font-bold font-mono animate-pulse">
-                                    PROCESSANDO...
+                                <span className="text-xs font-bold font-mono animate-pulse max-w-[150px] truncate">
+                                    {currentMessage || 'PROCESSANDO...'}
                                 </span>
                                 {/* Progress Bar */}
                                 <div className="h-2 w-32 bg-gray-200 rounded-full overflow-hidden border border-black/10">
                                     <div
                                         className="h-full bg-[#E63946] transition-all duration-300 ease-out"
-                                        style={{ width: '45%' }} // Mocked progress or use real from context
+                                        style={{ width: `${Math.min(globalProgress || 0, 100)}%` }}
                                     />
                                 </div>
+                                <span className="text-xs font-mono">{Math.round(globalProgress || 0)}%</span>
                             </div>
                         )}
                     </div>
@@ -406,40 +486,52 @@ function RatelApp() {
 
                         {/* User Submenu */}
                         {userMenuOpen && (
-                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-popover border rounded-lg shadow-xl py-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-popover border rounded-lg shadow-xl py-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200" style={{ fontStyle: 'normal' }}>
                                 <button
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal not-italic hover:bg-muted transition-colors"
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
+                                    style={{ fontStyle: 'normal' }}
                                     onClick={() => { setActiveTab('notifications'); setUserMenuOpen(false); }}
                                 >
                                     <Bell className="h-4 w-4" />
-                                    <span className="not-italic">{t('user_menu.notifications')}</span>
+                                    <span style={{ fontStyle: 'normal' }}>{t('user_menu.notifications')}</span>
                                     <Badge className="ml-auto h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px]">3</Badge>
                                 </button>
                                 <button
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal not-italic hover:bg-muted transition-colors"
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
+                                    style={{ fontStyle: 'normal' }}
                                     onClick={() => { setActiveTab('help'); setUserMenuOpen(false); }}
                                 >
                                     <HelpCircle className="h-4 w-4" />
-                                    <span className="not-italic">{t('user_menu.help')}</span>
+                                    <span style={{ fontStyle: 'normal' }}>{t('user_menu.help')}</span>
                                 </button>
                                 <button
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal not-italic hover:bg-muted transition-colors"
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
+                                    style={{ fontStyle: 'normal' }}
+                                    onClick={() => { setActiveTab('help'); setUserMenuOpen(false); }}
+                                >
+                                    <HelpCircle className="h-4 w-4" />
+                                    <span style={{ fontStyle: 'normal' }}>{t('sidebar.about')}</span>
+                                </button>
+                                <button
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
+                                    style={{ fontStyle: 'normal' }}
                                     onClick={() => { setActiveTab('profile'); setUserMenuOpen(false); }}
                                 >
                                     <Settings className="h-4 w-4" />
-                                    <span className="not-italic">{t('user_menu.settings')}</span>
+                                    <span style={{ fontStyle: 'normal' }}>{t('user_menu.settings')}</span>
                                 </button>
                                 <hr className="my-1 border-border" />
                                 <button
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-500 not-italic hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                    style={{ fontStyle: 'normal' }}
                                     onClick={handleLogout}
                                 >
                                     <LogOut className="h-4 w-4" />
-                                    <span className="not-italic">{t('user_menu.logout')}</span>
+                                    <span style={{ fontStyle: 'normal' }}>{t('user_menu.logout')}</span>
                                 </button>
                                 <hr className="my-1 border-border" />
-                                <div className="px-3 py-1.5 text-[10px] text-center text-muted-foreground font-mono">
-                                    v0.2.11
+                                <div className="px-3 py-1.5 text-[10px] text-center text-muted-foreground font-mono" style={{ fontStyle: 'normal' }}>
+                                    v0.2.13
                                 </div>
                             </div>
                         )}

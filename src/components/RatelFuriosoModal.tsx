@@ -30,7 +30,7 @@ export function RatelFuriosoModal({
                     <div className="p-2 rounded-sm bg-destructive/10">
                         <Zap className="h-6 w-6 text-destructive" />
                     </div>
-                    <h2 className="text-xl font-bold">Ratel Furioso 🦡</h2>
+                    <h2 className="text-xl font-bold">Apagar Tudo</h2>
                 </div>
 
                 <div className="space-y-4">

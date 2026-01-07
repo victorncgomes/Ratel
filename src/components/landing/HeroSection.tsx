@@ -98,14 +98,14 @@ export function HeroSection({ onLogin, onShowTerms, onShowPrivacy }: HeroSection
                                 className="flex items-center gap-3 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer outline-none"
                                 onClick={() => setLanguage('pt')}
                             >
-                                <img src="/images/flags/br.svg" alt="Portuguese" className="w-5 h-auto rounded-sm shadow-sm" />
+                                <img src="/images/flags/br.svg" alt="Portuguese" width="20" height="14" className="w-5 h-auto rounded-sm shadow-sm" />
                                 Português
                             </DropdownMenu.Item>
                             <DropdownMenu.Item
                                 className="flex items-center gap-3 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-md cursor-pointer outline-none"
                                 onClick={() => setLanguage('en')}
                             >
-                                <img src="/images/flags/us.svg" alt="English" className="w-5 h-auto rounded-sm shadow-sm" />
+                                <img src="/images/flags/us.svg" alt="English" width="20" height="14" className="w-5 h-auto rounded-sm shadow-sm" />
                                 English
                             </DropdownMenu.Item>
                             <DropdownMenu.Item
@@ -126,24 +126,30 @@ export function HeroSection({ onLogin, onShowTerms, onShowPrivacy }: HeroSection
 
                     {/* Left Side - Login (2/5) */}
                     <div className="lg:col-span-2 flex flex-col items-center lg:items-start text-center lg:text-left w-full">
-                        {/* Logo */}
-                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-8">
-                            <img
-                                src="/ratel.svg?v=3"
-                                alt="Ratel Logo"
-                                className="h-[116px] w-[116px] sm:h-[120px] sm:w-[120px] object-contain drop-shadow-lg translate-y-[20px] sm:translate-y-0"
-                            />
-                            <img
-                                src="/name-ratel.svg?v=3"
-                                alt="Ratel"
-                                className="h-16 sm:h-[84px] object-contain mt-2 sm:mt-0"
-                            />
+                        {/* Logo + Tagline - Centered Together */}
+                        <div className="flex flex-col items-center justify-center lg:items-start gap-2 mb-6">
+                            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                                <img
+                                    src="/ratel.svg?v=3"
+                                    alt="Ratel Logo"
+                                    width="120"
+                                    height="120"
+                                    fetchPriority="high"
+                                    className="h-[116px] w-[116px] sm:h-[120px] sm:w-[120px] object-contain drop-shadow-lg translate-y-[20px] sm:translate-y-0"
+                                />
+                                <img
+                                    src="/name-ratel.svg?v=3"
+                                    alt="Ratel"
+                                    width="200"
+                                    height="84"
+                                    className="h-16 sm:h-[84px] object-contain mt-2 sm:mt-0"
+                                />
+                            </div>
+                            {/* Tagline - Closer and centered with logo */}
+                            <p className="text-xl text-slate-600 max-w-sm text-center lg:text-left mt-2">
+                                {t('landing.hero.title')} {t('landing.hero.subtitle')}
+                            </p>
                         </div>
-
-                        {/* Tagline */}
-                        <p className="text-xl text-slate-600 mb-8 max-w-sm mx-auto lg:mx-0">
-                            {t('landing.hero.title')} {t('landing.hero.subtitle')}
-                        </p>
 
                         {/* Login Card - Theme-aware */}
                         <div className={`w-full max-w-[90vw] sm:max-w-sm p-4 sm:p-6 mx-auto lg:mx-0 ${isNeobrutalist

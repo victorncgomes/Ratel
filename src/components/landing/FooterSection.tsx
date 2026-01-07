@@ -14,6 +14,8 @@ export function FooterSection() {
                 <img
                     src="/images/bottom_image_integrated.png?v=2"
                     alt="Ratel observando o horizonte"
+                    width="1920"
+                    height="600"
                     className="w-full block"
                     style={{
                         width: '100%',
@@ -35,11 +37,30 @@ export function FooterSection() {
                     <img
                         src="/ratel-logo-negative.svg?v=2"
                         alt="Ratel"
+                        width="100"
+                        height="32"
                         className="h-8 opacity-60 grayscale hover:opacity-100 transition-opacity duration-300"
                     />
-                    <p className="text-gray-500 text-sm text-center sm:text-right font-medium">
-                        © {new Date().getFullYear()} Ratel. Developed by Paranaue.
-                    </p>
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                        <div className="flex items-center gap-4 text-sm">
+                            <a
+                                href="/terms"
+                                className="text-gray-400 hover:text-white transition-colors duration-200"
+                            >
+                                Termos de Serviço
+                            </a>
+                            <span className="text-gray-600">|</span>
+                            <a
+                                href="/privacy"
+                                className="text-gray-400 hover:text-white transition-colors duration-200"
+                            >
+                                Privacidade
+                            </a>
+                        </div>
+                        <p className="text-gray-500 text-sm text-center sm:text-right font-medium">
+                            © {new Date().getFullYear()} Ratel. Developed by Paranaue.
+                        </p>
+                    </div>
                 </div>
             </div>
         </footer>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Mail, Trash2, Shield, Zap, ArrowRight, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
+import { Mail, Trash2, Shield, Zap, ArrowRight, Loader2, RefreshCw, AlertCircle, Megaphone } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import BadgeGallery from '../gamification/BadgeGallery';
@@ -52,8 +52,8 @@ export function DashboardPage({ onNavigate }: DashboardProps) {
             action: 'cleanup'
         },
         {
-            title: t('dashboard.quick_actions.ratel_furious.title'),
-            description: t('dashboard.quick_actions.ratel_furious.desc'),
+            title: t('dashboard.quick_actions.delete_all.title'),
+            description: t('dashboard.quick_actions.delete_all.desc'),
             icon: Zap,
             color: 'bg-red-500',
             count: null,
@@ -77,7 +77,7 @@ export function DashboardPage({ onNavigate }: DashboardProps) {
                     <div className="flex items-center gap-2">
                         <AlertCircle className="h-5 w-5 text-yellow-600" />
                         <div>
-                            <p className="font-medium text-yellow-900 dark:text-yellow-100">Modo Demonstração</p>
+                            <p className="font-medium text-yellow-900 dark:text-yellow-100">{t('dashboard.demo_mode')}</p>
                             <p className="text-sm text-yellow-700 dark:text-yellow-300">
                                 Dados simulados. Faça login para ver seus dados reais.
                             </p>
@@ -92,11 +92,16 @@ export function DashboardPage({ onNavigate }: DashboardProps) {
 
             {/* Main Stats - Glassmorphism */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card variant="glass" hover="lift" className="border-blue-500/20">
+                <Card
+                    variant="glass"
+                    hover="lift"
+                    className="border-blue-500/20 cursor-pointer"
+                    onClick={() => onNavigate && onNavigate('inbox')}
+                >
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-muted-foreground">Na Caixa de Entrada</p>
+                                <p className="text-sm text-muted-foreground">{t('dashboard.in_inbox')}</p>
                                 <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
                                     {loading ? <Loader2 className="h-8 w-8 animate-spin" /> : inboxCount}
                                 </p>
@@ -108,7 +113,12 @@ export function DashboardPage({ onNavigate }: DashboardProps) {
                     </CardContent>
                 </Card>
 
-                <Card variant="glass" hover="lift" className="border-orange-500/20">
+                <Card
+                    variant="glass"
+                    hover="lift"
+                    className="border-orange-500/20 cursor-pointer"
+                    onClick={() => onNavigate && onNavigate('unread')}
+                >
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -124,7 +134,12 @@ export function DashboardPage({ onNavigate }: DashboardProps) {
                     </CardContent>
                 </Card>
 
-                <Card variant="glass" hover="lift" className="border-red-500/20">
+                <Card
+                    variant="glass"
+                    hover="lift"
+                    className="border-red-500/20 cursor-pointer"
+                    onClick={() => onNavigate && onNavigate('spam')}
+                >
                     <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -134,7 +149,7 @@ export function DashboardPage({ onNavigate }: DashboardProps) {
                                 </p>
                             </div>
                             <div className="p-3 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl shadow-lg">
-                                <Trash2 className="h-6 w-6 text-white" />
+                                <Megaphone className="h-6 w-6 text-white" />
                             </div>
                         </div>
                     </CardContent>
@@ -151,7 +166,7 @@ export function DashboardPage({ onNavigate }: DashboardProps) {
                             if (action.action === 'ratel') {
                                 // Navigate to subscriptions for Ratel Furioso
                                 if (onNavigate) onNavigate('subscriptions');
-                                showToast('Ratel Furioso ativado! Navegando para inscrições...', 'success');
+                                showToast(t('dashboard.quick_actions.delete_all.title') + ' ativado! Navegando para inscrições...', 'success');
                             } else if (action.action === 'shield') {
                                 if (onNavigate) onNavigate('rules');
                                 showToast('Abrindo Shield...', 'success');
@@ -194,13 +209,13 @@ export function DashboardPage({ onNavigate }: DashboardProps) {
             {/* Inbox Health - Glassmorphism Progress */}
             <Card variant="glass">
                 <CardHeader>
-                    <CardTitle className="gradient-text">Saúde da Caixa de Entrada</CardTitle>
+                    <CardTitle className="gradient-text">{t('dashboard.inbox_health')}</CardTitle>
                     <CardDescription>Quanto mais limpa, melhor sua produtividade</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
                         <div className="flex items-center justify-between text-sm">
-                            <span>Progresso para Inbox Zero</span>
+                            <span>{t('dashboard.inbox_zero_progress')}</span>
                             <span className="font-bold text-green-500">
                                 {Math.round((1 - unreadCount / Math.max(inboxCount, 1)) * 100)}%
                             </span>
@@ -224,7 +239,7 @@ export function DashboardPage({ onNavigate }: DashboardProps) {
             {/* Achievements Section */}
             <Card className="mt-8 border-2 border-black shadow-[4px_4px_0_0_#000]">
                 <CardHeader>
-                    <CardTitle className="text-xl font-bold">{t('common.achievements')}</CardTitle>
+                    <CardTitle className="text-xl font-bold">{t('dashboard.your_badges')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <BadgeGallery />

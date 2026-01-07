@@ -1,16 +1,16 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { useEmails } from '../../hooks/useEmails';
 import { PageHeader } from '../ui/PageHeader';
 import {
-    Loader2, AlertCircle, Search, Mail, HardDrive, Calendar, Tag, Newspaper, User
+    Loader2, AlertCircle, Search, Mail, HardDrive, Calendar, Tag, Newspaper, User, Megaphone
 } from 'lucide-react';
 import { GroupsColumn, GroupedItem } from '../GroupsColumn';
 import { BulkActionsToolbar } from '../BulkActionsToolbar';
 import { useStyleTheme } from '../../contexts/StyleThemeContext';
+import { VirtualizedEmailList } from '../VirtualizedEmailList';
 
 interface Props {
-    viewType: 'by-sender' | 'by-size' | 'by-date' | 'newsletters' | 'promotions';
+    viewType: 'by-sender' | 'by-size' | 'by-date' | 'newsletters' | 'promotions' | 'inbox' | 'unread' | 'spam';
 }
 
 export function MailListView({ viewType }: Props) {
@@ -20,6 +20,13 @@ export function MailListView({ viewType }: Props) {
     const [selectedGroup, setSelectedGroup] = useState<GroupedItem | null>(null);
     const [selectedEmailIds, setSelectedEmailIds] = useState<Set<string>>(new Set());
     const [actionLoading, setActionLoading] = useState(false);
+
+    // Ensure emails are loaded when this component mounts
+    useEffect(() => {
+        if (emails.length === 0) {
+            fetchEmails(500);
+        }
+    }, [fetchEmails, emails.length]);
 
     const getHeaderInfo = () => {
         switch (viewType) {
@@ -36,6 +43,27 @@ export function MailListView({ viewType }: Props) {
                 icon: Tag,
                 color: 'text-yellow-600',
                 bgColor: 'bg-yellow-100'
+            };
+            case 'inbox': return {
+                title: 'Caixa de Entrada',
+                description: 'Todos os emails da sua caixa de entrada principal.',
+                icon: Mail,
+                color: 'text-blue-600',
+                bgColor: 'bg-blue-100'
+            };
+            case 'unread': return {
+                title: 'Não Lidos',
+                description: 'Emails que você ainda não abriu.',
+                icon: AlertCircle,
+                color: 'text-orange-600',
+                bgColor: 'bg-orange-100'
+            };
+            case 'spam': return {
+                title: 'Spam',
+                description: 'Emails indesejados e potenciais ameaças.',
+                icon: Megaphone,
+                color: 'text-red-600',
+                bgColor: 'bg-red-100'
             };
             case 'by-sender': return {
                 title: 'Por Remetente',
@@ -70,21 +98,15 @@ export function MailListView({ viewType }: Props) {
 
     const headerInfo = getHeaderInfo();
 
-    useEffect(() => {
-        fetchEmails(500);
-    }, [fetchEmails]);
-
-    // Reset selection when view changes
-    useEffect(() => {
-        setSelectedGroup(null);
-        setSelectedEmailIds(new Set());
-    }, [viewType]);
+    // ... (existing useEffects)
 
     // Group emails based on viewType
     const groupedItems = useMemo((): GroupedItem[] => {
         const groups = new Map<string, { name: string; email?: string; count: number; isMailingList: boolean }>();
 
         let filtered = [...emails];
+
+        // Initial Filtering Logic
         if (viewType === 'newsletters') {
             filtered = filtered.filter(e => e.hasUnsubscribe);
         } else if (viewType === 'promotions') {
@@ -94,6 +116,13 @@ export function MailListView({ viewType }: Props) {
                 e.subject?.toLowerCase().includes('off') ||
                 (e as any).category === 'promotions'
             );
+        } else if (viewType === 'inbox') {
+            // Basic Inbox Filter (usually default, but ensures no spam/trash)
+            filtered = filtered.filter(e => !(e as any).labelIds?.includes('SPAM') && !(e as any).labelIds?.includes('TRASH'));
+        } else if (viewType === 'unread') {
+            filtered = filtered.filter(e => (e as any).labelIds?.includes('UNREAD'));
+        } else if (viewType === 'spam') {
+            filtered = filtered.filter(e => (e as any).labelIds?.includes('SPAM'));
         }
 
         filtered.forEach(email => {
@@ -102,48 +131,43 @@ export function MailListView({ viewType }: Props) {
             let emailAddr: string | undefined;
 
             if (viewType === 'by-sender' || viewType === 'newsletters' || viewType === 'promotions') {
-                key = email.from;
-                name = (email as any).fromName || email.from.split('@')[0];
+                key = email.from || 'unknown';
+                name = (email as any).fromName || (email.from ? email.from.split('@')[0] : 'Desconhecido');
                 emailAddr = email.from;
-            } else if (viewType === 'by-date') {
-                const emailDate = new Date(email.date);
-                const now = new Date();
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
-
-                if (emailDate >= yesterday) {
-                    key = 'yesterday';
-                    name = 'Ontem';
-                } else if (emailDate >= weekAgo) {
-                    key = 'this-week';
-                    name = 'Esta semana';
-                } else if (emailDate >= twoWeeksAgo) {
-                    key = 'last-week';
-                    name = 'Semana passada';
-                } else {
-                    // Group by month
-                    const monthKey = `${emailDate.getFullYear()}-${emailDate.getMonth()}`;
-                    key = monthKey;
-                    name = emailDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-                    name = name.charAt(0).toUpperCase() + name.slice(1);
-                }
             } else if (viewType === 'by-size') {
                 const size = (email as any).size || 0;
-                if (size > 5 * 1024 * 1024) {
-                    key = 'large';
-                    name = 'Maiores que 5 MB';
-                } else if (size > 1024 * 1024) {
-                    key = 'medium';
-                    name = 'Maiores que 1 MB';
-                } else {
-                    key = 'small';
-                    name = 'Pequenos ( < 1 MB )';
-                }
+                if (size > 5 * 1024 * 1024) { key = 'large'; name = 'Maiores que 5 MB'; }
+                else if (size > 1024 * 1024) { key = 'medium'; name = 'Maiores que 1 MB'; }
+                else { key = 'small'; name = 'Pequenos ( < 1 MB )'; }
             } else {
-                key = 'all';
-                name = 'Todos';
+                // Default grouping for Inbox, Unread, Spam, and By-Date is DATE
+                const emailDate = new Date(email.date);
+                if (isNaN(emailDate.getTime())) {
+                    key = 'unknown';
+                    name = 'Data Desconhecida';
+                } else {
+                    const now = new Date();
+                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+                    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+                    if (emailDate >= yesterday) {
+                        key = 'yesterday';
+                        name = 'Ontem';
+                    } else if (emailDate >= weekAgo) {
+                        key = 'this-week';
+                        name = 'Esta semana';
+                    } else if (emailDate >= twoWeeksAgo) {
+                        key = 'last-week';
+                        name = 'Semana passada';
+                    } else {
+                        const monthKey = `${emailDate.getFullYear()}-${emailDate.getMonth()}`;
+                        key = monthKey;
+                        name = emailDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+                        name = name.charAt(0).toUpperCase() + name.slice(1);
+                    }
+                }
             }
 
             const existing = groups.get(key);
@@ -154,18 +178,28 @@ export function MailListView({ viewType }: Props) {
             }
         });
 
-        // Search filtering within groups
-        if (searchTerm) {
-            // Implementation detail: Filter logic if needed
-        }
-
         return Array.from(groups.entries()).map(([id, data]) => ({
             id,
             ...data
-        })).sort((a, b) => b.count - a.count);
+        })).sort((a, b) => {
+            // Special sorting for Date groups
+            if (viewType === 'by-date' || viewType === 'inbox' || viewType === 'unread' || viewType === 'spam') {
+                const order = ['yesterday', 'this-week', 'last-week'];
+                const indexA = order.indexOf(a.id);
+                const indexB = order.indexOf(b.id);
+
+                if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                if (indexA !== -1) return -1;
+                if (indexB !== -1) return 1;
+
+                return b.id.localeCompare(a.id);
+            }
+            return b.count - a.count;
+        });
 
     }, [emails, viewType, searchTerm]);
 
+    // Define stats before returns
     const stats = [
         {
             label: 'Grupos Encontrados',
@@ -232,9 +266,10 @@ export function MailListView({ viewType }: Props) {
 
                     <div className="flex-1 overflow-y-auto p-2">
                         <GroupsColumn
-                            groups={groupedItems}
+                            items={groupedItems}
                             selectedId={selectedGroup?.id || null}
                             onSelect={setSelectedGroup}
+                            viewType={viewType}
                         />
                     </div>
                 </div>
@@ -246,19 +281,75 @@ export function MailListView({ viewType }: Props) {
                             {/* Using Bulk Actions as Header for Group */}
                             <BulkActionsToolbar
                                 selectedCount={selectedEmailIds.size}
-                                totalCount={selectedGroup.count} // Mocked, needs real emails from group
                                 onSelectAll={() => { }}
                                 onDeselectAll={() => setSelectedEmailIds(new Set())}
-                                onAction={async (action) => console.log(action)}
                                 loading={actionLoading}
+                                onDelete={async () => {
+                                    if (trashEmails) {
+                                        setActionLoading(true);
+                                        await trashEmails(Array.from(selectedEmailIds));
+                                        setActionLoading(false);
+                                        setSelectedEmailIds(new Set());
+                                    }
+                                }}
+                                onBlock={() => console.log('Bloquear')}
+                                onSpam={() => console.log('Spam')}
                             />
 
-                            {/* Placeholder for Emails List inside group */}
-                            <div className="flex-1 p-8 flex flex-col items-center justify-center text-center text-muted-foreground">
-                                <Mail className="h-16 w-16 mb-4 opacity-20" />
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">{selectedGroup.name}</h3>
-                                <p>{selectedGroup.count} emails neste grupo</p>
-                                <p className="text-sm mt-4 text-gray-400">(Listagem detalhada de emails seria implementada aqui)</p>
+                            {/* Emails List inside group */}
+                            <div className="flex-1 overflow-hidden">
+                                <VirtualizedEmailList
+                                    emails={emails.filter(e => {
+                                        // Filter logic based on ViewType and Selected Group
+                                        if (!selectedGroup) return false;
+
+                                        if (viewType === 'by-sender' || viewType === 'newsletters' || viewType === 'promotions') {
+                                            return e.from === selectedGroup.id;
+                                        }
+                                        if (viewType === 'by-date') {
+                                            const emailDate = new Date(e.date);
+                                            const now = new Date();
+                                            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+                                            if (selectedGroup.id === 'yesterday') {
+                                                const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+                                                return emailDate >= yesterday && emailDate < today;
+                                            }
+                                            if (selectedGroup.id === 'this-week') {
+                                                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                                return emailDate >= weekAgo && emailDate < today;
+                                            }
+                                            if (selectedGroup.id.includes('-')) {
+                                                // Month check
+                                                const [year, month] = selectedGroup.id.split('-').map(Number);
+                                                return emailDate.getFullYear() === year && emailDate.getMonth() === month;
+                                            }
+                                            return true;
+                                        }
+                                        if (viewType === 'by-size') {
+                                            const size = (e as any).size || 0;
+                                            if (selectedGroup.id === 'large') return size > 5 * 1024 * 1024;
+                                            if (selectedGroup.id === 'medium') return size > 1024 * 1024 && size <= 5 * 1024 * 1024;
+                                            if (selectedGroup.id === 'small') return size <= 1024 * 1024;
+                                        }
+                                        return true;
+                                    })}
+                                    selectedIds={selectedEmailIds}
+                                    onToggleSelect={(id) => {
+                                        const newSelected = new Set(selectedEmailIds);
+                                        if (newSelected.has(id)) {
+                                            newSelected.delete(id);
+                                        } else {
+                                            newSelected.add(id);
+                                        }
+                                        setSelectedEmailIds(newSelected);
+                                    }}
+                                    onSelectAll={() => {
+                                        // Implement when needed
+                                    }}
+                                    allSelected={false}
+                                    loading={loading}
+                                />
                             </div>
                         </div>
                     ) : (

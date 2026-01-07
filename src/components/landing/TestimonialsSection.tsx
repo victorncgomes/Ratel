@@ -72,7 +72,7 @@ export function TestimonialsSection() {
     };
 
     return (
-        <section className={`py-24 lg:py-32 ${isNeobrutalist ? 'bg-[#FFDE59]' : 'bg-gradient-to-b from-white to-slate-50'}`}>
+        <section className={`py-24 lg:py-32 ${isNeobrutalist ? 'bg-[#fbfbfb]' : 'bg-gradient-to-b from-white to-slate-50'}`}>
             <div className="max-w-7xl mx-auto px-6">
                 {/* Header */}
                 <div className="text-center mb-16">
@@ -89,6 +89,7 @@ export function TestimonialsSection() {
                     {/* Navigation Buttons */}
                     <button
                         onClick={prevTestimonial}
+                        aria-label="Testemunho anterior"
                         className={`absolute -left-4 lg:-left-12 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${isNeobrutalist
                             ? 'bg-white border-2 border-black shadow-[4px_4px_0_0_#000] text-black hover:shadow-[6px_6px_0_0_#000]'
                             : 'bg-white shadow-lg text-slate-600 hover:text-slate-900 hover:shadow-xl'
@@ -98,6 +99,7 @@ export function TestimonialsSection() {
                     </button>
                     <button
                         onClick={nextTestimonial}
+                        aria-label="Próximo testemunho"
                         className={`absolute -right-4 lg:-right-12 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${isNeobrutalist
                             ? 'bg-white border-2 border-black shadow-[4px_4px_0_0_#000] text-black hover:shadow-[6px_6px_0_0_#000]'
                             : 'bg-white shadow-lg text-slate-600 hover:text-slate-900 hover:shadow-xl'

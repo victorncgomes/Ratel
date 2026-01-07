@@ -240,7 +240,7 @@ app.get('/api/messages', requireAuth, async (req, res) => {
 app.get('/api/emails', requireAuth, async (req, res) => {
     try {
         const { accessToken, provider } = req.user;
-        const maxResults = parseInt(req.query.limit) || 500;
+        const maxResults = parseInt(req.query.limit) || 100; // Reduzido para carga mais rápida
         const offset = parseInt(req.query.offset) || 0;
 
         let emails;
@@ -733,6 +733,30 @@ app.get('/api/health', (req, res) => {
         timestamp: new Date().toISOString(),
         version: '0.2.6'
     });
+});
+
+// ========================================
+// AI ANALYSIS ROUTES
+// ========================================
+app.post('/api/ai/analyze', requireAuth, async (req, res) => {
+    try {
+        const { emails } = req.body;
+        if (!emails || !Array.isArray(emails)) {
+            return res.status(400).json({ error: 'Lista de emails inválida' });
+        }
+
+        console.log(`🤖 Analisando ${emails.length} emails com Gemini...`);
+        const results = await classifyEmails(emails); // Uses the imported service
+        const stats = generateClassificationStats(results);
+
+        res.json({
+            analyzed: results,
+            stats: stats
+        });
+    } catch (error) {
+        console.error('Erro na análise de IA:', error);
+        res.status(500).json({ error: 'Falha ao processar com IA' });
+    }
 });
 
 // ========================================

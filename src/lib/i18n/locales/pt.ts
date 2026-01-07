@@ -27,8 +27,8 @@ export const pt = {
     },
     landing: {
         hero: {
-            title: 'Um organizador de e-mails inteligente, rápido e metódico.',
-            subtitle: 'Mas também furioso e destemido.',
+            title: 'Um organizador furioso.',
+            subtitle: '',
             login_google: 'Continuar com Google',
             login_microsoft: 'Continuar com Hotmail',
             demo_button: 'Experimentar Demo Grátis',
@@ -59,7 +59,7 @@ export const pt = {
             card_3_point_1: 'Análise de armazenamento',
             card_3_point_2: 'Limpeza em massa',
             card_3_point_3: 'Filtros avançados',
-            card_4_title: 'Não Me Perturbe Mais!',
+            card_4_title: 'Apagar Tudo',
             card_4_desc: 'Chega de procurar links escondidos. Quando a bagunça está grande demais, use o cancelamento em massa! Cancele dezenas de inscrições de uma só vez. Recupere o controle.',
             card_4_point_1: 'Unsubscribe em massa',
             card_4_point_2: 'Detecção de newsletters',
@@ -99,6 +99,10 @@ export const pt = {
         activity: 'Atividade',
     },
     dashboard: {
+        demo_mode: 'Modo Demonstração',
+        in_inbox: 'na caixa de entrada',
+        inbox_zero_progress: 'Progresso para Inbox Zero',
+        your_badges: 'Seus Badges',
         received_emails: 'Emails Recebidos',
         reading_time: 'Tempo de Leitura',
         response_rate: 'Taxa de Resposta',
@@ -138,7 +142,7 @@ export const pt = {
         quick_actions: {
             email_lists: { title: 'Listas de Email', desc: 'Gerencie suas inscrições' },
             quick_cleanup: { title: 'Limpeza Rápida', desc: 'Libere espaço na caixa' },
-            ratel_furious: { title: 'Não Me Perturbe Mais!', desc: 'Cancelar tudo de uma vez' },
+            delete_all: { title: 'Apagar Tudo', desc: 'Cancelar inscrições em massa' },
             shield: { title: 'Shield', desc: 'Remetentes bloqueados' },
         }
     },
@@ -248,13 +252,33 @@ export const pt = {
         ],
         releases: [
             {
-                version: '0.3.0', date: '04/01/2026', type: 'major', changes: [
-                    '🦡 NÃO ME PERTURBE MAIS!: Cancelamento de múltiplas inscrições de uma só vez',
-                    '🧹 Limpeza Funcional: Análise real da caixa via Gmail/Outlook API',
-                    '🎭 Modo Demo: Versão funcional com dados mockados sem necessidade de login',
-                    '🔧 Correção de Etiquetas: Modo demo funcionando corretamente',
-                    '📊 Estatísticas avançadas: Contagens e tamanhos reais por categoria',
-                    '🗑️ Ações de limpeza: Esvaziar spam e lixeira com um clique'
+                version: '0.2.13', date: '07/01/2026', type: 'minor', changes: [
+                    '🛡️ Subscriptions V2: Layout Master-Detail com busca e ordenação',
+                    '🔒 Protection Actions: Ações de Bloquear, Remover de Seguros diretamente no hub',
+                    '⭐ Importantes Flow: Fluxo de triagem com ações Manter/Excluir',
+                    '🔧 Code Hardening: Correções de sintaxe e estabilidade'
+                ]
+            },
+            {
+                version: '0.2.12', date: '07/01/2026', type: 'minor', changes: [
+                    '🧠 Importantes View: Classificação de IA com Score 0-100 e justificativa',
+                    '🛡️ Protection Hub: Central unificada para emails Bloqueados, Seguros e Importantes',
+                    '💅 UX Refinements: Modal de cancelamento estilo Gmail',
+                    '📋 Listas Avançadas: Layout split-view para newsletters'
+                ]
+            },
+            {
+                version: '0.2.11', date: '06/01/2026', type: 'minor', changes: [
+                    '🚑 Processing Screen: Tela de carregamento com frases do The Sims',
+                    '📊 Carregamento em Lotes: Chunks de 500 para caixas 10k+',
+                    '🎨 Ícones Semânticos: User, HardDrive, Newspaper na sidebar',
+                    '💾 UI Neobrutalista: Headers e estilos nas views de listagem'
+                ]
+            },
+            {
+                version: '0.2.10', date: '06/01/2026', type: 'minor', changes: [
+                    '🎨 Landing Page Dual Theme: Glassmorphism e Neobrutalism completos',
+                    '🌍 Integração de Tema Global: Seletor persiste em toda aplicação'
                 ]
             },
             {
@@ -352,13 +376,43 @@ export const pt = {
                     'Identidade visual e paleta de cores aprovadas',
                     'Manifesto: "O que não serve, sai. Sem negociação."'
                 ]
+            },
+            {
+                version: '0.0.4', date: '29/12/2025', type: 'patch', changes: [
+                    '📱 Layout responsivo para dispositivos móveis',
+                    'Menu hambúrguer para navegação mobile',
+                    'Ajustes de tipografia para telas pequenas'
+                ]
+            },
+            {
+                version: '0.0.3', date: '28/12/2025', type: 'patch', changes: [
+                    '🎨 Componentes básicos de UI criados',
+                    'Sistema de cores e variáveis CSS',
+                    'Primeiros protótipos de tela'
+                ]
+            },
+            {
+                version: '0.0.2', date: '27/12/2025', type: 'patch', changes: [
+                    '⚙️ Configuração do ambiente de desenvolvimento',
+                    'ESLint e Prettier configurados',
+                    'Estrutura de pastas definida'
+                ]
+            },
+            {
+                version: '0.0.1', date: '26/12/2025', type: 'patch', changes: [
+                    '🚀 Criação do projeto',
+                    'Inicialização com Vite + React + TypeScript',
+                    'Primeiro commit'
+                ]
             }
         ]
     },
     sidebar: {
+        about: 'Sobre',
+        importantes: 'Importantes',
         main_actions: 'Ações Principais',
-        email_lists: 'Listas de Email',
-        quick_cleanup: 'Limpeza Rápida',
+        email_lists: 'Listas',
+        quick_cleanup: 'Limpeza',
         smart_views: 'Visualizações',
         by_sender: 'Remetente',
         by_size: 'Tamanho',
@@ -366,7 +420,31 @@ export const pt = {
         newsletters: 'Newsletters',
         promotions: 'Promoções',
         shield: 'Bloqueados',
-        rollup: 'Agrupados',
+        rollup: 'Roll-Up',
         protection: 'Proteção'
+    },
+    protection_page: {
+        title: 'Proteção & Segurança',
+        description: 'Gerencie bloqueios, remetentes seguros e a inteligência do Ratel na sua caixa de entrada.',
+        threats_blocked: 'Ameaças Bloqueadas',
+        safe_senders: 'Remetentes Seguros',
+        marked_important: 'Marcados Importante',
+        tab_blocked: 'Bloqueados (Shield)',
+        tab_safe: 'Remetentes Seguros',
+        tab_important: 'Importantes (AI)',
+        no_safe_sender: 'Nenhum remetente seguro',
+        no_safe_sender_desc: 'Marque emails como seguros para que nunca caiam no spam ou shield.',
+        no_important_email: 'Nenhum email marcado como importante',
+        no_important_email_desc: 'A IA classifica seus emails com um score. Você decide quais são importantes.',
+        safe: 'Seguro',
+        remove: 'Remover',
+        block: 'Bloquear',
+        not_important: 'Não é Importante',
+        rule_removed: 'Regra de bloqueio removida',
+        error_removing: 'Erro ao remover regra',
+        blocked_added: 'bloqueado e adicionado ao Shield',
+        error_blocking: 'Erro ao bloquear remetente',
+        removed_from_safe: 'Removido dos remetentes seguros',
+        marked_not_important: 'Marcado como não importante'
     }
 };

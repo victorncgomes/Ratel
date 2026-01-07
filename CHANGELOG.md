@@ -2,7 +2,38 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
-## [0.2.11] - 2026-01-06 (Atual)
+## [0.2.15] - 2026-01-07
+### 📦 Roll-Up & Correções
+- **Roll-Up Completo**: Painel de configurações com frequência (Diário/Semanal/Mensal) e horário preferido.
+- **Notificações Roll-Up**: Preview de próxima notificação e persistência de preferências em localStorage.
+- **Menus Corrigidos**: Sidebar agora usa nomes curtos (Listas, Limpeza, Roll-Up) em todos idiomas.
+- **Changelog Completo**: Versões 0.0.1 a 0.0.4 adicionadas ao histórico.
+- **Mensagens IA Corrigidas**: Texto reflete que usuário decide quais emails são importantes.
+
+## [0.2.14] - 2026-01-07
+### 🌍 Internacionalização & UI
+- **Traduções Completas**: Menu sidebar, Dashboard e botão "Sobre" em PT/EN/ES.
+- **Renomeação "Ratel Furioso"**: Substituído por "Apagar Tudo" em toda aplicação.
+- **BadgeGallery Dual Theme**: Suporte completo a Glassmorphism e Neobrutalism.
+- **Densidade Visual**: CSS implementado para modos Compacta/Confortável/Espaçosa.
+- **Changelog Sincronizado**: Central de Ajuda agora exibe versões 0.2.10-0.2.13.
+- **Versão Atualizada**: Exibição correta de v0.2.13 no menu do usuário.
+
+## [0.2.13] - 2026-01-07
+### 🛡️ Proteção & Fluxo de Trabalho
+- **Subscriptions V2**: Refatoração completa para layout Master-Detail com busca instantânea e ordenação (Volume, Recente, Alfabético).
+- **Protection Actions**: Implementadas ações de 'Bloquear', 'Remover de Seguros' e 'Não Importante' diretamente no hub de proteção.
+- **Importantes Flow**: Fluxo de triagem na visualização de prioridades com ações 'Manter' (Seguro) e 'Excluir' (Lixo).
+- **Code Hardening**: Correções de sintaxe e melhorias na estabilidade dos hooks de dados (`useEmails`).
+
+## [0.2.12] - 2026-01-07
+### 🧠 Inteligência & Proteção
+- **Importantes View**: Nova visualização com classificação de IA (Score 0-100) e justificativa automática.
+- **Protection Hub**: Central unificada para emails Bloqueados, Seguros e Importantes.
+- **UX Refinements**: Modal de cancelamento de inscrição (estilo Gmail) e renomeação de ações críticas ("APAGAR TUDO").
+- **Listas Avançadas**: Layout split-view para newsletters e filtros de ordenação (Data, Tamanho, Qtd).
+
+## [0.2.11] - 2026-01-06
 ### 🚑 Correções Críticas e UI
 - **Processing Screen Restaurada**: Reativada a tela de carregamento "Ratel Furioso" com frases do "The Sims" e vinculada ao carregamento progressivo real de emails.
 - **Correção de Carregamento**: Implementado carregamento em lotes (chunks de 500) para evitar travamento da interface em caixas de entrada grandes (10k+).

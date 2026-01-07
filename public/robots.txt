@@ -1,0 +1,10 @@
+# Ratel - Robots.txt
+# https://ratel.paranaue.dev
+
+User-agent: *
+Allow: /
+Allow: /terms
+Allow: /privacy
+
+# Sitemap
+Sitemap: https://ratel.paranaue.dev/sitemap.xml

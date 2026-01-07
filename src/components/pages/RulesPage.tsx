@@ -1,6 +1,6 @@
-
+// Imports
 import { useEffect } from 'react';
-import { useRules } from '../../hooks/useRules';
+import { useRules, Rule } from '../../hooks/useRules';
 import { PageHeader } from '../ui/PageHeader';
 import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -8,6 +8,71 @@ import { Badge } from '../ui/badge';
 import { Shield, Package, Trash2, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { showToast } from '../../lib/toast';
 import { useStyleTheme } from '../../contexts/StyleThemeContext';
+
+interface RulesListProps {
+    type: 'shield' | 'rollup';
+    rules: Rule[];
+    onRemove: (sender: string) => void;
+    isNeobrutalist: boolean;
+}
+
+export function RulesList({ type, rules, onRemove, isNeobrutalist }: RulesListProps) {
+    if (rules.length === 0) {
+        return (
+            <Card className="border-dashed flex flex-col items-center justify-center py-12 text-center">
+                <div className="p-4 bg-secondary rounded-full mb-4">
+                    {type === 'shield' ? <Shield className="h-8 w-8 text-muted-foreground" /> : <Package className="h-8 w-8 text-muted-foreground" />}
+                </div>
+                <h3 className="font-semibold text-xl">Nenhuma regra encontrada</h3>
+                <p className="text-muted-foreground max-w-sm mx-auto mt-2">
+                    Você ainda não adicionou nenhum remetente ao {type === 'shield' ? 'Shield' : 'Rollup'}.
+                </p>
+            </Card>
+        );
+    }
+
+    return (
+        <div className="grid grid-cols-1 gap-4">
+            {rules.map((rule) => (
+                <Card key={rule.sender} className={`overflow-hidden transition-all ${isNeobrutalist
+                    ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none hover:shadow-[6px_6px_0_0_#000] hover:-translate-y-1'
+                    : 'hover:shadow-md'
+                    }`}>
+                    <CardContent className="p-4 flex items-center justify-between flex-wrap gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className={`p-2 rounded-lg ${isNeobrutalist
+                                ? 'border-2 border-black shadow-[2px_2px_0_0_#000] font-bold'
+                                : ''
+                                } ${type === 'shield' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
+                                {type === 'shield' ? <Shield className="h-5 w-5" /> : <Package className="h-5 w-5" />}
+                            </div>
+                            <div>
+                                <p className="font-semibold text-lg break-all">{rule.sender}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <Badge variant="secondary" className="text-xs">
+                                        Ativo
+                                    </Badge>
+                                    <span className="text-xs text-muted-foreground">
+                                        Adicionado em {new Date(rule.createdAt).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onRemove(rule.sender)}
+                            className={`text-destructive hover:text-white hover:bg-destructive ${isNeobrutalist ? 'font-bold uppercase border-2 border-transparent hover:border-black' : ''}`}
+                        >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Remover
+                        </Button>
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+    );
+}
 
 interface Props {
     type: 'shield' | 'rollup';
@@ -77,57 +142,12 @@ export function RulesPage({ type }: Props) {
             )}
 
             {/* Rules Grid */}
-            <div className="grid grid-cols-1 gap-4">
-                {filteredRules.length === 0 ? (
-                    <Card className="border-dashed flex flex-col items-center justify-center py-12 text-center">
-                        <div className="p-4 bg-secondary rounded-full mb-4">
-                            {type === 'shield' ? <Shield className="h-8 w-8 text-muted-foreground" /> : <Package className="h-8 w-8 text-muted-foreground" />}
-                        </div>
-                        <h3 className="font-semibold text-xl">Nenhuma regra encontrada</h3>
-                        <p className="text-muted-foreground max-w-sm mx-auto mt-2">
-                            Você ainda não adicionou nenhum remetente ao {type === 'shield' ? 'Shield' : 'Rollup'}.
-                        </p>
-                    </Card>
-                ) : (
-                    filteredRules.map((rule) => (
-                        <Card key={rule.sender} className={`overflow-hidden transition-all ${isNeobrutalist
-                            ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none hover:shadow-[6px_6px_0_0_#000] hover:-translate-y-1'
-                            : 'hover:shadow-md'
-                            }`}>
-                            <CardContent className="p-4 flex items-center justify-between flex-wrap gap-4">
-                                <div className="flex items-center gap-4">
-                                    <div className={`p-2 rounded-lg ${isNeobrutalist
-                                        ? 'border-2 border-black shadow-[2px_2px_0_0_#000] font-bold'
-                                        : ''
-                                        } ${type === 'shield' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
-                                        {type === 'shield' ? <Shield className="h-5 w-5" /> : <Package className="h-5 w-5" />}
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-lg break-all">{rule.sender}</p>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <Badge variant="secondary" className="text-xs">
-                                                Ativo
-                                            </Badge>
-                                            <span className="text-xs text-muted-foreground">
-                                                Adicionado em {new Date(rule.createdAt).toLocaleDateString()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleRemove(rule.sender)}
-                                    className={`text-destructive hover:text-white hover:bg-destructive ${isNeobrutalist ? 'font-bold uppercase border-2 border-transparent hover:border-black' : ''}`}
-                                >
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Remover
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    ))
-                )}
-            </div>
+            <RulesList
+                type={type}
+                rules={filteredRules}
+                onRemove={handleRemove}
+                isNeobrutalist={isNeobrutalist}
+            />
         </div>
     );
 }

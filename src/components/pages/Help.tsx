@@ -120,7 +120,7 @@ export function HelpPage() {
                     <div className="space-y-6 animate-in fade-in duration-300">
                         <div className="flex items-center justify-between">
                             <h3 className="text-xl font-semibold">{t('help_page.changelog')}</h3>
-                            <span className="text-sm text-muted-foreground">{t('help_page.version')}: 0.1.4</span>
+                            <span className="text-sm text-muted-foreground">{t('help_page.version')}: 0.2.13</span>
                         </div>
                         <div className="space-y-4">
                             {Array.isArray(releases) && releases.map((release) => (

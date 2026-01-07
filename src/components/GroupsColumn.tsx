@@ -14,7 +14,7 @@ interface GroupsColumnProps {
     items: GroupedItem[];
     selectedId: string | null;
     onSelect: (item: GroupedItem) => void;
-    viewType: 'by-sender' | 'by-size' | 'by-date' | 'newsletters' | 'promotions';
+    viewType: 'by-sender' | 'by-size' | 'by-date' | 'newsletters' | 'promotions' | 'inbox' | 'unread' | 'spam';
     loading?: boolean;
 }
 
@@ -27,6 +27,9 @@ export function GroupsColumn({ items = [], selectedId, onSelect, viewType, loadi
             case 'by-date': return Calendar;
             case 'newsletters': return Mail;
             case 'promotions': return ShoppingBag;
+            case 'inbox': return Mail;
+            case 'unread': return Mail;
+            case 'spam': return Tag;
             default: return Tag;
         }
     };

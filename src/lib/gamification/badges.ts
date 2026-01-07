@@ -101,7 +101,7 @@ export const BADGES: Badge[] = [
         id: "early_bird",
         name: { pt: "Madrugador", en: "Early Bird", es: "Madrugador" },
         description: { pt: "Organize emails antes das 07:00.", en: "Organize emails before 7 AM.", es: "Organiza emails antes de las 7 AM." },
-        tier: "bronze", icon: "🌅", requirement: { type: "special", value: 1 }, rewardsCredits: 50, isSecret: true,
+        tier: "bronze", icon: "🌅", requirement: { type: "special", value: 1 }, rewardsCredits: 50, isSecret: false,
     },
 
     // ========== SILVER (Intermediário) - 100-300 Créditos ==========

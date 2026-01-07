@@ -15,6 +15,12 @@ export interface MockEmail {
     hasUnsubscribe: boolean;
     unsubscribeLink?: string;
     category: 'work' | 'social' | 'promotions' | 'updates' | 'spam' | 'trash' | 'draft';
+    // AI Metrics (Novos Campos)
+    aiScore: number; // 0-100
+    aiReason: string;
+    isImportant: boolean;
+    isMarkedSafe: boolean;
+    isBlocked: boolean;
 }
 
 // Helpers
@@ -22,48 +28,48 @@ const ONE_DAY = 24 * 60 * 60 * 1000;
 
 // Senders configurados para parecer real
 const SENDERS = [
-    { name: 'Medium Daily Digest', email: 'newsletter@medium.com', cat: 'updates', sub: true },
-    { name: 'GitHub', email: 'noreply@github.com', cat: 'work', sub: true },
-    { name: 'Amazon Deals', email: 'deals@amazon.com', cat: 'promotions', sub: true },
-    { name: 'Figma', email: 'team@figma.com', cat: 'work', sub: false },
-    { name: 'The Pragmatic Engineer', email: 'newsletter@substack.com', cat: 'updates', sub: true },
-    { name: 'LinkedIn', email: 'updates@linkedin.com', cat: 'social', sub: true },
-    { name: 'Netflix', email: 'info@netflix.com', cat: 'social', sub: true },
-    { name: 'Spotify', email: 'no-reply@spotify.com', cat: 'social', sub: true },
-    { name: 'Duolingo', email: 'hello@duolingo.com', cat: 'social', sub: true },
-    { name: 'Airbnb', email: 'noreply@airbnb.com', cat: 'updates', sub: true },
-    { name: 'Stack Overflow', email: 'newsletters@stackoverflow.email', cat: 'work', sub: true },
-    { name: 'Uber Eats', email: 'uber@uber.com', cat: 'promotions', sub: true },
-    { name: 'Coursera', email: 'no-reply@coursera.org', cat: 'updates', sub: true },
-    { name: 'Canva', email: 'hello@canva.com', cat: 'updates', sub: true },
-    { name: 'Notion', email: 'team@makenotion.com', cat: 'work', sub: true },
-    { name: 'Product Hunt', email: 'hello@producthunt.com', cat: 'updates', sub: true },
-    { name: 'Vercel', email: 'notifications@vercel.com', cat: 'work', sub: false },
-    { name: 'Stripe', email: 'support@stripe.com', cat: 'work', sub: false },
-    { name: 'Discord', email: 'noreply@discord.com', cat: 'social', sub: false },
-    { name: 'Zoom', email: 'no-reply@zoom.us', cat: 'work', sub: false },
-    { name: 'Ricardo (CEO)', email: 'ricardo@paranaue.io', cat: 'work', sub: false },
-    { name: 'Beatriz (Design)', email: 'bea@paranaue.io', cat: 'work', sub: false },
-    { name: 'Apple', email: 'news@insideapple.apple.com', cat: 'updates', sub: true },
-    { name: 'Google Workspace', email: 'workspace-noreply@google.com', cat: 'work', sub: false },
-    { name: 'Microsoft Azure', email: 'azure-noreply@microsoft.com', cat: 'work', sub: false },
-    { name: 'Twitter / X', email: 'info@twitter.com', cat: 'social', sub: true },
-    { name: 'Instagram', email: 'no-reply@mail.instagram.com', cat: 'social', sub: true },
-    { name: 'Slack', email: 'feedback@slack.com', cat: 'work', sub: true },
-    { name: 'Jira Software', email: 'jira@atlassian.net', cat: 'work', sub: true },
-    { name: 'Dropbox', email: 'no-reply@dropbox.com', cat: 'work', sub: true },
-    { name: 'Salesforce', email: 'info@salesforce.com', cat: 'work', sub: false },
-    { name: 'PayPal', email: 'service@paypal.com.br', cat: 'updates', sub: false },
-    { name: 'Nubank', email: 'to-me@nubank.com.br', cat: 'updates', sub: false },
-    { name: 'Mercado Livre', email: 'ofertas@mercadolivre.com.br', cat: 'promotions', sub: true },
-    { name: 'Shopee', email: 'email@shopee.com.br', cat: 'promotions', sub: true },
-    { name: 'AliExpress', email: 'promotion@aliexpress.com', cat: 'promotions', sub: true },
-    { name: 'Udemy', email: 'no-reply@e.udemymail.com', cat: 'updates', sub: true },
-    { name: 'YouTube', email: 'noreply@youtube.com', cat: 'social', sub: true },
-    { name: 'iFood', email: 'news@ifood.com.br', cat: 'promotions', sub: true },
-    { name: 'Spam Center', email: 'congrats@lottery-winner.com', cat: 'spam', sub: false },
-    { name: 'Casino Online', email: 'play@win-big-now.biz', cat: 'spam', sub: false },
-    { name: 'Crypto Bot', email: 'trade@bitcoin-million.ai', cat: 'spam', sub: false },
+    { name: 'Medium Daily Digest', email: 'newsletter@medium.com', cat: 'updates', sub: true, score: 30, reason: "Conteúdo informativo de interesse" },
+    { name: 'GitHub', email: 'noreply@github.com', cat: 'work', sub: true, score: 85, reason: "Notificação de repositório monitorado" },
+    { name: 'Amazon Deals', email: 'deals@amazon.com', cat: 'promotions', sub: true, score: 15, reason: "Promocional detectado" },
+    { name: 'Figma', email: 'team@figma.com', cat: 'work', sub: false, score: 90, reason: "Ferramenta de trabalho principal" },
+    { name: 'The Pragmatic Engineer', email: 'newsletter@substack.com', cat: 'updates', sub: true, score: 60, reason: "Newsletter técnica relevante" },
+    { name: 'LinkedIn', email: 'updates@linkedin.com', cat: 'social', sub: true, score: 40, reason: "Atualização de rede profissional" },
+    { name: 'Netflix', email: 'info@netflix.com', cat: 'social', sub: true, score: 20, reason: "Entretenimento pessoal" },
+    { name: 'Spotify', email: 'no-reply@spotify.com', cat: 'social', sub: true, score: 25, reason: "Entretenimento / Playlist" },
+    { name: 'Duolingo', email: 'hello@duolingo.com', cat: 'social', sub: true, score: 35, reason: "Lembrete de estudo diário" },
+    { name: 'Airbnb', email: 'noreply@airbnb.com', cat: 'updates', sub: true, score: 50, reason: "Atualização de viagem/reserva" },
+    { name: 'Stack Overflow', email: 'newsletters@stackoverflow.email', cat: 'work', sub: true, score: 70, reason: "Digest técnico relevante" },
+    { name: 'Uber Eats', email: 'uber@uber.com', cat: 'promotions', sub: true, score: 10, reason: "Oferta de entrega de comida" },
+    { name: 'Coursera', email: 'no-reply@coursera.org', cat: 'updates', sub: true, score: 55, reason: "Plataforma de aprendizado" },
+    { name: 'Canva', email: 'hello@canva.com', cat: 'updates', sub: true, score: 45, reason: "Ferramenta de design" },
+    { name: 'Notion', email: 'team@makenotion.com', cat: 'work', sub: true, score: 88, reason: "Ferramenta de produtividade essencial" },
+    { name: 'Product Hunt', email: 'hello@producthunt.com', cat: 'updates', sub: true, score: 40, reason: "Novidades do mercado" },
+    { name: 'Vercel', email: 'notifications@vercel.com', cat: 'work', sub: false, score: 95, reason: "Alerta de infraestrutura crítica" },
+    { name: 'Stripe', email: 'support@stripe.com', cat: 'work', sub: false, score: 92, reason: "Transação financeira importante" },
+    { name: 'Discord', email: 'noreply@discord.com', cat: 'social', sub: false, score: 30, reason: "Chat da comunidade" },
+    { name: 'Zoom', email: 'no-reply@zoom.us', cat: 'work', sub: false, score: 80, reason: "Convite de reunião" },
+    { name: 'Ricardo (CEO)', email: 'ricardo@paranaue.io', cat: 'work', sub: false, score: 99, reason: "Mensagem direta do CEO" },
+    { name: 'Beatriz (Design)', email: 'bea@paranaue.io', cat: 'work', sub: false, score: 90, reason: "Colaborador interno (Design)" },
+    { name: 'Apple', email: 'news@insideapple.apple.com', cat: 'updates', sub: true, score: 65, reason: "Atualizações de ecossistema Apple" },
+    { name: 'Google Workspace', email: 'workspace-noreply@google.com', cat: 'work', sub: false, score: 85, reason: "Notificação de conta Google" },
+    { name: 'Microsoft Azure', email: 'azure-noreply@microsoft.com', cat: 'work', sub: false, score: 90, reason: "Alerta de serviço Azure Cloud" },
+    { name: 'Twitter / X', email: 'info@twitter.com', cat: 'social', sub: true, score: 35, reason: "Notificações de rede social" },
+    { name: 'Instagram', email: 'no-reply@mail.instagram.com', cat: 'social', sub: true, score: 30, reason: "Atividade de amigos/seguidores" },
+    { name: 'Slack', email: 'feedback@slack.com', cat: 'work', sub: true, score: 75, reason: "Notificação de workspace" },
+    { name: 'Jira Software', email: 'jira@atlassian.net', cat: 'work', sub: true, score: 82, reason: "Atualização de ticket/projeto" },
+    { name: 'Dropbox', email: 'no-reply@dropbox.com', cat: 'work', sub: true, score: 70, reason: "Atividade de arquivos" },
+    { name: 'Salesforce', email: 'info@salesforce.com', cat: 'work', sub: false, score: 78, reason: "Relatório CRM" },
+    { name: 'PayPal', email: 'service@paypal.com.br', cat: 'updates', sub: false, score: 88, reason: "Confirmação de pagamento/recebimento" },
+    { name: 'Nubank', email: 'to-me@nubank.com.br', cat: 'updates', sub: false, score: 90, reason: "Movimentação bancária" },
+    { name: 'Mercado Livre', email: 'ofertas@mercadolivre.com.br', cat: 'promotions', sub: true, score: 20, reason: "Oferta de e-commerce" },
+    { name: 'Shopee', email: 'email@shopee.com.br', cat: 'promotions', sub: true, score: 15, reason: "Promoção de marketplace" },
+    { name: 'AliExpress', email: 'promotion@aliexpress.com', cat: 'promotions', sub: true, score: 10, reason: "Oferta internacional" },
+    { name: 'Udemy', email: 'no-reply@e.udemymail.com', cat: 'updates', sub: true, score: 45, reason: "Curso/Aprendizado" },
+    { name: 'YouTube', email: 'noreply@youtube.com', cat: 'social', sub: true, score: 40, reason: "Notificação de canal inscrito" },
+    { name: 'iFood', email: 'news@ifood.com.br', cat: 'promotions', sub: true, score: 15, reason: "Cupom/Oferta detectada" },
+    { name: 'Spam Center', email: 'congrats@lottery-winner.com', cat: 'spam', sub: false, score: 0, reason: "Padrão de SPAM detectado" },
+    { name: 'Casino Online', email: 'play@win-big-now.biz', cat: 'spam', sub: false, score: 0, reason: "Padrão de jogo/aposta" },
+    { name: 'Crypto Bot', email: 'trade@bitcoin-million.ai', cat: 'spam', sub: false, score: 0, reason: "Tentativa de phishing/crypto" },
 ];
 
 const SUBJECTS: Record<string, string[]> = {
@@ -213,25 +219,36 @@ const generateMockEmails = (count: number): MockEmail[] => {
         const subject = subjects[Math.floor(Math.random() * subjects.length)];
         const snippet = SNIPPETS[Math.floor(Math.random() * SNIPPETS.length)];
 
-        // Distribuir datas (algumas hoje, muitas recentes, muitas antigas)
+        // Distribuir datas (aumentar a variação)
         let dateValue;
-        if (i < 50) {
-            dateValue = now - (Math.random() * ONE_DAY); // Hoje (50 emails)
-        } else if (i < 200) {
-            dateValue = now - (Math.random() * 30 * ONE_DAY); // Último mês (150 emails)
-        } else if (i < 350) {
-            dateValue = now - (Math.random() * 90 * ONE_DAY); // Últimos 3 meses (150 emails)
+        if (i < 80) {
+            dateValue = now - (Math.random() * ONE_DAY); // Hoje (80 emails)
+        } else if (i < 300) {
+            dateValue = now - (Math.random() * 7 * ONE_DAY); // Última semana
+        } else if (i < 550) {
+            dateValue = now - (Math.random() * 30 * ONE_DAY); // Último mês
         } else {
-            dateValue = now - (Math.random() * 365 * ONE_DAY); // Último ano (restante)
+            dateValue = now - (Math.random() * 365 * ONE_DAY); // Último ano
         }
 
-        // Tamanhos (alguns muito grandes > 5MB = 5.242.880 bytes)
+        // Tamanhos
         let size;
-        if (i % 12 === 0) {
-            size = 5000000 + Math.floor(Math.random() * 12000000); // 5MB a 17MB
+        if (i % 15 === 0) {
+            size = 5000000 + Math.floor(Math.random() * 12000000); // Grandes > 5MB
         } else {
-            size = 2000 + Math.floor(Math.random() * 1500000); // 2KB a 1.5MB
+            size = 2000 + Math.floor(Math.random() * 1500000);
         }
+
+        // AI Score Logic Simulation
+        // Adiciona variação aleatória de +/- 10 ao score base do sender
+        const baseScore = sender.score || 50;
+        const randomVar = Math.floor(Math.random() * 20) - 10;
+        let finalScore = baseScore + randomVar;
+        if (finalScore > 100) finalScore = 100;
+        if (finalScore < 0) finalScore = 0;
+
+        // Is Important? (Score > 75)
+        const isImportant = finalScore > 75;
 
         emails.push({
             id: `mock-${i}`,
@@ -240,20 +257,26 @@ const generateMockEmails = (count: number): MockEmail[] => {
             subject: subject,
             snippet: snippet,
             date: new Date(dateValue).toISOString(),
-            isRead: i > 40 ? Math.random() > 0.4 : false, // Primeiro 40 não lidos
+            isRead: i > 60 ? Math.random() > 0.4 : false,
             hasAttachment: i % 8 === 0,
             size: size,
             labels: [category],
             hasUnsubscribe: sender.sub,
             unsubscribeLink: sender.sub ? `https://${sender.email.split('@')[1]}/unsubscribe` : undefined,
-            category: category
+            category: category,
+            // Campos IA
+            aiScore: finalScore,
+            aiReason: sender.reason,
+            isImportant: isImportant,
+            isMarkedSafe: i % 50 === 0, // Alguns marcados como seguros
+            isBlocked: category === 'spam' // Spam é bloqueado
         });
     }
     return emails;
 };
 
-// Exportar base de dados principal (450 emails agora)
-export const mockEmails = generateMockEmails(450);
+// Exportar base de dados principal (777 emails agora)
+export const mockEmails = generateMockEmails(777);
 
 // Derivar Subscriptions Consistentemente
 export const mockSubscriptions = (() => {
