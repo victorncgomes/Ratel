@@ -8,16 +8,30 @@ import { GroupsColumn, GroupedItem } from '../GroupsColumn';
 import { BulkActionsToolbar } from '../BulkActionsToolbar';
 import { cn } from '@/lib/utils';
 
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
+
 interface Props {
     viewType: 'by-sender' | 'by-size' | 'by-date' | 'newsletters' | 'promotions';
 }
 
 export function MailListView({ viewType }: Props) {
+    const { isNeobrutalist } = useStyleTheme();
     const { emails, loading, error, fetchEmails, trashEmails } = useEmails();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedGroup, setSelectedGroup] = useState<GroupedItem | null>(null);
     const [selectedEmailIds, setSelectedEmailIds] = useState<Set<string>>(new Set());
     const [actionLoading, setActionLoading] = useState(false);
+
+    const getTitle = () => {
+        switch (viewType) {
+            case 'newsletters': return 'NEWSLETTERS';
+            case 'promotions': return 'PROMOÇÕES';
+            case 'by-sender': return 'POR REMETENTE';
+            case 'by-size': return 'POR TAMANHO';
+            case 'by-date': return 'POR DATA';
+            default: return 'EMAILS';
+        }
+    };
 
     useEffect(() => {
         fetchEmails(500); // Restaurado: agora usa batch API eficiente
@@ -261,9 +275,16 @@ export function MailListView({ viewType }: Props) {
 
     return (
         <div className="h-[calc(100vh-8rem)] flex flex-col animate-in fade-in duration-300">
+            {/* Header Mobile Global para a View */}
+            <div className="md:hidden mb-4 px-2">
+                <h2 className={`text-2xl font-black tracking-tight flex items-center gap-2 ${isNeobrutalist ? 'uppercase' : ''}`}>
+                    <span className="gradient-text">{getTitle()}</span>
+                </h2>
+            </div>
+
             {/* Mobile Header with Back Button (only when group selected) */}
             {selectedGroup && (
-                <div className="lg:hidden flex items-center gap-3 mb-4 p-2 glass-card rounded-sm">
+                <div className={`lg:hidden flex items-center gap-3 mb-4 p-2 rounded-sm ${isNeobrutalist ? 'bg-white border-2 border-black shadow-[4px_4px_0_0_#000]' : 'glass-card'}`}>
                     <button
                         onClick={() => setSelectedGroup(null)}
                         className="p-2 hover:bg-secondary/50 rounded-sm transition-colors"
@@ -273,7 +294,7 @@ export function MailListView({ viewType }: Props) {
                         </svg>
                     </button>
                     <div className="flex-1">
-                        <p className="font-semibold truncate">{selectedGroup.name}</p>
+                        <p className={`font-semibold truncate ${isNeobrutalist ? 'font-black uppercase' : ''}`}>{selectedGroup.name}</p>
                         <p className="text-xs text-muted-foreground">{filteredEmails.length} emails</p>
                     </div>
                 </div>

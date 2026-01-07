@@ -1,5 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import { useDeepCleaning, DeepCleaningEmail } from '../../hooks/useDeepCleaning';
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/badge';
@@ -12,6 +14,7 @@ import { authFetch } from '../../lib/api';
 type ViewMode = 'size' | 'date';
 
 export function DeepCleaning() {
+    const { isNeobrutalist } = useStyleTheme();
     const { loading, error, fetchBySize, fetchByDate } = useDeepCleaning();
     const [viewMode, setViewMode] = useState<ViewMode>('size');
     const [emails, setEmails] = useState<DeepCleaningEmail[]>([]);
@@ -85,10 +88,10 @@ export function DeepCleaning() {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div>
+            <div className="md:hidden">
                 <h2 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-                    <HardDrive className="h-8 w-8 text-primary" />
-                    Deep Cleaning
+                    <HardDrive className={`h-8 w-8 ${isNeobrutalist ? 'text-black' : 'text-primary'}`} />
+                    DEEP CLEANING
                 </h2>
                 <p className="text-muted-foreground mt-1 text-lg">
                     Encontre e remova emails grandes ou antigos para liberar espaço
@@ -96,34 +99,52 @@ export function DeepCleaning() {
             </div>
 
             <div className="flex gap-2">
-                <Button variant={viewMode === 'size' ? 'default' : 'outline'} onClick={() => setViewMode('size')} className="gap-2">
+                <Button
+                    variant={viewMode === 'size' ? 'default' : 'outline'}
+                    onClick={() => setViewMode('size')}
+                    className={`gap-2 ${isNeobrutalist && viewMode === 'size'
+                        ? 'bg-[#E63946] text-white font-black uppercase border-2 border-black shadow-[3px_3px_0_0_#000]'
+                        : isNeobrutalist
+                            ? 'font-bold border-2 border-black shadow-[3px_3px_0_0_#000] bg-white'
+                            : ''
+                        }`}
+                >
                     <HardDrive className="h-4 w-4" />
-                    Por Tamanho
+                    POR TAMANHO
                 </Button>
-                <Button variant={viewMode === 'date' ? 'default' : 'outline'} onClick={() => setViewMode('date')} className="gap-2">
+                <Button
+                    variant={viewMode === 'date' ? 'default' : 'outline'}
+                    onClick={() => setViewMode('date')}
+                    className={`gap-2 ${isNeobrutalist && viewMode === 'date'
+                        ? 'bg-[#E63946] text-white font-black uppercase border-2 border-black shadow-[3px_3px_0_0_#000]'
+                        : isNeobrutalist
+                            ? 'font-bold border-2 border-black shadow-[3px_3px_0_0_#000] bg-white'
+                            : ''
+                        }`}
+                >
                     <Calendar className="h-4 w-4" />
-                    Por Data
+                    POR DATA
                 </Button>
             </div>
 
-            <Card>
+            <Card className={`${isNeobrutalist ? 'border-4 border-black shadow-[6px_6px_0_0_#000] rounded-none' : ''}`}>
                 <CardHeader>
-                    <CardTitle className="text-lg">Filtros</CardTitle>
+                    <CardTitle className={`text-lg ${isNeobrutalist ? 'font-black uppercase' : ''}`}>Filtros</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {viewMode === 'size' ? (
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Tamanho mínimo: {minSizeMB} MB</label>
-                            <input type="range" min="1" max="50" value={minSizeMB} onChange={(e) => setMinSizeMB(parseInt(e.target.value))} className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer" />
-                            <div className="flex justify-between text-xs text-muted-foreground">
+                            <label className="text-sm font-medium font-bold">TAMANHO MÍNIMO: {minSizeMB} MB</label>
+                            <input type="range" min="1" max="50" value={minSizeMB} onChange={(e) => setMinSizeMB(parseInt(e.target.value))} className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-black" />
+                            <div className="flex justify-between text-xs text-muted-foreground font-bold">
                                 <span>1 MB</span>
                                 <span>50 MB</span>
                             </div>
                         </div>
                     ) : (
                         <div className="space-y-2">
-                            <label className="text-sm font-medium">Emails anteriores a:</label>
-                            <Input type="date" value={beforeDate} onChange={(e) => setBeforeDate(e.target.value)} className="w-full" />
+                            <label className="text-sm font-medium font-bold">EMAILS ANTERIORES A:</label>
+                            <Input type="date" value={beforeDate} onChange={(e) => setBeforeDate(e.target.value)} className={`w-full ${isNeobrutalist ? 'border-2 border-black shadow-[2px_2px_0_0_#000]' : ''}`} />
                         </div>
                     )}
                 </CardContent>

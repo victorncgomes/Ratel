@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
 import { Button } from '../ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
 import { Input } from '../ui/input';
 import {
     Search, Book, MessageCircle, FileQuestion, History,
-    Users, ChevronRight, Mail, Globe, CheckCircle
+    Users, ChevronRight, Mail, Globe
 } from 'lucide-react';
 
 type TabType = 'docs' | 'changelog' | 'about' | 'faq';
@@ -24,6 +25,7 @@ interface FaqItem {
 
 export function HelpPage() {
     const { t } = useLanguage();
+    const { isNeobrutalist } = useStyleTheme();
     const [activeTab, setActiveTab] = useState<TabType>('docs');
 
     // Fetch dynamic data from translation files
@@ -45,7 +47,7 @@ export function HelpPage() {
         <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
             <div className="text-center space-y-4 py-8">
-                <h2 className="text-4xl font-heading font-bold tracking-tight">{t('help_page.title')}</h2>
+                <h2 className="text-4xl font-heading font-black tracking-tight">{t('help_page.title')}</h2>
                 <p className="text-muted-foreground">{t('help_page.subtitle')}</p>
                 <div className="max-w-md mx-auto relative hidden">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -54,14 +56,19 @@ export function HelpPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2 border-b pb-2 overflow-x-auto">
+            <div className={`flex gap-2 pb-2 overflow-x-auto ${isNeobrutalist ? 'border-b-4 border-black' : 'border-b border-border'}`}>
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
                         <Button
                             key={tab.id}
                             variant={activeTab === tab.id ? 'default' : 'ghost'}
-                            className="gap-2 whitespace-nowrap"
+                            className={`gap-2 whitespace-nowrap transition-all
+                                ${isNeobrutalist
+                                    ? `font-bold border-2 border-black ${activeTab === tab.id ? 'shadow-[3px_3px_0_0_#000] bg-[#E63946] text-white' : 'shadow-[2px_2px_0_0_#000]'}`
+                                    : `${activeTab === tab.id ? 'bg-primary text-primary-foreground' : 'hover:bg-muted text-muted-foreground'} rounded-full`
+                                }
+                            `}
                             onClick={() => setActiveTab(tab.id)}
                         >
                             <Icon className="h-4 w-4" />
@@ -84,7 +91,10 @@ export function HelpPage() {
                                 { title: t('help_page.topics.settings.title'), desc: t('help_page.topics.settings.desc'), icon: '⚙️' },
                                 { title: t('help_page.topics.shortcuts.title'), desc: t('help_page.topics.shortcuts.desc'), icon: '⌨️' },
                             ].map((doc, i) => (
-                                <Card key={i} className="hover:shadow-md transition-shadow cursor-pointer group">
+                                <Card key={i} className={`cursor-pointer group transition-all ${isNeobrutalist
+                                    ? 'hover:shadow-[6px_6px_0_0_#000] border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none'
+                                    : 'hover:shadow-md hover:-translate-y-1'
+                                    }`}>
                                     <CardContent className="p-4 flex items-center justify-between">
                                         <div className="flex items-center gap-4">
                                             <span className="text-2xl">{doc.icon}</span>
@@ -196,13 +206,13 @@ export function HelpPage() {
                 )}
             </div>
 
-            {/* Support CTA */}
-            <div className="bg-primary/5 rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* Support CTA - Neobrutalist */}
+            <div className="border-4 border-black shadow-[6px_6px_0_0_#000] p-8 flex flex-col md:flex-row items-center justify-between gap-6 bg-white">
                 <div>
-                    <h3 className="text-xl font-bold mb-2">{t('help_page.need_help.title')}</h3>
+                    <h3 className="text-xl font-black mb-2">{t('help_page.need_help.title')}</h3>
                     <p className="text-muted-foreground">{t('help_page.need_help.description')}</p>
                 </div>
-                <Button size="lg" className="gap-2" onClick={handleSupport}>
+                <Button size="lg" className="gap-2 font-bold border-4 border-black shadow-[4px_4px_0_0_#000] bg-[#E63946] text-white hover:shadow-[6px_6px_0_0_#000]" onClick={handleSupport}>
                     <MessageCircle className="h-5 w-5" />
                     {t('help_page.contact')}
                 </Button>

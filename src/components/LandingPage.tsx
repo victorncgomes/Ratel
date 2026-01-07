@@ -1,7 +1,7 @@
 import { HeroSection } from './landing/HeroSection';
 import { PhilosophySection } from './landing/PhilosophySection';
 import { FeaturesSection } from './landing/FeaturesSection';
-import { StatsSection } from './landing/StatsSection';
+
 import { TestimonialsSection } from './landing/TestimonialsSection';
 import { FooterSection } from './landing/FooterSection';
 
@@ -37,8 +37,8 @@ export function LandingPage({ onLogin, onShowTerms, onShowPrivacy }: LandingPage
             {/* Section 3: Features */}
             <FeaturesSection />
 
-            {/* Section 4: Stats */}
-            <StatsSection />
+            {/* Section 4: Stats 
+            <StatsSection /> -- Removed as it is now integrated into FeaturesSection */}
 
             {/* Section 5: Testimonials */}
             <TestimonialsSection />

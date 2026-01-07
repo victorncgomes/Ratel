@@ -1,0 +1,16 @@
+{
+    "name": "Ratel",
+    "short_name": "Ratel",
+    "description": "Ratel - Inbox Control Center",
+    "theme_color": "#ffffff",
+    "background_color": "#ffffff",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "/ratel.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}

@@ -1,0 +1,401 @@
+/**
+ * RATEL - Design System Neobrutalist
+ * Estilo inspirado em Super Mario Bros SNES + Anime Noir
+ * Aplicado em toda a aplicação
+ */
+
+/* ========== VARIÁVEIS ========== */
+:root {
+    /* Cores Base */
+    --brutal-white: #FFFFFF;
+    --brutal-black: #000000;
+    --brutal-ice: #F5F5F5;
+    --brutal-red: #E63946;
+    --brutal-shadow: #000000;
+
+    /* Cores de Badge */
+    --badge-bronze: #CD7F32;
+    --badge-silver: #C0C0C0;
+    --badge-gold: #FFD700;
+    --badge-platinum: #E5E4E2;
+    --badge-diamond: #B9F2FF;
+
+    /* Territórios (Super Mario Style) */
+    --territory-forest: #228B22;
+    --territory-mountain: #8B4513;
+    --territory-desert: #F4A460;
+    --territory-infinity: #4B0082;
+
+    /* Bordas e Sombras */
+    --brutal-border-width: 4px;
+    --brutal-shadow-offset: 8px;
+    --brutal-button-shadow: 4px;
+
+    /* Transições */
+    --brutal-transition: all 0.1s ease;
+}
+
+/* ========== RESET NEOBRUTALIST ========== */
+.brutal-reset {
+    border-radius: 0 !important;
+}
+
+/* ========== CARDS ========== */
+.brutal-card {
+    background: var(--brutal-white);
+    border: var(--brutal-border-width) solid var(--brutal-black);
+    box-shadow: var(--brutal-shadow-offset) var(--brutal-shadow-offset) 0 var(--brutal-shadow);
+    border-radius: 0;
+    padding: 1.5rem;
+    transition: var(--brutal-transition);
+}
+
+.brutal-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: calc(var(--brutal-shadow-offset) + 2px) calc(var(--brutal-shadow-offset) + 2px) 0 var(--brutal-shadow);
+}
+
+.brutal-card-active {
+    border-color: var(--brutal-red);
+}
+
+.brutal-card-locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ========== BOTÕES ========== */
+.brutal-button {
+    background: var(--brutal-white);
+    border: 3px solid var(--brutal-black);
+    box-shadow: var(--brutal-button-shadow) var(--brutal-button-shadow) 0 var(--brutal-black);
+    padding: 0.75rem 1.5rem;
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    cursor: pointer;
+    transition: var(--brutal-transition);
+    border-radius: 0;
+}
+
+.brutal-button:hover {
+    transform: translate(2px, 2px);
+    box-shadow: calc(var(--brutal-button-shadow) - 2px) calc(var(--brutal-button-shadow) - 2px) 0 var(--brutal-black);
+}
+
+.brutal-button:active {
+    transform: translate(var(--brutal-button-shadow), var(--brutal-button-shadow));
+    box-shadow: 0 0 0 var(--brutal-black);
+}
+
+.brutal-button-danger {
+    background: var(--brutal-red);
+    color: var(--brutal-white);
+}
+
+.brutal-button-success {
+    background: var(--territory-forest);
+    color: var(--brutal-white);
+}
+
+.brutal-button-gold {
+    background: var(--badge-gold);
+    color: var(--brutal-black);
+}
+
+.brutal-button-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ========== BADGES ========== */
+.brutal-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border: 3px solid var(--brutal-black);
+    border-radius: 50%;
+    font-size: 2rem;
+    transition: var(--brutal-transition);
+}
+
+.brutal-badge-bronze {
+    background: var(--badge-bronze);
+}
+
+.brutal-badge-silver {
+    background: var(--badge-silver);
+}
+
+.brutal-badge-gold {
+    background: var(--badge-gold);
+}
+
+.brutal-badge-locked {
+    filter: grayscale(100%);
+    opacity: 0.5;
+}
+
+.brutal-badge:hover:not(.brutal-badge-locked) {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* ========== PROGRESS BAR ========== */
+.brutal-progress {
+    background: var(--brutal-ice);
+    border: 3px solid var(--brutal-black);
+    height: 2rem;
+    overflow: hidden;
+}
+
+.brutal-progress-fill {
+    background: var(--brutal-red);
+    height: 100%;
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brutal-white);
+    font-weight: 700;
+    font-size: 0.875rem;
+}
+
+/* ========== TERRITÓRIO (SUPER MARIO STYLE) ========== */
+.brutal-territory {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--brutal-transition);
+}
+
+.brutal-territory::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: var(--brutal-border-width) solid var(--brutal-black);
+    box-shadow: var(--brutal-shadow-offset) var(--brutal-shadow-offset) 0 var(--brutal-shadow);
+    background: var(--brutal-white);
+    z-index: -1;
+}
+
+.brutal-territory:hover:not(.brutal-territory-locked) {
+    transform: translateY(-5px);
+}
+
+.brutal-territory-active::before {
+    border-color: var(--brutal-red);
+    animation: pulse 2s infinite;
+}
+
+.brutal-territory-completed::before {
+    background: var(--territory-forest);
+}
+
+.brutal-territory-locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ========== MAPA (CAMINHO SUPER MARIO) ========== */
+.brutal-map-path {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    overflow-x: auto;
+}
+
+.brutal-map-connector {
+    width: 60px;
+    height: 8px;
+    background: repeating-linear-gradient(90deg,
+            var(--brutal-black) 0px,
+            var(--brutal-black) 10px,
+            transparent 10px,
+            transparent 20px);
+}
+
+.brutal-map-connector-active {
+    background: var(--brutal-red);
+}
+
+/* ========== ANIMAÇÕES ========== */
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow: var(--brutal-shadow-offset) var(--brutal-shadow-offset) 0 var(--brutal-shadow);
+    }
+
+    50% {
+        box-shadow: calc(var(--brutal-shadow-offset) + 2px) calc(var(--brutal-shadow-offset) + 2px) 0 var(--brutal-red);
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+.brutal-bounce {
+    animation: bounce 1s ease infinite;
+}
+
+.brutal-shake {
+    animation: shake 0.5s ease;
+}
+
+/* ========== LOADING SCREEN ========== */
+.brutal-loading {
+    position: fixed;
+    inset: 0;
+    background: var(--brutal-white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 2rem;
+}
+
+.brutal-loading-message {
+    font-size: 1.125rem;
+    font-weight: 700;
+    text-align: center;
+    min-height: 3rem;
+    animation: pulse 2s infinite;
+}
+
+/* ========== TIPOGRAFIA NEOBRUTALIST ========== */
+.brutal-title {
+    font-family: 'Nexa', sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    color: var(--brutal-black);
+}
+
+.brutal-title-xl {
+    font-size: 3rem;
+}
+
+.brutal-title-lg {
+    font-size: 2rem;
+}
+
+.brutal-title-md {
+    font-size: 1.5rem;
+}
+
+/* ========== INPUTS NEOBRUTALIST ========== */
+.brutal-input {
+    background: var(--brutal-white);
+    border: 3px solid var(--brutal-black);
+    padding: 0.75rem 1rem;
+    font-family: 'Nexa', sans-serif;
+    font-weight: 400;
+    border-radius: 0;
+    box-shadow: 4px 4px 0 var(--brutal-black);
+}
+
+.brutal-input:focus {
+    outline: none;
+    border-color: var(--brutal-red);
+    box-shadow: 4px 4px 0 var(--brutal-red);
+}
+
+/* ========== CREDITS DISPLAY ========== */
+.brutal-credits {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--badge-gold);
+    border: 3px solid var(--brutal-black);
+    box-shadow: 4px 4px 0 var(--brutal-black);
+    font-weight: 700;
+}
+
+/* ========== STREAK DISPLAY ========== */
+.brutal-streak {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--brutal-red);
+    color: var(--brutal-white);
+    border: 3px solid var(--brutal-black);
+    box-shadow: 4px 4px 0 var(--brutal-black);
+    font-weight: 700;
+}
+
+/* ========== TOAST NOTIFICATIONS ========== */
+.brutal-toast {
+    background: var(--brutal-white);
+    border: 3px solid var(--brutal-black);
+    box-shadow: 4px 4px 0 var(--brutal-black);
+    border-radius: 0;
+    padding: 1rem;
+    font-family: 'Nexa', sans-serif;
+    font-weight: 700;
+}
+
+/* ========== RESPONSIVO ========== */
+@media (max-width: 768px) {
+    :root {
+        --brutal-border-width: 3px;
+        --brutal-shadow-offset: 6px;
+        --brutal-button-shadow: 3px;
+    }
+
+    .brutal-territory {
+        width: 100px;
+        height: 100px;
+    }
+
+    .brutal-badge {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+
+    .brutal-title-xl {
+        font-size: 2rem;
+    }
+
+    .brutal-title-lg {
+        font-size: 1.5rem;
+    }
+}

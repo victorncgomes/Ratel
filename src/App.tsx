@@ -10,6 +10,8 @@ import { cn } from './lib/utils';
 import { LandingPage } from './components/LandingPage';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { ProgressProvider } from './contexts/ProgressContext';
+import { StyleThemeProvider, useStyleTheme } from './contexts/StyleThemeContext';
+import { MapView } from './components/gamification';
 
 import { FlagBR, FlagES, FlagUK } from './components/icons/Flags';
 
@@ -39,6 +41,7 @@ interface UserData {
 function RatelApp() {
     useTheme(); // Inicializa tema
     const { t, language, setLanguage } = useLanguage();
+    const { isNeobrutalist } = useStyleTheme();
     const [isFlagMenuOpen, setIsFlagMenuOpen] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -121,26 +124,26 @@ function RatelApp() {
     }
 
     const navItems = [
-        { id: 'subscriptions', icon: '📬', label: t('sidebar.email_lists'), badge: String(12) },
-        { id: 'cleanup', icon: '🧹', label: t('sidebar.quick_cleanup'), badge: null },
+        { id: 'subscriptions', icon: '✉️', label: 'Listas', badge: String(12) },
+        { id: 'cleanup', icon: '🗑️', label: 'Limpeza', badge: null },
     ];
 
     const smartViews = [
-        { id: 'by-sender', icon: '👤', label: t('sidebar.by_sender'), count: 156 },
-        { id: 'by-size', icon: '📦', label: t('sidebar.by_size'), count: 34 },
-        { id: 'by-date', icon: '📅', label: t('sidebar.by_date'), count: 89 },
-        { id: 'newsletters', icon: '📰', label: t('sidebar.newsletters'), count: 45 },
-        { id: 'promotions', icon: '🛒', label: t('sidebar.promotions'), count: 78 },
+        { id: 'by-sender', icon: '👁️', label: t('sidebar.by_sender'), count: 156 },
+        { id: 'by-size', icon: '⚖️', label: t('sidebar.by_size'), count: 34 },
+        { id: 'by-date', icon: '⏰', label: t('sidebar.by_date'), count: 89 },
+        { id: 'newsletters', icon: '📜', label: t('sidebar.newsletters'), count: 45 },
+        { id: 'promotions', icon: '💰', label: t('sidebar.promotions'), count: 78 },
     ];
 
     const actionItems = [
-        { id: 'shield', icon: '🛡️', label: t('sidebar.shield'), count: 3 },
-        { id: 'rollup', icon: '📦', label: t('sidebar.rollup'), count: 5 },
+        { id: 'shield', icon: '🚫', label: t('sidebar.shield'), count: 3 },
+        { id: 'rollup', icon: '📚', label: t('sidebar.rollup'), count: 5 },
     ];
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'dashboard': return <DashboardPage onNavigate={setActiveTab} />;
+            case 'dashboard': return <MapView />;
             case 'subscriptions': return <SubscriptionsPage />;
             case 'cleanup': return <CleanupPage />;
             case 'activity': return <ActivityPage />;
@@ -169,9 +172,12 @@ function RatelApp() {
     };
 
     return (
-        <div className="min-h-screen gradient-bg font-sans antialiased">
-            {/* Header */}
-            <header className="sticky top-0 z-50 w-full glass border-b border-white/10">
+        <div className="min-h-screen bg-white font-sans antialiased">
+            {/* Header - Theme Aware */}
+            <header className={`sticky top-0 z-50 w-full transition-all duration-200 ${isNeobrutalist
+                ? 'bg-white border-b-4 border-black'
+                : 'bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm'
+                }`}>
                 <div className="flex h-16 items-center px-4 gap-4">
                     {/* Mobile Menu Button */}
                     <Button
@@ -254,14 +260,19 @@ function RatelApp() {
             {/* Sidebar */}
             <aside
                 className={cn(
-                    'fixed top-16 left-0 bottom-0 w-64 glass border-r border-white/10 transition-transform duration-300 z-40 flex flex-col',
-                    sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+                    'fixed top-16 left-0 bottom-0 w-64 transition-transform duration-300 z-40 flex flex-col',
+                    sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+                    isNeobrutalist
+                        ? 'bg-white border-r-4 border-black'
+                        : 'bg-slate-50 border-r border-slate-200'
                 )}
             >
                 <nav className="flex flex-col h-full p-4 gap-2 overflow-y-auto">
                     {/* Main Actions */}
-                    <div className="space-y-1">
-                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{t('sidebar.main_actions')}</p>
+                    <div className={`space-y-1 p-3 ${isNeobrutalist
+                        ? 'border-4 border-black shadow-[4px_4px_0_0_#000] bg-white'
+                        : ''
+                        }`}>
                         {navItems.map((item) => {
                             const isActive = activeTab === item.id;
                             return (
@@ -272,10 +283,10 @@ function RatelApp() {
                                         setSidebarOpen(false);
                                     }}
                                     className={cn(
-                                        'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative',
-                                        isActive
-                                            ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
-                                            : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                                        'w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-all duration-200 group relative',
+                                        isNeobrutalist
+                                            ? `font-bold border-2 border-black ${isActive ? 'bg-[#E63946] text-white shadow-[3px_3px_0_0_#000]' : 'bg-white text-black hover:bg-gray-100 shadow-[2px_2px_0_0_#000]'}`
+                                            : `font-medium rounded-lg ${isActive ? 'bg-blue-100 text-blue-700' : 'text-slate-600 hover:bg-slate-100'}`
                                     )}
                                 >
                                     <span className="text-lg">{item.icon}</span>
@@ -288,9 +299,11 @@ function RatelApp() {
                         })}
                     </div>
 
-                    {/* Smart Views - Mailstrom Style */}
-                    <div className="space-y-1 pt-4 border-t border-border/50">
-                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{t('sidebar.smart_views')}</p>
+                    {/* Smart Views */}
+                    <div className={`space-y-1 pt-4 mt-4 ${isNeobrutalist
+                        ? 'border-4 border-black p-3 shadow-[4px_4px_0_0_#000] bg-white'
+                        : 'border-t border-slate-200'
+                        }`}>
                         {smartViews.map((item) => (
                             <button
                                 key={item.id}
@@ -299,10 +312,10 @@ function RatelApp() {
                                     setSidebarOpen(false);
                                 }}
                                 className={cn(
-                                    'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all',
-                                    activeTab === item.id
-                                        ? 'bg-secondary text-foreground'
-                                        : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
+                                    'w-full flex items-center gap-3 px-3 py-2 text-sm transition-all',
+                                    isNeobrutalist
+                                        ? `font-bold border-2 border-black ${activeTab === item.id ? 'bg-[#E63946] text-white shadow-[2px_2px_0_0_#000]' : 'bg-white text-black hover:bg-gray-100 shadow-[2px_2px_0_0_#000]'}`
+                                        : `font-medium rounded-lg ${activeTab === item.id ? 'bg-blue-100 text-blue-700' : 'text-slate-600 hover:bg-slate-100'}`
                                 )}
                             >
                                 <span className="text-base">{item.icon}</span>
@@ -312,9 +325,11 @@ function RatelApp() {
                         ))}
                     </div>
 
-                    {/* Shield & Rollup - Leave Me Alone Style */}
-                    <div className="space-y-1 pt-4 border-t border-border/50">
-                        <p className="px-2 text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{t('sidebar.protection')}</p>
+                    {/* Shield & Rollup */}
+                    <div className={`space-y-1 pt-4 mt-4 ${isNeobrutalist
+                        ? 'border-4 border-black p-3 shadow-[4px_4px_0_0_#000] bg-white'
+                        : 'border-t border-slate-200'
+                        }`}>
                         {actionItems.map((item) => (
                             <button
                                 key={item.id}
@@ -323,10 +338,10 @@ function RatelApp() {
                                     setSidebarOpen(false);
                                 }}
                                 className={cn(
-                                    'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all',
-                                    activeTab === item.id
-                                        ? 'bg-secondary text-foreground'
-                                        : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
+                                    'w-full flex items-center gap-3 px-3 py-2 text-sm transition-all',
+                                    isNeobrutalist
+                                        ? `font-bold border-2 border-black ${activeTab === item.id ? 'bg-[#E63946] text-white shadow-[2px_2px_0_0_#000]' : 'bg-white text-black hover:bg-gray-100 shadow-[2px_2px_0_0_#000]'}`
+                                        : `font-medium rounded-lg ${activeTab === item.id ? 'bg-blue-100 text-blue-700' : 'text-slate-600 hover:bg-slate-100'}`
                                 )}
                             >
                                 <span className="text-base">{item.icon}</span>
@@ -339,61 +354,64 @@ function RatelApp() {
                     <div className="flex-1" />
 
                     {/* User Profile Section */}
-                    <div className="pt-4 border-t border-border/50">
-                        <div className="relative">
-                            <button
-                                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-secondary"
-                            >
-                                <Avatar className="h-8 w-8">
-                                    <AvatarImage src={user?.photo || ''} />
-                                    <AvatarFallback>{user?.name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 text-left overflow-hidden">
-                                    <p className="font-medium truncate">{user?.name || t('user_menu.demo_user')}</p>
-                                </div>
-                            </button>
+                    <div className={`pt-4 mt-4 relative ${isNeobrutalist
+                        ? 'border-4 border-black p-3 shadow-[4px_4px_0_0_#000] bg-white'
+                        : 'border-t border-slate-200'
+                        }`}>
+                        <button
+                            onClick={() => setUserMenuOpen(!userMenuOpen)}
+                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all hover:bg-secondary"
+                        >
+                            <Avatar className={`h-8 w-8 ${isNeobrutalist ? 'border-2 border-black' : ''}`}>
+                                <AvatarImage src={user?.photo || ''} />
+                                <AvatarFallback className={isNeobrutalist ? 'font-bold bg-[#E63946] text-white' : ''}>
+                                    {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 text-left overflow-hidden">
+                                <p className="font-medium truncate">{user?.name || t('user_menu.demo_user')}</p>
+                            </div>
+                        </button>
 
-                            {/* User Submenu */}
-                            {userMenuOpen && (
-                                <div className="absolute bottom-full left-0 right-0 mb-2 bg-popover border rounded-lg shadow-xl py-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                                    <button
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
-                                        style={{ fontStyle: 'normal' }}
-                                        onClick={() => { setActiveTab('notifications'); setUserMenuOpen(false); }}
-                                    >
-                                        <Bell className="h-4 w-4" />
-                                        <span style={{ fontStyle: 'normal' }}>{t('user_menu.notifications')}</span>
-                                        <Badge className="ml-auto h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px]">3</Badge>
-                                    </button>
-                                    <button
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
-                                        style={{ fontStyle: 'normal' }}
-                                        onClick={() => { setActiveTab('help'); setUserMenuOpen(false); }}
-                                    >
-                                        <HelpCircle className="h-4 w-4" />
-                                        <span style={{ fontStyle: 'normal' }}>{t('user_menu.help')}</span>
-                                    </button>
-                                    <button
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
-                                        style={{ fontStyle: 'normal' }}
-                                        onClick={() => { setActiveTab('profile'); setUserMenuOpen(false); }}
-                                    >
-                                        <Settings className="h-4 w-4" />
-                                        <span style={{ fontStyle: 'normal' }}>{t('user_menu.settings')}</span>
-                                    </button>
-                                    <hr className="my-1 border-border" />
-                                    <button
-                                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                                        style={{ fontStyle: 'normal' }}
-                                        onClick={handleLogout}
-                                    >
-                                        <LogOut className="h-4 w-4" />
-                                        <span style={{ fontStyle: 'normal' }}>{t('user_menu.logout')}</span>
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                        {/* User Submenu */}
+                        {userMenuOpen && (
+                            <div className="absolute bottom-full left-0 right-0 mb-2 bg-popover border rounded-lg shadow-xl py-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                <button
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
+                                    style={{ fontStyle: 'normal' }}
+                                    onClick={() => { setActiveTab('notifications'); setUserMenuOpen(false); }}
+                                >
+                                    <Bell className="h-4 w-4" />
+                                    <span style={{ fontStyle: 'normal' }}>{t('user_menu.notifications')}</span>
+                                    <Badge className="ml-auto h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px]">3</Badge>
+                                </button>
+                                <button
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
+                                    style={{ fontStyle: 'normal' }}
+                                    onClick={() => { setActiveTab('help'); setUserMenuOpen(false); }}
+                                >
+                                    <HelpCircle className="h-4 w-4" />
+                                    <span style={{ fontStyle: 'normal' }}>{t('user_menu.help')}</span>
+                                </button>
+                                <button
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
+                                    style={{ fontStyle: 'normal' }}
+                                    onClick={() => { setActiveTab('profile'); setUserMenuOpen(false); }}
+                                >
+                                    <Settings className="h-4 w-4" />
+                                    <span style={{ fontStyle: 'normal' }}>{t('user_menu.settings')}</span>
+                                </button>
+                                <hr className="my-1 border-border" />
+                                <button
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                                    style={{ fontStyle: 'normal' }}
+                                    onClick={handleLogout}
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                    <span style={{ fontStyle: 'normal' }}>{t('user_menu.logout')}</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </nav>
             </aside>
@@ -412,22 +430,26 @@ function RatelApp() {
             </main>
 
             {/* Mobile Overlay */}
-            {sidebarOpen && (
-                <div
-                    onClick={() => setSidebarOpen(false)}
-                    className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30 lg:hidden animate-in fade-in"
-                />
-            )}
-        </div>
+            {
+                sidebarOpen && (
+                    <div
+                        onClick={() => setSidebarOpen(false)}
+                        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-30 lg:hidden animate-in fade-in"
+                    />
+                )
+            }
+        </div >
     );
 }
 
 export default function App() {
     return (
         <LanguageProvider>
-            <ProgressProvider>
-                <RatelApp />
-            </ProgressProvider>
+            <StyleThemeProvider>
+                <ProgressProvider>
+                    <RatelApp />
+                </ProgressProvider>
+            </StyleThemeProvider>
         </LanguageProvider>
     );
 }

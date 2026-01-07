@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Loader2, ChevronDown } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 interface HeroSectionProps {
@@ -21,6 +22,7 @@ const TESTIMONIALS_KEYS = [
 
 export function HeroSection({ onLogin, onShowTerms, onShowPrivacy }: HeroSectionProps) {
     const { t, language, setLanguage } = useLanguage();
+    const { isNeobrutalist } = useStyleTheme();
     const [currentTestimonial, setCurrentTestimonial] = useState(0);
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -121,30 +123,36 @@ export function HeroSection({ onLogin, onShowTerms, onShowPrivacy }: HeroSection
                 <div className="w-full max-w-7xl grid lg:grid-cols-5 gap-12 lg:gap-16 items-center">
 
                     {/* Left Side - Login (2/5) */}
-                    <div className="lg:col-span-2 flex flex-col items-center lg:items-start text-center lg:text-left">
+                    <div className="lg:col-span-2 flex flex-col items-center lg:items-start text-center lg:text-left w-full">
                         {/* Logo */}
-                        <div className="flex items-center gap-4 mb-8">
+                        <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-8">
                             <img
                                 src="/ratel.svg?v=3"
                                 alt="Ratel Logo"
-                                className="h-[120px] w-[120px] object-contain drop-shadow-lg"
+                                className="h-[116px] w-[116px] sm:h-[120px] sm:w-[120px] object-contain drop-shadow-lg translate-y-[20px] sm:translate-y-0"
                             />
                             <img
                                 src="/name-ratel.svg?v=3"
                                 alt="Ratel"
-                                className="h-[84px] object-contain"
+                                className="h-16 sm:h-[84px] object-contain mt-2 sm:mt-0"
                             />
                         </div>
 
                         {/* Tagline */}
-                        <p className="text-xl text-slate-600 mb-8 max-w-sm">
+                        <p className="text-xl text-slate-600 mb-8 max-w-sm mx-auto lg:mx-0">
                             {t('landing.hero.title')} {t('landing.hero.subtitle')}
                         </p>
 
-                        {/* Login Card - Glassmorphic */}
-                        <div className="w-full max-w-sm p-6 rounded-3xl bg-white/60 backdrop-blur-xl border border-white/40 shadow-xl shadow-slate-200/50">
+                        {/* Login Card - Theme-aware */}
+                        <div className={`w-full max-w-[90vw] sm:max-w-sm p-4 sm:p-6 mx-auto lg:mx-0 ${isNeobrutalist
+                            ? 'bg-white border-4 border-black shadow-[8px_8px_0_0_#000]'
+                            : 'rounded-3xl bg-white/60 backdrop-blur-xl border border-white/40 shadow-xl shadow-slate-200/50'
+                            }`}>
                             {/* Terms */}
-                            <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-100/80 mb-5">
+                            <div className={`flex items-start gap-3 p-3 mb-5 ${isNeobrutalist
+                                ? 'bg-gray-100 border-2 border-black'
+                                : 'rounded-xl bg-slate-100/80'
+                                }`}>
                                 <input
                                     type="checkbox"
                                     id="terms-hero"
@@ -168,7 +176,10 @@ export function HeroSection({ onLogin, onShowTerms, onShowPrivacy }: HeroSection
                             <Button
                                 variant="outline"
                                 size="lg"
-                                className="w-full h-12 text-base bg-white hover:bg-slate-50 border-slate-200 mb-3 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
+                                className={`w-full h-12 text-base mb-3 transition-all duration-300 ${isNeobrutalist
+                                    ? 'bg-white border-4 border-black shadow-[4px_4px_0_0_#000] hover:shadow-[6px_6px_0_0_#000] font-bold'
+                                    : 'bg-white hover:bg-slate-50 border-slate-200 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5'
+                                    }`}
                                 onClick={() => handleLogin('google')}
                                 disabled={!!isLoading || !agreedToTerms}
                             >
@@ -185,7 +196,10 @@ export function HeroSection({ onLogin, onShowTerms, onShowPrivacy }: HeroSection
                             <Button
                                 variant="outline"
                                 size="lg"
-                                className="w-full h-12 text-base bg-white hover:bg-slate-50 border-slate-200 mb-4 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
+                                className={`w-full h-12 text-base mb-4 transition-all duration-300 ${isNeobrutalist
+                                    ? 'bg-white border-4 border-black shadow-[4px_4px_0_0_#000] hover:shadow-[6px_6px_0_0_#000] font-bold'
+                                    : 'bg-white hover:bg-slate-50 border-slate-200 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5'
+                                    }`}
                                 onClick={() => handleLogin('microsoft')}
                                 disabled={!!isLoading || !agreedToTerms}
                             >
@@ -212,7 +226,10 @@ export function HeroSection({ onLogin, onShowTerms, onShowPrivacy }: HeroSection
                             {/* Demo Button */}
                             <Button
                                 size="lg"
-                                className="w-full h-12 text-base bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300 hover:-translate-y-0.5"
+                                className={`w-full h-12 text-base transition-all duration-300 ${isNeobrutalist
+                                        ? 'bg-[#E63946] border-4 border-black shadow-[4px_4px_0_0_#000] hover:shadow-[6px_6px_0_0_#000] text-white font-black'
+                                        : 'bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5'
+                                    }`}
                                 onClick={() => handleLogin('demo')}
                                 disabled={!!isLoading}
                             >

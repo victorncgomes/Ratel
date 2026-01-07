@@ -341,13 +341,13 @@ export const es = {
         email_lists: 'Listas de Email',
         quick_cleanup: 'Limpieza Rápida',
         smart_views: 'Visualizaciones',
-        by_sender: 'Por Remitente',
-        by_size: 'Por Tamaño',
-        by_date: 'Por Fecha',
+        by_sender: 'Remitente',
+        by_size: 'Tamaño',
+        by_date: 'Fecha',
         newsletters: 'Newsletters',
         promotions: 'Promociones',
         protection: 'Protección',
-        shield: 'Shield (Bloqueados)',
-        rollup: 'Rollup (Agrupados)',
+        shield: 'Bloqueados',
+        rollup: 'Agrupados',
     }
 };

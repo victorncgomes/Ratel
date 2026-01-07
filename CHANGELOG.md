@@ -2,6 +2,78 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [0.2.9] - 2026-01-06
+
+### 🎮 Sistema de Gamificação COMPLETO
+
+#### Design System Neobrutalist
+- **`neobrutalism.css`** - Estilo inspirado em Super Mario Bros SNES + Anime Noir
+  - Bordas pretas grossas (4px), sombras offset (8px), sem border-radius
+  - Cores: preto, branco, branco-gelo (#F5F5F5), vermelho acento (#E63946)
+  - Componentes: cards, botões, badges, barras de progresso, territórios
+  - Animações: pulse, bounce, shake
+  - Responsivo para mobile
+
+#### Frases Engraçadas Trilíngue (80 iniciais → 200)
+- **`funnyMessages.ts`** - Tabela editável PT/EN/ES
+  - Categorias: Política, Stalker, Absurdo, Tech/Nerd, Cotidiano, Autoironia IA
+  - Rotação automática a cada 3 segundos no LoadingScreen
+  - Funções: `getRandomFunnyMessage()`, `getAllFunnyMessages()`, `getFunnyMessageById()`
+
+#### Sistema de Badges (15 iniciais)
+- **`badges.ts`** - Badges trilíngue com tiers Bronze/Silver/Gold
+  - First Blood, Honey Badger, Spam Slayer, Newsletter Destroyer
+  - Week Warrior, Month Master, Inbox Zero Hero, Email Annihilator
+  - Badges secretos: Night Owl, Speed Demon
+  - Recompensas: 10-1000 créditos por badge
+
+#### Sistema de Territórios (4 mapas)
+- **`territories.ts`** - Progressão estilo Super Mario
+  - Floresta do Spam (100 emails, 10 unsubs)
+  - Montanha das Newsletters (500 emails, 50 unsubs)
+  - Deserto Corporativo (1000 emails, 100 unsubs)
+  - Infinito e Além (∞)
+  - Inimigos: Chacal, Leão, Tigre, Elefante
+
+#### Sistema de Créditos Freemium
+- **`credits.ts`** - Economia com limites diários
+  - FREE: 10 exclusões + 5 unsubscribes/dia, 100 créditos iniciais
+  - PRO: Ações ilimitadas, todos os badges/territórios
+  - Ganhos: +2 por email, +5 por unsub, +50 por badge, +200 por território
+
+#### Hooks de Gamificação
+- **`useProgression.ts`** - Gerencia progressão, streaks, territórios
+- **`useBadges.ts`** - Verificação automática de desbloqueio, cálculo de progresso
+- **`useCredits.ts`** - Economia, limites diários, upgrade PRO
+
+#### Componentes React
+- **`LoadingScreen.tsx`** - Carregamento até 10k emails com barra de progresso e frases engraçadas
+- **`CreditsDisplay.tsx`** - Créditos, streak, ações restantes
+- **`BadgeGallery.tsx`** - Galeria com filtros e modal de detalhes
+- **`TerritoryNode.tsx`** - Nó do mapa com animações e estados
+- **`MapView.tsx`** - Mapa de progressão (substitui Dashboard) estilo Super Mario
+
+### 📁 Novos Arquivos (14 total)
+```
+src/styles/neobrutalism.css
+src/lib/gamification/funnyMessages.ts
+src/lib/gamification/badges.ts
+src/lib/gamification/territories.ts
+src/lib/gamification/credits.ts
+src/lib/gamification/index.ts
+src/hooks/useProgression.ts
+src/hooks/useBadges.ts
+src/hooks/useCredits.ts
+src/components/gamification/LoadingScreen.tsx
+src/components/gamification/CreditsDisplay.tsx
+src/components/gamification/BadgeGallery.tsx
+src/components/gamification/TerritoryNode.tsx
+src/components/gamification/MapView.tsx
+src/components/gamification/index.tsx
+```
+
+---
+
 ## [0.2.7] - 2026-01-06
 
 ### 🧹 Auditoria e Limpeza de Código
