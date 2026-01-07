@@ -2,208 +2,152 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [0.2.11] - 2026-01-06 (Atual)
+### 🚑 Correções Críticas e UI
+- **Processing Screen Restaurada**: Reativada a tela de carregamento "Ratel Furioso" com frases do "The Sims" e vinculada ao carregamento progressivo real de emails.
+- **Correção de Carregamento**: Implementado carregamento em lotes (chunks de 500) para evitar travamento da interface em caixas de entrada grandes (10k+).
+- **Ícones da Sidebar**: Substituídos ícones genéricos (olho, balança) por ícones semânticos (User, HardDrive, Newspaper).
+- **UI Neobrutalista**: Adicionados headers e estilos de borda/sombra explicitos nas views "Por Remetente", "Tamanho" e "Newsletters".
+- **Limpeza de Settings**: Removida barra superior desnecessária no Perfil e corrigido itálico no menu de usuário.
+
+## [0.2.10] - 2026-01-06
+### 🎨 Landing Page & Temas
+- **Landing Page Dual Theme**: Implementado suporte completo a troca de temas (Glassmorphism e Neobrutalism) em todas as seções (Hero, Features, Stats, Testimonials).
+- **Integração de Tema Global**: O seletor de tema agora persiste a escolha e afeta toda a aplicação, incluindo a Landing Page pública.
+
 ## [0.2.9] - 2026-01-06
+### 🎮 Gamificação Avançada
+- **MapView Horizontal**: Layout de mapa de fases estilo "Super Mario World" com scroll horizontal.
+- **Sistema de Badges**: Implementada galeria de conquistas com validação automática.
+- **Funny Messages**: Adicionadas 200+ frases de carregamento trilíngues.
 
-### 🎮 Sistema de Gamificação COMPLETO
+## [0.2.8] - 2026-01-05
+### 💠 Design System Neobrutalism
+- **Estilo Visual**: Criação do token de design `neobrutalism` (bordas 4px, sombras duras, cores vibrantes).
+- **Componentes**: Adaptação de Cards, Botões e Badges para suportar variante brutalista.
 
-#### Design System Neobrutalist
-- **`neobrutalism.css`** - Estilo inspirado em Super Mario Bros SNES + Anime Noir
-  - Bordas pretas grossas (4px), sombras offset (8px), sem border-radius
-  - Cores: preto, branco, branco-gelo (#F5F5F5), vermelho acento (#E63946)
-  - Componentes: cards, botões, badges, barras de progresso, territórios
-  - Animações: pulse, bounce, shake
-  - Responsivo para mobile
+## [0.2.7] - 2026-01-05
+### 🧹 Auditoria e Otimização
+- **Limpeza de Código**: Remoção do antigo sistema RATE e hooks não utilizados.
+- **Outlook Support**: Melhorias na contagem de spam/lixo para contas Microsoft.
+- **Architectural Docs**: Criação do `ARCHITECTURE.md` e `RATEL_BLUEPRINT.md`.
 
-#### Frases Engraçadas Trilíngue (80 iniciais → 200)
-- **`funnyMessages.ts`** - Tabela editável PT/EN/ES
-  - Categorias: Política, Stalker, Absurdo, Tech/Nerd, Cotidiano, Autoironia IA
-  - Rotação automática a cada 3 segundos no LoadingScreen
-  - Funções: `getRandomFunnyMessage()`, `getAllFunnyMessages()`, `getFunnyMessageById()`
+## [0.2.6] - 2026-01-04
+### 🌍 Internacionalização
+- **i18n**: Suporte completo a Português (PT), Inglês (EN) e Espanhol (ES) via `LanguageContext`.
+- **Traduções**: Arquivos de tradução JSON para todas as strings da UI.
 
-#### Sistema de Badges (15 iniciais)
-- **`badges.ts`** - Badges trilíngue com tiers Bronze/Silver/Gold
-  - First Blood, Honey Badger, Spam Slayer, Newsletter Destroyer
-  - Week Warrior, Month Master, Inbox Zero Hero, Email Annihilator
-  - Badges secretos: Night Owl, Speed Demon
-  - Recompensas: 10-1000 créditos por badge
+## [0.2.5] - 2026-01-04
+### 🛡️ Shield & Proteção
+- **Auto-Block**: Funcionalidade para bloquear remetentes indesejados automaticamente.
+- **Spam Analysis**: Detecção aprimorada de padrões de spam baseada em keywords.
 
-#### Sistema de Territórios (4 mapas)
-- **`territories.ts`** - Progressão estilo Super Mario
-  - Floresta do Spam (100 emails, 10 unsubs)
-  - Montanha das Newsletters (500 emails, 50 unsubs)
-  - Deserto Corporativo (1000 emails, 100 unsubs)
-  - Infinito e Além (∞)
-  - Inimigos: Chacal, Leão, Tigre, Elefante
+## [0.2.4] - 2026-01-03
+### 🗞️ Newsletter Management
+- **Smart View: Newsletters**: Detecção automática de emails com link de unsubscribe.
+- **Rollup**: Funcionalidade para agrupar newsletters em um resumo diário (mockup).
 
-#### Sistema de Créditos Freemium
-- **`credits.ts`** - Economia com limites diários
-  - FREE: 10 exclusões + 5 unsubscribes/dia, 100 créditos iniciais
-  - PRO: Ações ilimitadas, todos os badges/territórios
-  - Ganhos: +2 por email, +5 por unsub, +50 por badge, +200 por território
+## [0.2.3] - 2026-01-03
+### 🧹 Deep Cleaning
+- **Filtros Avançados**: Limpeza por tamanho (>5MB) e por antiguidade (>1 ano).
+- **Bulk Actions**: Seleção e exclusão em massa com performance otimizada.
 
-#### Hooks de Gamificação
-- **`useProgression.ts`** - Gerencia progressão, streaks, territórios
-- **`useBadges.ts`** - Verificação automática de desbloqueio, cálculo de progresso
-- **`useCredits.ts`** - Economia, limites diários, upgrade PRO
+## [0.2.2] - 2026-01-02
+### 💅 UI Overhaul (Tailwind)
+- **Refatoração Visual**: Migração completa de CSS modules para Tailwind CSS.
+- **Responsividade**: Layout responsivo para Mobile e Tablet.
+- **Sidebar**: Nova navegação retrátil.
 
-#### Componentes React
-- **`LoadingScreen.tsx`** - Carregamento até 10k emails com barra de progresso e frases engraçadas
-- **`CreditsDisplay.tsx`** - Créditos, streak, ações restantes
-- **`BadgeGallery.tsx`** - Galeria com filtros e modal de detalhes
-- **`TerritoryNode.tsx`** - Nó do mapa com animações e estados
-- **`MapView.tsx`** - Mapa de progressão (substitui Dashboard) estilo Super Mario
+## [0.2.1] - 2026-01-02
+### 📥 Inbox Features
+- **Lista Virtualizada**: Implementação de `tanstack-virtual` para performance em listas longas.
+- **Agrupamento**: Visualização de emails agrupados por Remetente.
 
-### 📁 Novos Arquivos (14 total)
-```
-src/styles/neobrutalism.css
-src/lib/gamification/funnyMessages.ts
-src/lib/gamification/badges.ts
-src/lib/gamification/territories.ts
-src/lib/gamification/credits.ts
-src/lib/gamification/index.ts
-src/hooks/useProgression.ts
-src/hooks/useBadges.ts
-src/hooks/useCredits.ts
-src/components/gamification/LoadingScreen.tsx
-src/components/gamification/CreditsDisplay.tsx
-src/components/gamification/BadgeGallery.tsx
-src/components/gamification/TerritoryNode.tsx
-src/components/gamification/MapView.tsx
-src/components/gamification/index.tsx
-```
+## [0.2.0] - 2026-01-01
+### 🚀 Backend Migration
+- **Node.js + Express**: Migração do backend para servidor Express dedicado.
+- **API Proxy**: Rotas seguras para comunicar com Gmail/Outlook APIs.
 
----
+## [0.1.9] - 2025-12-31
+### 💾 Data Persistence
+- **IndexedDB**: Implementação de cache local para emails usando `idb`.
+- **Offline Mode**: Acesso básico a emails cacheados sem internet.
 
-## [0.2.7] - 2026-01-06
+## [0.1.8] - 2025-12-30
+### 🔑 Auth System V2
+- **Unified Auth**: Sistema de login unificado para Google e Microsoft via Passport.js.
+- **Token Refresh**: Gestão automática de renovação de tokens.
 
-### 🧹 Auditoria e Limpeza de Código
-- **Remoção Completa do Sistema RATE** - Sistema de pontuação AI não funcional removido
-  - Deletados 6 arquivos frontend (`RateBadge`, `RateFilter`, `useRate`, `rateService`, `useLabels`, `useUserBehavior`)
-  - Deletado 1 arquivo backend (`server/services/rateService.js`)
-  - Removido endpoint `/api/rate/calculate`
-  - Removidas todas as referências em `MailListView.tsx` e `VirtualizedEmailList.tsx`
-- **Hooks Não Utilizados Removidos**
-  - `useLabels.ts` - Não estava sendo importado em nenhum componente
-  - `useUserBehavior.ts` - Não estava sendo utilizado
-- **Código Limpo e Otimizado**
-  - Redução de ~7% no total de linhas de código
-  - Build de produção sem erros (11.94s)
-  - Todas as funcionalidades testadas e operacionais
+## [0.1.7] - 2025-12-28
+### 📧 Email Parsing
+- **Body Parser**: Extração segura de conteúdo HTML e Texto de emails.
+- **Sanitization**: Proteção contra XSS em visualização de emails.
 
-### 🔧 Melhorias
-- **Suporte Completo ao Outlook** - Implementada contagem de spam e lixeira para Microsoft Graph API
-  - Função `getOutlookSpamTrashCount` em `cleanupService.js`
-  - Integração com `analyzeInbox` para Outlook
-- **Favicon** - Adicionado favicon.png para resolver erro 404
-- **Documentação** - Criado `docs/ARCHITECTURE.md` com arquitetura completa do projeto
-  - Estrutura de pastas detalhada
-  - Fluxos de autenticação OAuth
-  - Integração com APIs (Gmail/Outlook)
-  - Sistema de temas e componentes
-  - Rotas da API e serviços backend
-- **README** - Atualizado com informações completas do projeto
+## [0.1.6] - 2025-12-25
+### 🔌 Microsoft Integration
+- **Outlook API**: Conexão inicial com Microsoft Graph API.
+- **Folder Sync**: Sincronização básica de pastas do Outlook.
 
-### ✅ Funcionalidades Verificadas
-- Autenticação OAuth (Google + Microsoft) ✅
-- Dashboard com estatísticas reais ✅
-- Detecção e gerenciamento de newsletters ✅
-- Limpeza rápida e Deep Cleaning ✅
-- Shield (bloqueio) e Rollup (agrupamento) ✅
-- Modo Demo ✅
-- Internacionalização (PT/EN/ES) ✅
-- Tema claro/escuro ✅
+## [0.1.5] - 2025-12-23
+### 🔌 Gmail Integration
+- **Gmail API**: Conexão inicial com Google API.
+- **Label Sync**: Leitura de labels e categorias do Gmail.
 
+## [0.1.4] - 2025-12-20
+### 🏗️ Project Structure
+- **Vite Setup**: Migração de CRA para Vite.
+- **TypeScript**: Configuração estrita de tipos e interfaces base.
 
+## [0.1.3] - 2025-12-18
+### 🎨 Design Concept
+- **Mockups**: Prototipagem da interface "Glassmorphism".
+- **Assets**: Criação de logo e identidade visual inicial.
 
-## [0.2.6] - 2026-01-05
+## [0.1.2] - 2025-12-15
+### 🔐 Auth Prototype
+- **Login POC**: Prova de conceito de login com Google OAuth.
 
+## [0.1.1] - 2025-12-10
+### 📝 Planning
+- **Requirements**: Definição de escopo e funcionalidades MVP.
+- **Tech Stack**: Seleção de React, Node, Tailwind.
 
-### ✨ Novidades
-- **Sistema RATE (IA)** - Pontuação inteligente 0-100 para cada email baseada em comportamento
-  - `useUserBehavior` hook para tracking de ações
-  - `rateService` com cálculo local + integração Gemini API
-  - `RateBadge` componente visual com cores e emojis
-- **Layout Mailstrom** - Interface três colunas com grupos e contagens
-  - `GroupsColumn` para visualização agrupada
-  - `BulkActionsToolbar` com Deletar, Bloquear, Spam, Rollup, Cancelar Inscrição
-- **Botão Rollup** - Agrupar emails no Rollup diário
+## [0.1.0] - 2025-12-01
+### 🎉 Initial Commit
+- **Repository**: Criação do repositório.
+- **Hello World**: Setup inicial do ambiente de desenvolvimento.
 
-### 🎨 Design
-- **Tema NOIR (Dark Mode)** - Preto profundo, branco gelo, vermelho sangue/rosa choque
-- **Containers Quadrados** - Substituídos rounded-2xl por rounded-sm
-- **Aurora Glassmorphism** - Gradientes azul→roxo→rosa no tema claro
-- **Removidos Headers Redundantes** - UX mais limpa
+## [0.0.8] - 2025-11-28
+### 🧪 Feasibility Study
+- Análise de APIs de email.
+- Testes de performance com listas grandes.
 
-### 🔧 Melhorias
-- Classificação "Por Data" estilo Mailstrom (Ontem, Esta semana, Meses)
-- Subscriptions: Cancelar Tudo movido para ao lado da pesquisa
-- Labels página removida (consolidada em outras views)
+## [0.0.7] - 2025-11-25
+### 🧠 Ideation
+- Brainstorming do conceito "Ratel".
+- Definição da persona do usuário.
 
----
+## [0.0.6] - 2025-11-20
+### 📊 Market Analysis
+- Estudo de concorrentes (Mailstrom, Cleanfox).
+- Identificação de oportunidades de nicho (Gamificação).
 
-## [0.2.5] - 2026-01-05
+## [0.0.5] - 2025-11-15
+### 📝 Conceptual Draft
+- Rascunhos iniciais de wireframes.
 
-### ✨ Novidades
-- **UI Glassmorphism/Claymorphism** - Redesign completo
-- **Landing Page Premium** - Nova página de entrada com traduções
-- **RatelFuriosoModal** simplificado
+## [0.0.4] - 2025-11-10
+### 💡 Inception
+- Ideia inicial do projeto surgida.
 
-### 🔧 Melhorias
-- Dashboard com cards glass/clay
-- Cleanup page com categorias visuais
-- Sidebar com menu de usuário
+## [0.0.3] - 2025-11-05
+### 🥚 Pre-Alpha Research
+- Pesquisa sobre limitações de IMAP/POP3 vs APIs REST.
 
----
+## [0.0.2] - 2025-11-01
+### 🌑 Void
+- O caos antes da criação.
 
-## [0.2.4] - 2026-01-05
-
-### ✨ Novidades
-- **Página de Termos de Uso** (`/terms`)
-- **Página de Política de Privacidade** (`/privacy`)
-- **Aceite de Termos no Login** - Checkbox obrigatório
-
-### 🔧 Melhorias
-- LoginPage redesenhada com badge de segurança
-
----
-
-## [0.2.3] - 2026-01-05
-
-### ✨ Novidades
-- **Sistema Shield/Rollup** - Backend para bloqueio e agrupamento
-- **API de Mensagens Genérica** (`/api/messages`)
-
-### 🔧 Melhorias
-- Página de Limpeza exibe contagem real de Spam e Lixeira
-- Backend de Análise retorna Rascunhos, Spam e Lixeira
-
----
-
-## [0.2.2] - 2026-01-04
-
-### 🐛 Correções
-- Corrigido erro de sintaxe em `Cleanup.tsx`
-- Removidos imports não utilizados
-- Sidebar menu Italic corrigido
-
----
-
-## [0.2.1] - 2026-01-04
-
-### ✨ Novidades
-- **Ratel Furioso** - Cancelamento em massa de inscrições
-- **Modo Demo** - Funciona sem login
-
-### 🔧 Melhorias
-- Dashboard com estatísticas
-- Detecção automática de newsletters
-
----
-
-## [0.2.0] - 2026-01-04 (Release Inicial)
-
-### Funcionalidades
-- Login com Google e Microsoft OAuth
-- Detecção automática de inscrições/newsletters
-- Página de Inscrições com ações: Arquivar, Deletar, Cancelar Inscrição
-- Página de Limpeza com análise de emails antigos, grandes e rascunhos
+## [0.0.1] - 2025-10-25
+### 💥 Big Bang
+- A singularidade do projeto.

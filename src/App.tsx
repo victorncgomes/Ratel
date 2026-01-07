@@ -412,6 +412,10 @@ function RatelApp() {
                                     <LogOut className="h-4 w-4" />
                                     <span className="not-italic">{t('user_menu.logout')}</span>
                                 </button>
+                                <hr className="my-1 border-border" />
+                                <div className="px-3 py-1.5 text-[10px] text-center text-muted-foreground font-mono">
+                                    v0.2.11
+                                </div>
                             </div>
                         )}
                     </div>

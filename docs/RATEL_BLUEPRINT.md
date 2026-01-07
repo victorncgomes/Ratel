@@ -1,6 +1,6 @@
 # 🦡 RATEL - BLUEPRINT COMPLETO DE RECONSTRUÇÃO
 
-**Versão**: 0.2.7  
+**Versão**: 0.2.11  
 **Data**: 06/01/2026  
 **Status**: Produção  
 **Desenvolvedor**: Paranaue (Mídia e Marketing)
