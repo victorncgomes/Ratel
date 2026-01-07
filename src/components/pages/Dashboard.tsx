@@ -222,10 +222,14 @@ export function DashboardPage({ onNavigate }: DashboardProps) {
             </Card>
 
             {/* Achievements Section */}
-            <div>
-                <h2 className="text-xl font-bold mb-4">{t('common.achievements')}</h2>
-                <BadgeGallery />
-            </div>
+            <Card className="mt-8 border-2 border-black shadow-[4px_4px_0_0_#000]">
+                <CardHeader>
+                    <CardTitle className="text-xl font-bold">{t('common.achievements')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <BadgeGallery />
+                </CardContent>
+            </Card>
         </div>
     );
 }
