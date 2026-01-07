@@ -63,25 +63,16 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
     });
 
     // Parallax effect logic
-    // If image is on Right (isEven=true): 
-    //   Enters from Right (+50% to 0) -> Exits to Left (0 to -50%)
-    // If image is on Left (isEven=false):
-    //   Enters from Left (-50% to 0) -> Exits to Right (0 to +50%)
-
-    // Original working animation: smooth enter from side, center, exit to opposite side
     const xInput = [0, 0.5, 1];
 
-    // Bounce back: enter from side, center, return to same side
-    // Index 2 (Limpeza) needs to go further left at center (-30%)
-    // Index 1 (Intelligence) and 5 (Newsletters) need to go further right at center (+25%)
     const displacement = (index === 2 || index === 3) ? "100%" : "80%";
     const negDisplacement = (index === 2 || index === 3) ? "-100%" : "-80%";
 
     let centerTarget = "0%";
     if (index === 2) centerTarget = "-30%";
-    else if (index === 0) centerTarget = "-15%"; // Filosofia: mais 5 pontos para esquerda (era -10%)
-    else if (index === 1) centerTarget = "5%"; // Classificação: mais para esquerda (era 15%)
-    else if (index === 5) centerTarget = "10%"; // Newsletters
+    else if (index === 0) centerTarget = "-15%";
+    else if (index === 1) centerTarget = "5%";
+    else if (index === 5) centerTarget = "10%";
 
     const rightImageOutput = [displacement, centerTarget, displacement];
     const leftImageOutput = [negDisplacement, centerTarget, negDisplacement];
@@ -93,7 +84,6 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
     );
 
     const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
-    // Removed dynamic scale as requested
 
     return (
         <div
@@ -101,16 +91,12 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
             className={`flex flex-col ${isEven ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-8 lg:gap-16 py-32 lg:py-48 min-h-screen overflow-hidden w-full max-w-full`}
         >
             {/* Image section */}
-            {/* Image section */}
             <div className="flex-1 w-full relative">
                 <motion.div
                     style={{ x, opacity }}
                     className="will-change-transform"
                 >
                     {feature.secondImage ? (
-                        // Two images side by side for merged sections
-                        // Order: secondImage (marketing) LEFT, image (shopping) RIGHT
-                        // Adjusted: Gap 30px, shifted left, responsive scale (0.8 mobile, 1.5 desktop)
                         <div className="flex flex-col sm:flex-row gap-2 sm:gap-[30px] items-center justify-center -translate-x-20 lg:-translate-x-36">
                             <img
                                 src={feature.secondImage}
@@ -136,13 +122,9 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
                             />
                         </div>
                     ) : (
-                        // Single image
                         <img
                             src={feature.image}
                             alt={t(`landing.features.${feature.id}_title`)}
-                            // ScaledDown Intelligence (index 1) to 1.05
-                            // ScaledDown Interrupt (index 3) to 1.35 (was 1.5)
-                            // ScaledUp Newsletters (index 5) to 1.15
                             className={`w-full h-auto object-contain contrast-105 mx-auto ${index === 0 ? 'scale-[1.2]' : ''} ${index === 1 ? 'scale-[1.26]' : ''} ${index === 2 ? 'scale-[1.5]' : ''} ${index === 3 ? 'scale-[1.35]' : ''} ${index === 5 ? 'scale-[1.15]' : ''}`}
                             style={{
                                 maxHeight: index === 0 ? undefined : '800px',
@@ -163,16 +145,16 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
                             {feature.emoji}
                         </span>
                         <h3 className={`text-3xl lg:text-5xl font-bold leading-tight ${isNeobrutalist
-                                ? 'bg-black text-white px-4 py-2 shadow-[4px_4px_0_0_#000]'
-                                : 'bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700'
+                            ? 'bg-black text-white px-4 py-2 shadow-[4px_4px_0_0_#000]'
+                            : 'bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700'
                             }`}>
                             {t(`landing.features.${feature.id}_title`)}
                         </h3>
                     </div>
 
                     <p className={`text-xl lg:text-2xl leading-relaxed ${isNeobrutalist
-                            ? 'font-bold border-l-4 border-black pl-4'
-                            : 'text-slate-600'
+                        ? 'font-bold border-l-4 border-black pl-4'
+                        : 'text-slate-600'
                         }`}>
                         {t(`landing.features.${feature.id}_desc`)}
                     </p>
@@ -200,7 +182,7 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
                         />
                     </div>
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 }
