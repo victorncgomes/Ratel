@@ -3,6 +3,7 @@ import { useScroll, useTransform, motion } from 'framer-motion';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useStyleTheme } from '../../contexts/StyleThemeContext';
 import { StatsSection } from './StatsSection';
+import { TestimonialsSection } from './TestimonialsSection';
 
 interface FeatureMetadata {
     id: string; // Key for translation: landing.features.card_N_title
@@ -154,49 +155,42 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
                 </motion.div>
             </div>
 
-            {/* Text content - with max-width constraint */}
-            <motion.div
-                className="flex-1 max-w-[1800px] mx-auto px-6 lg:px-12"
-                style={{
-                    opacity: useTransform(scrollYProgress, [0.1, 0.3, 0.7, 0.9], [0, 1, 1, 0]),
-                    y: useTransform(scrollYProgress, [0, 1], [100, -100]) // Parallax vertical for text
-                }}
-            >
-                <div className="max-w-lg mx-auto lg:mx-0">
-                    <div
-                        className={`inline-flex items-center gap-3 mb-8 px-5 py-3 ${isNeobrutalist
-                            ? 'bg-white border-2 border-black shadow-[4px_4px_0_0_#000] rounded-none'
-                            : 'bg-gradient-to-r from-blue-50 to-violet-50 rounded-full shadow-lg'
-                            }`}
-                    >
-                        <span className="text-5xl">{feature.emoji}</span>
-                        <div className={`h-8 w-px ${isNeobrutalist ? 'bg-black' : 'bg-slate-200'}`} />
-                        <span className={`text-sm font-medium uppercase tracking-wider ${isNeobrutalist ? 'text-black font-bold' : 'text-slate-500'}`}>{t('landing.features.feature_badge')}</span>
+            {/* Text Section */}
+            <div className="flex-1 z-10 w-full px-4 lg:px-8">
+                <div className={`max-w-2xl ${isEven ? 'mr-auto' : 'ml-auto text-right'}`}>
+                    <div className="flex items-center gap-4 mb-6 justify-start">
+                        <span className="text-4xl lg:text-6xl filter drop-shadow-lg animate-bounce-slow">
+                            {feature.emoji}
+                        </span>
+                        <h3 className={`text-3xl lg:text-5xl font-bold leading-tight ${isNeobrutalist
+                                ? 'bg-black text-white px-4 py-2 shadow-[4px_4px_0_0_#000]'
+                                : 'bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700'
+                            }`}>
+                            {t(`landing.features.${feature.id}_title`)}
+                        </h3>
                     </div>
 
-                    <h3 className="text-5xl lg:text-6xl font-bold text-slate-800 mb-10 leading-tight">
-                        {t(`landing.features.${feature.id}_title`)}
-                    </h3>
-
-                    <p className="text-2xl text-slate-600 leading-relaxed mb-10">
+                    <p className={`text-xl lg:text-2xl leading-relaxed ${isNeobrutalist
+                            ? 'font-bold border-l-4 border-black pl-4'
+                            : 'text-slate-600'
+                        }`}>
                         {t(`landing.features.${feature.id}_desc`)}
                     </p>
 
-                    <div className="flex items-center gap-4">
-                        <motion.div
-                            initial={{ width: 0, x: 50 }}
-                            whileInView={{ width: "5rem", x: 0 }}
-                            viewport={{ once: false }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
-                            className="h-1.5 bg-gradient-to-r from-blue-500 to-violet-500 rounded-full"
-                        />
-                        <motion.div
-                            initial={{ width: 0, x: 40 }}
-                            whileInView={{ width: "2.5rem", x: 0 }}
-                            viewport={{ once: false }}
-                            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                            className="h-1.5 bg-gradient-to-r from-violet-500 to-pink-500 rounded-full"
-                        />
+                    {/* Features list */}
+                    <ul className={`mt-8 space-y-4 ${isEven ? 'text-left' : 'text-right'}`}>
+                        {[1, 2, 3].map((i) => (
+                            <li key={i} className={`flex items-center gap-3 ${!isEven && 'flex-row-reverse'}`}>
+                                <div className={`w-2 h-2 rounded-full ${isNeobrutalist ? 'bg-black' : 'bg-blue-500'}`} />
+                                <span className="text-lg text-slate-700">
+                                    {t(`landing.features.${feature.id}_point_${i}`)}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+
+                    {/* Progress indicator */}
+                    <div className={`mt-8 h-1.5 w-full max-w-[100px] bg-slate-100 rounded-full overflow-hidden ${!isEven && 'ml-auto'}`}>
                         <motion.div
                             initial={{ width: 0, x: 30 }}
                             whileInView={{ width: "1.25rem", x: 0 }}
@@ -215,11 +209,13 @@ export function FeaturesSection() {
     const { t } = useLanguage();
     const { isNeobrutalist } = useStyleTheme();
 
-    // Split features to insert StatsSection in between
+    // Split features to insert StatsSection and TestimonialsSection
     // First batch: Card 1 (Philosophy) + Card 2 (Intelligence)
     const firstBatch = FEATURES_METADATA.slice(0, 2);
-    // Second batch: Rest of cards
-    const secondBatch = FEATURES_METADATA.slice(2);
+    // Middle batch: Card 3 (Limpeza) + Card 4 (Não Me Perturbe) -> Entre Index 1 e 4 (2 e 3)
+    const middleBatch = FEATURES_METADATA.slice(2, 4);
+    // Last batch: Card 5 (Compras) + Card 6 (Newsletters) -> Index 4 em diante
+    const lastBatch = FEATURES_METADATA.slice(4);
 
     return (
         <div className="bg-white overflow-hidden">
@@ -258,13 +254,27 @@ export function FeaturesSection() {
             {/* Stats Section (Full Width) */}
             <StatsSection />
 
-            {/* Remaining Features */}
+            {/* Middle Features (Limpeza & Não Perturbe) */}
             <section className="relative py-0 bg-white">
                 <div className="max-w-[1800px] mx-auto">
                     <div className="space-y-0">
-                        {secondBatch.map((feature, index) => (
-                            // Add offset to index to maintain correct parity for alternating layout
+                        {middleBatch.map((feature, index) => (
                             <FeatureCard key={index + 2} feature={feature} index={index + 2} />
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Testimonials Section (Inserted Here) */}
+            <TestimonialsSection />
+
+            {/* Remaining Features (Compras & Newsletters) */}
+            <section className="relative py-0 bg-white">
+                <div className="max-w-[1800px] mx-auto">
+                    <div className="space-y-0">
+                        {lastBatch.map((feature, index) => (
+                            // Offset is 4 (2 from first + 2 from middle)
+                            <FeatureCard key={index + 4} feature={feature} index={index + 4} />
                         ))}
                     </div>
                 </div>
@@ -279,4 +289,3 @@ export function FeaturesSection() {
         </div>
     );
 }
-
