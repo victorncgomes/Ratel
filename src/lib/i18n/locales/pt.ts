@@ -346,8 +346,8 @@ export const pt = {
         by_date: 'Data',
         newsletters: 'Newsletters',
         promotions: 'Promoções',
-        protection: 'Proteção',
         shield: 'Bloqueados',
         rollup: 'Agrupados',
+        protection: 'Proteção'
     }
 };

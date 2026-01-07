@@ -67,7 +67,7 @@ export function HeroSection({ onLogin, onShowTerms, onShowPrivacy }: HeroSection
     const testimonialRole = testimonialKey.role ? t(`landing.testimonials.${testimonialKey.role}`) : '';
 
     return (
-        <section className={`min-h-screen flex flex-col relative overflow-hidden ${isNeobrutalist ? 'bg-[#FFDE59]' : 'bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100'}`}>
+        <section className="min-h-screen flex flex-col relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100">
             {/* Background Decoration - Hide in Neobrutalism */}
             {!isNeobrutalist && (
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">

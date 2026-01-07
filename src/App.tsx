@@ -135,16 +135,19 @@ function RatelApp() {
         { id: 'cleanup', icon: Trash2, label: 'Limpeza', badge: null },
     ];
 
-    const smartViews = [{ id: 'by-sender', label: t('sidebar.smart_views.by_sender'), icon: User, count: 12 },
-    { id: 'by-size', label: t('sidebar.smart_views.by_size'), icon: HardDrive, count: 5 },
-    { id: 'by-date', label: t('sidebar.smart_views.by_date'), icon: Calendar, count: '' },
-    { id: 'newsletters', label: t('sidebar.smart_views.newsletters'), icon: Newspaper, count: 42 },
-    { id: 'promotions', icon: Tag, label: t('sidebar.promotions'), count: 78 },
+    // Smart Views
+    const smartViews = [
+        { id: 'by-sender', label: t('sidebar.by_sender'), icon: User, count: 12 },
+        { id: 'by-size', label: t('sidebar.by_size'), icon: HardDrive, count: 5 },
+        { id: 'by-date', label: t('sidebar.by_date'), icon: Calendar, count: 0 },
+        { id: 'newsletters', label: t('sidebar.newsletters'), icon: Newspaper, count: 42 },
     ];
 
+    // Action Items (Shield & Rollup)
     const actionItems = [
-        { id: 'shield', icon: Shield, label: t('sidebar.shield'), count: 3 },
-        { id: 'rollup', icon: Package, label: t('sidebar.rollup'), count: 5 },
+        { id: 'promotions', label: t('sidebar.promotions'), icon: Tag, count: 78 },
+        { id: 'shield', label: t('sidebar.shield'), icon: Shield, count: 3 },
+        { id: 'rollup', label: t('sidebar.rollup'), icon: Package, count: 5 },
     ];
 
     const renderContent = () => {
@@ -307,7 +310,7 @@ function RatelApp() {
 
                     {/* Smart Views */}
                     <div className={`space-y-1 pt-4 mt-4 ${isNeobrutalist
-                        ? 'border-4 border-black p-3 shadow-[4px_4px_0_0_#000] bg-white'
+                        ? 'border-t-4 border-black pt-4'
                         : 'border-t border-slate-200'
                         }`}>
                         {smartViews.map((item) => (
@@ -333,7 +336,7 @@ function RatelApp() {
 
                     {/* Shield & Rollup */}
                     <div className={`space-y-1 pt-4 mt-4 ${isNeobrutalist
-                        ? 'border-4 border-black p-3 shadow-[4px_4px_0_0_#000] bg-white'
+                        ? 'border-t-4 border-black pt-4'
                         : 'border-t border-slate-200'
                         }`}>
                         {actionItems.map((item) => (
