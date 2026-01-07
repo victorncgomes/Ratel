@@ -67,13 +67,15 @@ export function HeroSection({ onLogin, onShowTerms, onShowPrivacy }: HeroSection
     const testimonialRole = testimonialKey.role ? t(`landing.testimonials.${testimonialKey.role}`) : '';
 
     return (
-        <section className="min-h-screen flex flex-col relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100">
-            {/* Background Decoration */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-blue-400/10 rounded-full blur-3xl" />
-                <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-violet-400/10 rounded-full blur-3xl" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-teal-400/5 rounded-full blur-3xl" />
-            </div>
+        <section className={`min-h-screen flex flex-col relative overflow-hidden ${isNeobrutalist ? 'bg-[#FFDE59]' : 'bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-100'}`}>
+            {/* Background Decoration - Hide in Neobrutalism */}
+            {!isNeobrutalist && (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-blue-400/10 rounded-full blur-3xl" />
+                    <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-violet-400/10 rounded-full blur-3xl" />
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-teal-400/5 rounded-full blur-3xl" />
+                </div>
+            )}
 
             {/* Language Selector - Absolute Top Right */}
             <div className="absolute top-6 right-6 z-50">
@@ -227,8 +229,8 @@ export function HeroSection({ onLogin, onShowTerms, onShowPrivacy }: HeroSection
                             <Button
                                 size="lg"
                                 className={`w-full h-12 text-base transition-all duration-300 ${isNeobrutalist
-                                        ? 'bg-[#E63946] border-4 border-black shadow-[4px_4px_0_0_#000] hover:shadow-[6px_6px_0_0_#000] text-white font-black'
-                                        : 'bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5'
+                                    ? 'bg-[#E63946] border-4 border-black shadow-[4px_4px_0_0_#000] hover:shadow-[6px_6px_0_0_#000] text-white font-black'
+                                    : 'bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white rounded-xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5'
                                     }`}
                                 onClick={() => handleLogin('demo')}
                                 disabled={!!isLoading}
@@ -244,7 +246,10 @@ export function HeroSection({ onLogin, onShowTerms, onShowPrivacy }: HeroSection
 
                     {/* Right Side - Testimonials Carousel (3/5) */}
                     <div className="lg:col-span-3 flex items-center justify-center">
-                        <div className="w-full max-w-xl p-8 lg:p-12 rounded-3xl bg-white/40 backdrop-blur-xl border border-white/50 shadow-2xl shadow-slate-200/50">
+                        <div className={`w-full max-w-xl p-8 lg:p-12 transition-all ${isNeobrutalist
+                            ? 'bg-white border-4 border-black shadow-[8px_8px_0_0_#000]'
+                            : 'rounded-3xl bg-white/40 backdrop-blur-xl border border-white/50 shadow-2xl shadow-slate-200/50'
+                            }`}>
                             <div
                                 className={`transition-all duration-500 ${fadeState === 'in' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                             >
@@ -280,8 +285,8 @@ export function HeroSection({ onLogin, onShowTerms, onShowPrivacy }: HeroSection
                                             }, 300);
                                         }}
                                         className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentTestimonial
-                                            ? 'bg-blue-600 w-6'
-                                            : 'bg-slate-300 hover:bg-slate-400'
+                                            ? (isNeobrutalist ? 'bg-black w-6 border border-black' : 'bg-blue-600 w-6')
+                                            : (isNeobrutalist ? 'bg-transparent border border-black' : 'bg-slate-300 hover:bg-slate-400')
                                             }`}
                                     />
                                 ))}

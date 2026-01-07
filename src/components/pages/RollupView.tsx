@@ -5,9 +5,11 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/badge';
 import { Package, Loader2, AlertCircle, Archive, CheckCircle } from 'lucide-react';
 import { showToast } from '../../lib/toast';
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
 
 export function RollupView() {
     const { rules, loading, error, fetchRules } = useRules();
+    const { isNeobrutalist } = useStyleTheme();
     const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
@@ -81,13 +83,13 @@ export function RollupView() {
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
+                <Card className={isNeobrutalist ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none' : ''}>
                     <CardContent className="p-4">
                         <div className="text-sm text-muted-foreground">Total de Remetentes</div>
                         <div className="text-2xl font-bold">{groups.length}</div>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className={isNeobrutalist ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none' : ''}>
                     <CardContent className="p-4">
                         <div className="text-sm text-muted-foreground">Total de Emails</div>
                         <div className="text-2xl font-bold">
@@ -95,7 +97,7 @@ export function RollupView() {
                         </div>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className={isNeobrutalist ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none' : ''}>
                     <CardContent className="p-4">
                         <div className="text-sm text-muted-foreground">Espaço Economizado</div>
                         <div className="text-2xl font-bold">~{Math.floor(groups.length * 2.5)} MB</div>
@@ -127,11 +129,14 @@ export function RollupView() {
                     </Card>
                 ) : (
                     groups.map((group) => (
-                        <Card key={group.sender} className="overflow-hidden hover:shadow-md transition-all">
+                        <Card key={group.sender} className={`overflow-hidden transition-all ${isNeobrutalist
+                            ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none hover:shadow-[6px_6px_0_0_#000] hover:-translate-y-1'
+                            : 'hover:shadow-md'
+                            }`}>
                             <CardHeader className="pb-3">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
+                                        <div className={`p-2 rounded-lg ${isNeobrutalist ? 'border-2 border-black shadow-[2px_2px_0_0_#000] font-bold' : ''} bg-blue-100 text-blue-600`}>
                                             <Package className="h-5 w-5" />
                                         </div>
                                         <div>
@@ -151,7 +156,9 @@ export function RollupView() {
                                         size="sm"
                                         onClick={() => handleMarkAllRead(group.sender)}
                                         disabled={actionLoading}
-                                        className="gap-2"
+                                        className={`gap-2 ${isNeobrutalist
+                                            ? 'border-2 border-black shadow-[2px_2px_0_0_#000] active:shadow-none hover:bg-gray-100'
+                                            : ''}`}
                                     >
                                         <CheckCircle className="h-4 w-4" />
                                         Marcar como Lidas
@@ -161,7 +168,9 @@ export function RollupView() {
                                         size="sm"
                                         onClick={() => handleArchiveAll(group.sender)}
                                         disabled={actionLoading}
-                                        className="gap-2"
+                                        className={`gap-2 ${isNeobrutalist
+                                            ? 'border-2 border-black shadow-[2px_2px_0_0_#000] active:shadow-none hover:bg-gray-100'
+                                            : ''}`}
                                     >
                                         <Archive className="h-4 w-4" />
                                         Arquivar Todas
@@ -174,7 +183,9 @@ export function RollupView() {
             </div>
 
             {/* Info */}
-            <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+            <Card className={`${isNeobrutalist
+                ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none bg-blue-50'
+                : 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'}`}>
                 <CardContent className="p-4 flex items-start gap-3">
                     <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
                     <div className="text-sm text-blue-900 dark:text-blue-100">

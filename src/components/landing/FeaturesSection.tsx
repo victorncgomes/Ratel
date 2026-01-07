@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { useScroll, useTransform, motion } from 'framer-motion';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
 import { StatsSection } from './StatsSection';
 
 interface FeatureMetadata {
@@ -46,6 +47,7 @@ const FEATURES_METADATA: FeatureMetadata[] = [
 
 function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: number }) {
     const { t } = useLanguage();
+    const { isNeobrutalist } = useStyleTheme();
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Inverted logic: 
@@ -162,11 +164,14 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
             >
                 <div className="max-w-lg mx-auto lg:mx-0">
                     <div
-                        className="inline-flex items-center gap-3 mb-8 px-5 py-3 bg-gradient-to-r from-blue-50 to-violet-50 rounded-full shadow-lg"
+                        className={`inline-flex items-center gap-3 mb-8 px-5 py-3 ${isNeobrutalist
+                            ? 'bg-white border-2 border-black shadow-[4px_4px_0_0_#000] rounded-none'
+                            : 'bg-gradient-to-r from-blue-50 to-violet-50 rounded-full shadow-lg'
+                            }`}
                     >
                         <span className="text-5xl">{feature.emoji}</span>
-                        <div className="h-8 w-px bg-slate-200" />
-                        <span className="text-sm font-medium text-slate-500 uppercase tracking-wider">{t('landing.features.feature_badge')}</span>
+                        <div className={`h-8 w-px ${isNeobrutalist ? 'bg-black' : 'bg-slate-200'}`} />
+                        <span className={`text-sm font-medium uppercase tracking-wider ${isNeobrutalist ? 'text-black font-bold' : 'text-slate-500'}`}>{t('landing.features.feature_badge')}</span>
                     </div>
 
                     <h3 className="text-5xl lg:text-6xl font-bold text-slate-800 mb-10 leading-tight">
@@ -208,6 +213,7 @@ function FeatureCard({ feature, index }: { feature: FeatureMetadata; index: numb
 
 export function FeaturesSection() {
     const { t } = useLanguage();
+    const { isNeobrutalist } = useStyleTheme();
 
     // Split features to insert StatsSection in between
     // First batch: Card 1 (Philosophy) + Card 2 (Intelligence)
@@ -221,7 +227,10 @@ export function FeaturesSection() {
             <section className="relative pt-24 lg:pt-40 pb-0">
                 <div className="max-w-[1800px] mx-auto">
                     <div className="text-center mb-16 px-4 lg:px-0">
-                        <span className="inline-block px-5 py-2.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-8 shadow-md">
+                        <span className={`inline-block px-5 py-2.5 rounded-full text-sm font-medium mb-8 ${isNeobrutalist
+                            ? 'bg-[#E63946] text-white border-2 border-black shadow-[4px_4px_0_0_#000] rounded-none font-bold'
+                            : 'bg-blue-100 text-blue-700 shadow-md'
+                            }`}>
                             {t('landing.features.title_badge')}
                         </span>
                         {/* Mobile: texto em container branco com padding e fonte menor */}

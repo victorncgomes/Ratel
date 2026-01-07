@@ -1,8 +1,11 @@
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
+
 export function FooterSection() {
+    const { isNeobrutalist } = useStyleTheme();
     return (
         // Changed bg-white to bg-slate-50 to match the end of TestimonialsSection gradient for seamless blending.
         // The image's transparency will now reveal this matching background.
-        <footer className="relative w-full bg-slate-50 mt-[-1px]">
+        <footer className={`relative w-full mt-[-1px] ${isNeobrutalist ? 'bg-[#FFDE59]' : 'bg-slate-50'}`}>
             <div className="relative w-full">
                 {/* 
                    Seamless Integration using CSS Mask

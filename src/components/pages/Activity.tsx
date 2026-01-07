@@ -1,9 +1,11 @@
 import { useLanguage } from '../../contexts/LanguageContext';
 import { Card } from '../ui/Card';
 import { Mail, Trash2, Archive, Reply, Forward } from 'lucide-react';
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
 
 export function ActivityPage() {
     const { t } = useLanguage();
+    const { isNeobrutalist } = useStyleTheme();
 
     const mockActivity = [
         {
@@ -57,7 +59,10 @@ export function ActivityPage() {
                             <item.icon className={`h-5 w-5 ${item.color}`} />
                         </div>
 
-                        <Card className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 hover:shadow-md transition-shadow">
+                        <Card className={`w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 transition-all ${isNeobrutalist
+                            ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none hover:shadow-[6px_6px_0_0_#000]'
+                            : 'hover:shadow-md'
+                            }`}>
                             <div className="font-bold text-slate-900 dark:text-slate-100">{item.action}</div>
                             <div className="text-sm text-slate-500 dark:text-slate-400">{item.target}</div>
                             <time className="block text-xs font-medium text-slate-400 mt-2">{item.time}</time>

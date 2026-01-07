@@ -1,6 +1,5 @@
 
-import React from 'react';
-import { motion } from 'framer-motion';
+
 import { useAchievements } from '../../hooks/useAchievements';
 import { Achievement, AchievementTier } from '../../lib/gamification/achievements';
 import { useProgression } from '../../hooks/useProgression';
@@ -28,7 +27,7 @@ export default function AchievementsGallery() {
     return (
         <div className="brutal-card" style={{ background: '#FFF', padding: '1.5rem', marginTop: '1rem' }}>
             <h3 className="brutal-title brutal-title-sm" style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-                🏆 Galeria de Conquistas
+                🏆 CONQUISTAS
             </h3>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>

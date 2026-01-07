@@ -1,12 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { ArrowLeft, Shield, Lock, Eye, Trash2 } from 'lucide-react';
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
 
 interface PrivacyPageProps {
     onBack: () => void;
 }
 
 export function PrivacyPage({ onBack }: PrivacyPageProps) {
+    const { isNeobrutalist } = useStyleTheme();
     return (
         <div className="min-h-screen bg-background p-6">
             <div className="max-w-3xl mx-auto">
@@ -15,7 +17,7 @@ export function PrivacyPage({ onBack }: PrivacyPageProps) {
                     Voltar
                 </Button>
 
-                <Card className="mb-6">
+                <Card className={`mb-6 ${isNeobrutalist ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none' : ''}`}>
                     <CardHeader>
                         <CardTitle className="text-2xl">Política de Privacidade</CardTitle>
                         <CardDescription>Última atualização: Janeiro 2026</CardDescription>
@@ -23,28 +25,28 @@ export function PrivacyPage({ onBack }: PrivacyPageProps) {
                     <CardContent className="space-y-6">
                         {/* Resumo Visual */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="flex items-start gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                            <div className={`flex items-start gap-3 p-4 rounded-lg bg-green-500/10 border border-green-500/20 ${isNeobrutalist ? 'border-2 border-black shadow-[2px_2px_0_0_#000] rounded-none bg-white' : ''}`}>
                                 <Shield className="h-5 w-5 text-green-600 mt-0.5" />
                                 <div>
                                     <p className="font-medium text-sm">Não vendemos seus dados</p>
                                     <p className="text-xs text-muted-foreground">Seus dados são seus. Ponto.</p>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                            <div className={`flex items-start gap-3 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20 ${isNeobrutalist ? 'border-2 border-black shadow-[2px_2px_0_0_#000] rounded-none bg-white' : ''}`}>
                                 <Lock className="h-5 w-5 text-blue-600 mt-0.5" />
                                 <div>
                                     <p className="font-medium text-sm">Criptografia SSL</p>
                                     <p className="text-xs text-muted-foreground">Dados protegidos em trânsito</p>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-3 p-4 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                            <div className={`flex items-start gap-3 p-4 rounded-lg bg-purple-500/10 border border-purple-500/20 ${isNeobrutalist ? 'border-2 border-black shadow-[2px_2px_0_0_#000] rounded-none bg-white' : ''}`}>
                                 <Eye className="h-5 w-5 text-purple-600 mt-0.5" />
                                 <div>
                                     <p className="font-medium text-sm">Acesso mínimo</p>
                                     <p className="text-xs text-muted-foreground">Só acessamos o necessário</p>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-3 p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+                            <div className={`flex items-start gap-3 p-4 rounded-lg bg-red-500/10 border border-red-500/20 ${isNeobrutalist ? 'border-2 border-black shadow-[2px_2px_0_0_#000] rounded-none bg-white' : ''}`}>
                                 <Trash2 className="h-5 w-5 text-red-600 mt-0.5" />
                                 <div>
                                     <p className="font-medium text-sm">Exclusão a qualquer momento</p>

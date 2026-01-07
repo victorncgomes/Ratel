@@ -1,12 +1,14 @@
 import { useIntersectionObserver } from '../../hooks/useLandingAnimations';
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
 
 export function PhilosophySection() {
     const { ref, hasIntersected } = useIntersectionObserver({ threshold: 0.2 });
+    const { isNeobrutalist } = useStyleTheme();
 
     return (
         <section
             ref={ref}
-            className="relative py-24 lg:py-32 bg-gradient-to-b from-white to-slate-50"
+            className={`relative py-24 lg:py-32 ${isNeobrutalist ? 'bg-white' : 'bg-gradient-to-b from-white to-slate-50'}`}
         >
             {/* Content */}
             <div className="max-w-4xl mx-auto px-6">
@@ -39,20 +41,29 @@ export function PhilosophySection() {
                     </div>
 
                     <div className="mt-12 flex flex-wrap justify-center gap-8">
-                        <div className="flex items-center gap-3 text-slate-700">
-                            <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center">
+                        <div className={`flex items-center gap-3 ${isNeobrutalist ? 'text-black' : 'text-slate-700'}`}>
+                            <div className={`w-14 h-14 transition-all flex items-center justify-center ${isNeobrutalist
+                                    ? 'bg-blue-100 border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none'
+                                    : 'rounded-2xl bg-blue-100'
+                                }`}>
                                 <span className="text-2xl">🧠</span>
                             </div>
                             <span className="font-medium">IA Gemini</span>
                         </div>
-                        <div className="flex items-center gap-3 text-slate-700">
-                            <div className="w-14 h-14 rounded-2xl bg-green-100 flex items-center justify-center">
+                        <div className={`flex items-center gap-3 ${isNeobrutalist ? 'text-black' : 'text-slate-700'}`}>
+                            <div className={`w-14 h-14 transition-all flex items-center justify-center ${isNeobrutalist
+                                    ? 'bg-green-100 border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none'
+                                    : 'rounded-2xl bg-green-100'
+                                }`}>
                                 <span className="text-2xl">⚡</span>
                             </div>
                             <span className="font-medium">Limpeza Instantânea</span>
                         </div>
-                        <div className="flex items-center gap-3 text-slate-700">
-                            <div className="w-14 h-14 rounded-2xl bg-violet-100 flex items-center justify-center">
+                        <div className={`flex items-center gap-3 ${isNeobrutalist ? 'text-black' : 'text-slate-700'}`}>
+                            <div className={`w-14 h-14 transition-all flex items-center justify-center ${isNeobrutalist
+                                    ? 'bg-violet-100 border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none'
+                                    : 'rounded-2xl bg-violet-100'
+                                }`}>
                                 <span className="text-2xl">🔒</span>
                             </div>
                             <span className="font-medium">100% Seguro</span>

@@ -120,7 +120,11 @@ export function HelpPage() {
                         </div>
                         <div className="space-y-4">
                             {Array.isArray(releases) && releases.map((release) => (
-                                <Card key={release.version} className={release.type === 'minor' ? 'border-primary/50 bg-primary/5' : ''}>
+                                <Card key={release.version} className={
+                                    isNeobrutalist
+                                        ? `border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none ${release.type === 'minor' ? 'bg-primary/5' : 'bg-white'}`
+                                        : `${release.type === 'minor' ? 'border-primary/50 bg-primary/5' : ''}`
+                                }>
                                     <CardHeader className="pb-2">
                                         <div className="flex items-center justify-between">
                                             <CardTitle className="text-lg flex items-center gap-2">
@@ -151,7 +155,7 @@ export function HelpPage() {
                 {/* Quem Somos */}
                 {activeTab === 'about' && (
                     <div className="space-y-8 animate-in fade-in duration-300">
-                        <Card className="overflow-hidden">
+                        <Card className={`overflow-hidden ${isNeobrutalist ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none' : ''}`}>
                             <div className="bg-gradient-to-r from-primary to-fluent-purple p-8 text-white">
                                 <h3 className="text-3xl font-heading font-bold mb-2">{t('help_page.paranaue.title')}</h3>
                                 <p className="text-lg opacity-90">{t('help_page.paranaue.subtitle')}</p>
@@ -190,7 +194,7 @@ export function HelpPage() {
                 {activeTab === 'faq' && (
                     <div className="space-y-4 animate-in fade-in duration-300">
                         {Array.isArray(faqs) && faqs.map((item, i) => (
-                            <Card key={i}>
+                            <Card key={i} className={isNeobrutalist ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none' : ''}>
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-base flex items-start gap-2">
                                         <FileQuestion className="h-5 w-5 text-primary shrink-0 mt-0.5" />
@@ -206,13 +210,19 @@ export function HelpPage() {
                 )}
             </div>
 
-            {/* Support CTA - Neobrutalist */}
-            <div className="border-4 border-black shadow-[6px_6px_0_0_#000] p-8 flex flex-col md:flex-row items-center justify-between gap-6 bg-white">
+            {/* Support CTA */}
+            <div className={isNeobrutalist
+                ? "border-4 border-black shadow-[6px_6px_0_0_#000] p-8 flex flex-col md:flex-row items-center justify-between gap-6 bg-white"
+                : "rounded-xl border border-border bg-card p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm"
+            }>
                 <div>
-                    <h3 className="text-xl font-black mb-2">{t('help_page.need_help.title')}</h3>
+                    <h3 className={`text-xl mb-2 ${isNeobrutalist ? 'font-black' : 'font-semibold'}`}>{t('help_page.need_help.title')}</h3>
                     <p className="text-muted-foreground">{t('help_page.need_help.description')}</p>
                 </div>
-                <Button size="lg" className="gap-2 font-bold border-4 border-black shadow-[4px_4px_0_0_#000] bg-[#E63946] text-white hover:shadow-[6px_6px_0_0_#000]" onClick={handleSupport}>
+                <Button size="lg" className={isNeobrutalist
+                    ? "gap-2 font-bold border-4 border-black shadow-[4px_4px_0_0_#000] bg-[#E63946] text-white hover:shadow-[6px_6px_0_0_#000]"
+                    : "gap-2"
+                } onClick={handleSupport}>
                     <MessageCircle className="h-5 w-5" />
                     {t('help_page.contact')}
                 </Button>

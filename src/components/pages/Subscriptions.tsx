@@ -9,6 +9,7 @@ import { getAccessToken } from '../../lib/api';
 import { showToast } from '../../lib/toast';
 import { useRatelFurioso } from '../../hooks/useRatelFurioso';
 import { RatelFuriosoModal } from '../RatelFuriosoModal';
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
 
 export function SubscriptionsPage() {
     const {
@@ -29,6 +30,7 @@ export function SubscriptionsPage() {
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const itemsPerPage = 50;
     const ratelFurioso = useRatelFurioso();
+    const { isNeobrutalist } = useStyleTheme();
 
     useEffect(() => {
         const hasToken = getAccessToken();
@@ -132,13 +134,17 @@ export function SubscriptionsPage() {
                         placeholder="Procurar..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-sm border bg-background/50 backdrop-blur focus:outline-none focus:ring-2 focus:ring-primary/50 focus:bg-background text-sm transition-all"
+                        className={`w-full pl-10 pr-4 py-2.5 text-sm transition-all ${isNeobrutalist
+                            ? 'border-2 border-black shadow-[2px_2px_0_0_#000] bg-white focus:shadow-[3px_3px_0_0_#000]'
+                            : 'rounded-sm border bg-background/50 backdrop-blur focus:outline-none focus:ring-2 focus:ring-primary/50 focus:bg-background'}`}
                     />
                 </div>
                 <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as 'recent' | 'emails')}
-                    className="px-4 py-2.5 rounded-sm border bg-background/50 backdrop-blur text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className={`px-4 py-2.5 text-sm ${isNeobrutalist
+                        ? 'border-2 border-black shadow-[2px_2px_0_0_#000] bg-white focus:shadow-[3px_3px_0_0_#000]'
+                        : 'rounded-sm border bg-background/50 backdrop-blur focus:outline-none focus:ring-2 focus:ring-primary/50'}`}
                 >
                     <option value="emails">↓ Mais relevante</option>
                     <option value="recent">↑ Ordem alfabética</option>
@@ -166,7 +172,9 @@ export function SubscriptionsPage() {
                 {subscriptions.map((sub) => (
                     <div
                         key={sub.id}
-                        className="flex items-center gap-4 p-4 glass-card rounded-sm hover:shadow-lg transition-all"
+                        className={`flex items-center gap-4 p-4 transition-all ${isNeobrutalist
+                            ? 'border-4 border-black shadow-[4px_4px_0_0_#000] bg-white hover:shadow-[6px_6px_0_0_#000] hover:-translate-y-1'
+                            : 'glass-card rounded-sm hover:shadow-lg'}`}
                     >
                         {/* Avatar */}
                         <Avatar className={`h-12 w-12 ${sub.color} shadow-lg`}>

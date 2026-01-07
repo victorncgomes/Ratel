@@ -1,5 +1,9 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { Menu, Bell, Search, HelpCircle, LogOut, Settings } from 'lucide-react';
+import {
+    Menu, Bell, Search, HelpCircle, LogOut, Settings,
+    Mail, Trash2, Eye, Scale, Clock, Scroll, Tag,
+    Shield, Package
+} from 'lucide-react';
 import { useTheme } from './hooks/useTheme';
 import { Button } from './components/ui/Button';
 
@@ -124,26 +128,26 @@ function RatelApp() {
     }
 
     const navItems = [
-        { id: 'subscriptions', icon: '✉️', label: 'Listas', badge: String(12) },
-        { id: 'cleanup', icon: '🗑️', label: 'Limpeza', badge: null },
+        { id: 'subscriptions', icon: Mail, label: 'Listas', badge: String(12) },
+        { id: 'cleanup', icon: Trash2, label: 'Limpeza', badge: null },
     ];
 
     const smartViews = [
-        { id: 'by-sender', icon: '👁️', label: t('sidebar.by_sender'), count: 156 },
-        { id: 'by-size', icon: '⚖️', label: t('sidebar.by_size'), count: 34 },
-        { id: 'by-date', icon: '⏰', label: t('sidebar.by_date'), count: 89 },
-        { id: 'newsletters', icon: '📜', label: t('sidebar.newsletters'), count: 45 },
-        { id: 'promotions', icon: '💰', label: t('sidebar.promotions'), count: 78 },
+        { id: 'by-sender', icon: Eye, label: t('sidebar.by_sender'), count: 156 },
+        { id: 'by-size', icon: Scale, label: t('sidebar.by_size'), count: 34 },
+        { id: 'by-date', icon: Clock, label: t('sidebar.by_date'), count: 89 },
+        { id: 'newsletters', icon: Scroll, label: t('sidebar.newsletters'), count: 45 },
+        { id: 'promotions', icon: Tag, label: t('sidebar.promotions'), count: 78 },
     ];
 
     const actionItems = [
-        { id: 'shield', icon: '🚫', label: t('sidebar.shield'), count: 3 },
-        { id: 'rollup', icon: '📚', label: t('sidebar.rollup'), count: 5 },
+        { id: 'shield', icon: Shield, label: t('sidebar.shield'), count: 3 },
+        { id: 'rollup', icon: Package, label: t('sidebar.rollup'), count: 5 },
     ];
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'dashboard': return <MapView />;
+            case 'dashboard': return isNeobrutalist ? <MapView /> : <DashboardPage onNavigate={setActiveTab} />;
             case 'subscriptions': return <SubscriptionsPage />;
             case 'cleanup': return <CleanupPage />;
             case 'activity': return <ActivityPage />;
@@ -289,7 +293,7 @@ function RatelApp() {
                                             : `font-medium rounded-lg ${isActive ? 'bg-blue-100 text-blue-700' : 'text-slate-600 hover:bg-slate-100'}`
                                     )}
                                 >
-                                    <span className="text-lg">{item.icon}</span>
+                                    <item.icon className="h-5 w-5" />
                                     <span className="flex-1 text-left">{item.label}</span>
                                     {item.badge && (
                                         <Badge variant={isActive ? 'secondary' : 'outline'}>{item.badge}</Badge>
@@ -318,7 +322,7 @@ function RatelApp() {
                                         : `font-medium rounded-lg ${activeTab === item.id ? 'bg-blue-100 text-blue-700' : 'text-slate-600 hover:bg-slate-100'}`
                                 )}
                             >
-                                <span className="text-base">{item.icon}</span>
+                                <item.icon className="h-5 w-5" />
                                 <span className="flex-1 text-left">{item.label}</span>
                                 <span className="text-xs text-muted-foreground">{item.count}</span>
                             </button>
@@ -344,7 +348,7 @@ function RatelApp() {
                                         : `font-medium rounded-lg ${activeTab === item.id ? 'bg-blue-100 text-blue-700' : 'text-slate-600 hover:bg-slate-100'}`
                                 )}
                             >
-                                <span className="text-base">{item.icon}</span>
+                                <item.icon className="h-5 w-5" />
                                 <span className="flex-1 text-left">{item.label}</span>
                                 <span className="text-xs text-muted-foreground">{item.count}</span>
                             </button>

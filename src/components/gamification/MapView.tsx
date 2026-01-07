@@ -33,7 +33,7 @@ export default function MapView() {
             deleted: 'emails eliminados',
             unsubs: 'newsletters canceladas',
             streak: 'dias de streak',
-            viewAchievements: 'Ver Conquistas',
+            viewAchievements: 'Conquistas',
             advance: 'AVANÇAR!',
             requirements: 'Requisitos',
             enemies: 'Inimigos',
@@ -45,7 +45,7 @@ export default function MapView() {
             deleted: 'emails deleted',
             unsubs: 'newsletters cancelled',
             streak: 'streak days',
-            viewAchievements: 'View Achievements',
+            viewAchievements: 'Achievements',
             advance: 'ADVANCE!',
             requirements: 'Requirements',
             enemies: 'Enemies',
@@ -57,7 +57,7 @@ export default function MapView() {
             deleted: 'emails eliminados',
             unsubs: 'newsletters canceladas',
             streak: 'días de racha',
-            viewAchievements: 'Ver Logros',
+            viewAchievements: 'Logros',
             advance: '¡AVANZAR!',
             requirements: 'Requisitos',
             enemies: 'Enemigos',
@@ -85,7 +85,7 @@ export default function MapView() {
                 <StatBox
                     icon="🏆"
                     value={`${unlocked.length}/${total}`}
-                    label="Achievements"
+                    label={l.viewAchievements}
                     onClick={() => setShowAchievements(!showAchievements)}
                     highlight
                 />
@@ -105,52 +105,56 @@ export default function MapView() {
                 )}
             </AnimatePresence>
 
-            {/* Jornada (Path) - Sem Container Extra */}
-            <div className="flex flex-col items-center justify-center py-8 relative">
-                {/* Linha pontilhada de guia (decorativa) */}
-                <div className="absolute top-0 bottom-0 w-1 border-l-4 border-dashed border-gray-200 -z-10" />
+            {/* Jornada (Path) - Layout Horizontal Super Mario */}
+            <div className="py-8 overflow-x-auto">
+                {/* Linha de guia horizontal */}
+                <div className="relative min-w-max flex items-center justify-center px-8">
+                    <div className="absolute left-8 right-8 h-2 bg-gray-200 border-2 border-black top-1/2 -translate-y-1/2 -z-10" />
 
-                <div className="flex flex-col gap-16 items-center w-full max-w-2xl">
-                    {territories.map((territory, index) => {
-                        const isActive = index === userProgress.currentTerritoryIndex;
-                        const isCompleted = index < userProgress.currentTerritoryIndex;
-                        const isLocked = index > userProgress.currentTerritoryIndex;
-                        const progress = isActive ? getTerritoryProgress() : isCompleted ? 100 : 0;
+                    <div className="flex flex-row gap-8 items-center">
+                        {territories.map((territory, index) => {
+                            const isActive = index === userProgress.currentTerritoryIndex;
+                            const isCompleted = index < userProgress.currentTerritoryIndex;
+                            const isLocked = index > userProgress.currentTerritoryIndex;
+                            const progress = isActive ? getTerritoryProgress() : isCompleted ? 100 : 0;
 
-                        // Zigue-zague visual
-                        const offset = index % 2 === 0 ? '-translate-x-12' : 'translate-x-12';
+                            return (
+                                <React.Fragment key={territory.id}>
+                                    <div className="relative flex flex-col items-center">
+                                        <TerritoryNode
+                                            territory={territory}
+                                            index={index}
+                                            isActive={isActive}
+                                            isCompleted={isCompleted}
+                                            isLocked={isLocked}
+                                            progress={progress}
+                                            onClick={() => setSelectedTerritory(territory)}
+                                        />
 
-                        return (
-                            <React.Fragment key={territory.id}>
-                                <div className={`relative transition-transform duration-500 ${offset}`}>
-                                    <TerritoryNode
-                                        territory={territory}
-                                        index={index}
-                                        isActive={isActive}
-                                        isCompleted={isCompleted}
-                                        isLocked={isLocked}
-                                        progress={progress}
-                                        onClick={() => setSelectedTerritory(territory)}
-                                    />
+                                        {/* Botão Avançar abaixo do nó ativo */}
+                                        {isActive && checkCanAdvance() && (
+                                            <motion.button
+                                                initial={{ scale: 0 }}
+                                                animate={{ scale: 1 }}
+                                                className="mt-4 brutal-button brutal-button-success whitespace-nowrap z-20"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    advanceTerritory();
+                                                }}
+                                            >
+                                                {l.advance} ➔
+                                            </motion.button>
+                                        )}
+                                    </div>
 
-                                    {/* Botão Flutuante de Avançar (apenas no ativo se puder avançar) */}
-                                    {isActive && checkCanAdvance() && (
-                                        <motion.button
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            className="absolute -right-20 top-1/2 -translate-y-1/2 brutal-button brutal-button-success whitespace-nowrap z-20"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                advanceTerritory();
-                                            }}
-                                        >
-                                            {l.advance} ➔
-                                        </motion.button>
+                                    {/* Conector entre territórios */}
+                                    {index < territories.length - 1 && (
+                                        <div className={`w-12 h-2 ${isCompleted ? 'bg-[#228B22]' : 'bg-gray-300'} border-2 border-black`} />
                                     )}
-                                </div>
-                            </React.Fragment>
-                        );
-                    })}
+                                </React.Fragment>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
 

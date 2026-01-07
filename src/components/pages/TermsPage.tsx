@@ -1,12 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { ArrowLeft } from 'lucide-react';
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
 
 interface TermsPageProps {
     onBack: () => void;
 }
 
 export function TermsPage({ onBack }: TermsPageProps) {
+    const { isNeobrutalist } = useStyleTheme();
     return (
         <div className="min-h-screen bg-background p-6">
             <div className="max-w-3xl mx-auto">
@@ -15,7 +17,7 @@ export function TermsPage({ onBack }: TermsPageProps) {
                     Voltar
                 </Button>
 
-                <Card>
+                <Card className={isNeobrutalist ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none' : ''}>
                     <CardHeader>
                         <CardTitle className="text-2xl">Termos de Uso</CardTitle>
                         <CardDescription>Última atualização: Janeiro 2026</CardDescription>

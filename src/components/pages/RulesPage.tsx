@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/badge';
 import { Shield, Package, Trash2, Loader2, AlertCircle } from 'lucide-react';
 import { showToast } from '../../lib/toast';
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
 
 interface Props {
     type: 'shield' | 'rollup';
@@ -12,6 +13,7 @@ interface Props {
 
 export function RulesPage({ type }: Props) {
     const { rules, loading, error, fetchRules, removeRule } = useRules();
+    const { isNeobrutalist } = useStyleTheme();
 
     useEffect(() => {
         fetchRules();
@@ -71,10 +73,16 @@ export function RulesPage({ type }: Props) {
                     </Card>
                 ) : (
                     filteredRules.map((rule) => (
-                        <Card key={rule.sender} className="overflow-hidden hover:shadow-md transition-all">
+                        <Card key={rule.sender} className={`overflow-hidden transition-all ${isNeobrutalist
+                            ? 'border-4 border-black shadow-[4px_4px_0_0_#000] rounded-none hover:shadow-[6px_6px_0_0_#000] hover:-translate-y-1'
+                            : 'hover:shadow-md'
+                            }`}>
                             <CardContent className="p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className={`p-2 rounded-lg ${type === 'shield' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
+                                    <div className={`p-2 rounded-lg ${isNeobrutalist
+                                            ? 'border-2 border-black shadow-[2px_2px_0_0_#000] font-bold'
+                                            : ''
+                                        } ${type === 'shield' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
                                         {type === 'shield' ? <Shield className="h-5 w-5" /> : <Package className="h-5 w-5" />}
                                     </div>
                                     <div>

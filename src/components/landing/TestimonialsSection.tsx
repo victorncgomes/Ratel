@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useStyleTheme } from '../../contexts/StyleThemeContext';
 
 interface TestimonialKey {
     text: string;
@@ -50,6 +51,7 @@ const TESTIMONIALS_KEYS: TestimonialKey[] = [
 
 export function TestimonialsSection() {
     const { t } = useLanguage();
+    const { isNeobrutalist } = useStyleTheme();
     const [currentIndex, setCurrentIndex] = useState(0);
 
     const nextTestimonial = () => {
@@ -70,7 +72,7 @@ export function TestimonialsSection() {
     };
 
     return (
-        <section className="py-24 lg:py-32 bg-gradient-to-b from-white to-slate-50">
+        <section className={`py-24 lg:py-32 ${isNeobrutalist ? 'bg-[#FFDE59]' : 'bg-gradient-to-b from-white to-slate-50'}`}>
             <div className="max-w-7xl mx-auto px-6">
                 {/* Header */}
                 <div className="text-center mb-16">
@@ -87,13 +89,19 @@ export function TestimonialsSection() {
                     {/* Navigation Buttons */}
                     <button
                         onClick={prevTestimonial}
-                        className="absolute -left-4 lg:-left-12 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:shadow-xl transition-all duration-300"
+                        className={`absolute -left-4 lg:-left-12 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${isNeobrutalist
+                            ? 'bg-white border-2 border-black shadow-[4px_4px_0_0_#000] text-black hover:shadow-[6px_6px_0_0_#000]'
+                            : 'bg-white shadow-lg text-slate-600 hover:text-slate-900 hover:shadow-xl'
+                            }`}
                     >
                         <ChevronLeft className="h-6 w-6" />
                     </button>
                     <button
                         onClick={nextTestimonial}
-                        className="absolute -right-4 lg:-right-12 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:shadow-xl transition-all duration-300"
+                        className={`absolute -right-4 lg:-right-12 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${isNeobrutalist
+                            ? 'bg-white border-2 border-black shadow-[4px_4px_0_0_#000] text-black hover:shadow-[6px_6px_0_0_#000]'
+                            : 'bg-white shadow-lg text-slate-600 hover:text-slate-900 hover:shadow-xl'
+                            }`}
                     >
                         <ChevronRight className="h-6 w-6" />
                     </button>
@@ -103,7 +111,10 @@ export function TestimonialsSection() {
                         {getVisibleTestimonials().map((testimonial, index) => (
                             <div
                                 key={`${testimonial.author}-${index}`}
-                                className="p-8 rounded-3xl bg-white/70 backdrop-blur-sm border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group"
+                                className={`p-8 transition-all duration-500 group ${isNeobrutalist
+                                    ? 'bg-white border-4 border-black shadow-[8px_8px_0_0_#000]'
+                                    : 'rounded-3xl bg-white/70 backdrop-blur-sm border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:-translate-y-1'
+                                    }`}
                             >
                                 {/* Quote Icon */}
                                 <Quote className="h-8 w-8 text-blue-500/30 mb-6 group-hover:text-blue-500/50 transition-colors duration-300" />
@@ -119,10 +130,10 @@ export function TestimonialsSection() {
                                         {testimonial.avatar}
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-slate-800">
+                                        <p className={`font-semibold ${isNeobrutalist ? 'text-black' : 'text-slate-800'}`}>
                                             {testimonial.author}
                                         </p>
-                                        <p className="text-sm text-slate-500">
+                                        <p className={`text-sm ${isNeobrutalist ? 'text-black font-medium' : 'text-slate-500'}`}>
                                             {t(`landing.testimonials.${testimonial.role}`)} @ {testimonial.company}
                                         </p>
                                     </div>
@@ -139,8 +150,8 @@ export function TestimonialsSection() {
                             key={index}
                             onClick={() => setCurrentIndex(index)}
                             className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentIndex
-                                ? 'bg-blue-600 w-8'
-                                : 'bg-slate-300 hover:bg-slate-400'
+                                ? (isNeobrutalist ? 'bg-black w-8 border border-black' : 'bg-blue-600 w-8')
+                                : (isNeobrutalist ? 'bg-transparent border border-black' : 'bg-slate-300 hover:bg-slate-400')
                                 }`}
                         />
                     ))}
