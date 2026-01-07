@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { mockEmails } from '../lib/mockData';
 import { getAccessToken } from '../lib/api';
 
-const API_BASE = 'http://localhost:3109';
+const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.MODE === 'production' ? '' : 'http://localhost:3109');
 
 export interface Email {
     id: string;

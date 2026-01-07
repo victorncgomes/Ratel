@@ -54,7 +54,7 @@ export function HeroSection({ onLogin, onShowTerms, onShowPrivacy }: HeroSection
             return;
         }
 
-        const backendUrl = 'http://localhost:3109';
+        const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:3109';
         if (provider === 'google') {
             window.location.href = `${backendUrl}/auth/google`;
         } else if (provider === 'microsoft') {

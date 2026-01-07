@@ -1,4 +1,3 @@
-import { useMemo } from 'react';
 import { Mail, User, Calendar, Box, Tag, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,7 +18,8 @@ interface GroupsColumnProps {
     loading?: boolean;
 }
 
-export function GroupsColumn({ items, selectedId, onSelect, viewType, loading }: GroupsColumnProps) {
+export function GroupsColumn({ items = [], selectedId, onSelect, viewType, loading }: GroupsColumnProps) {
+    const safeItems = items || [];
     const getIcon = () => {
         switch (viewType) {
             case 'by-sender': return User;
@@ -62,14 +62,14 @@ export function GroupsColumn({ items, selectedId, onSelect, viewType, loading }:
                 <div className="flex items-center gap-2">
                     <Icon className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium text-muted-foreground">
-                        {items.length} grupos
+                        {safeItems.length} grupos
                     </span>
                 </div>
             </div>
 
             {/* Items List */}
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                {items.map((item) => (
+                {safeItems.map((item) => (
                     <button
                         key={item.id}
                         onClick={() => onSelect(item)}
@@ -108,7 +108,7 @@ export function GroupsColumn({ items, selectedId, onSelect, viewType, loading }:
                     </button>
                 ))}
 
-                {items.length === 0 && (
+                {safeItems.length === 0 && (
                     <div className="text-center py-8 text-muted-foreground text-sm">
                         Nenhum grupo encontrado
                     </div>
