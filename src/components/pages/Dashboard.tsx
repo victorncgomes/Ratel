@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Mail, Trash2, Shield, Zap, ArrowRight, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
+import BadgeGallery from '../gamification/BadgeGallery';
 import { useStats } from '../../hooks/useStats';
 import { mockStats } from '../../lib/mockData';
 import { getAccessToken } from '../../lib/api';
@@ -219,6 +220,12 @@ export function DashboardPage({ onNavigate }: DashboardProps) {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Achievements Section */}
+            <div>
+                <h2 className="text-xl font-bold mb-4">{t('common.achievements')}</h2>
+                <BadgeGallery />
+            </div>
         </div>
     );
 }

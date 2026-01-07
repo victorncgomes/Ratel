@@ -11,6 +11,7 @@ export const en = {
         support: 'Support',
         main_menu: 'Main Menu',
         user: 'User',
+        achievements: 'Achievements',
         back_to_home: 'Back to Home',
         open: 'Open',
         actions: 'Actions',
