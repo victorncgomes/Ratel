@@ -1,0 +1,125 @@
+/* Tema Tokyo Nights - Dark Glassmorphism */
+
+.theme-tokyo {
+    --theme-bg: #1A1B26;
+    --theme-surface: #24283B;
+    --theme-surface-bright: #414868;
+    --theme-text: #C0CAF5;
+    --theme-text-secondary: #9AA5CE;
+    --theme-primary: #7AA2F7;
+    --theme-secondary: #BB9AF7;
+    --theme-border: #414868;
+}
+
+/* Botões Tokyo */
+.theme-tokyo .btn-tokyo {
+    background: rgba(122, 162, 247, 0.2);
+    color: var(--theme-primary);
+    border: 1px solid rgba(122, 162, 247, 0.3);
+    backdrop-filter: blur(16px) saturate(180%);
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-tokyo .btn-tokyo:hover {
+    background: rgba(122, 162, 247, 0.3);
+    box-shadow: 0 0 20px rgba(122, 162, 247, 0.3);
+    border-color: rgba(122, 162, 247, 0.5);
+    transform: translateY(-2px);
+}
+
+.theme-tokyo .btn-tokyo:active {
+    transform: translateY(0);
+    box-shadow: 0 0 10px rgba(122, 162, 247, 0.2);
+}
+
+.theme-tokyo .btn-tokyo-primary {
+    background: linear-gradient(135deg, #7AA2F7 0%, #BB9AF7 100%);
+    color: #1A1B26;
+    border: none;
+}
+
+.theme-tokyo .btn-tokyo-primary:hover {
+    box-shadow: 0 0 30px rgba(122, 162, 247, 0.5);
+}
+
+/* Cards Tokyo */
+.theme-tokyo .card-tokyo {
+    background: rgba(36, 40, 59, 0.7);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(192, 202, 245, 0.1);
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-tokyo .card-tokyo:hover {
+    background: rgba(36, 40, 59, 0.8);
+    border-color: rgba(192, 202, 245, 0.2);
+    box-shadow: 0 0 20px rgba(122, 162, 247, 0.2);
+    transform: translateY(-4px);
+}
+
+.theme-tokyo .card-tokyo-bright {
+    background: rgba(65, 72, 104, 0.7);
+    border-color: rgba(192, 202, 245, 0.15);
+}
+
+/* Inputs Tokyo */
+.theme-tokyo .input-tokyo {
+    background: rgba(36, 40, 59, 0.5);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(122, 162, 247, 0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: var(--theme-text);
+    transition: all 0.3s;
+}
+
+.theme-tokyo .input-tokyo:focus {
+    outline: none;
+    border-color: rgba(122, 162, 247, 0.5);
+    background: rgba(36, 40, 59, 0.7);
+    box-shadow: 0 0 15px rgba(122, 162, 247, 0.2);
+}
+
+/* Gradientes Neon */
+.theme-tokyo .gradient-neon {
+    background: linear-gradient(135deg, #7AA2F7 0%, #BB9AF7 50%, #9ECE6A 100%);
+}
+
+.theme-tokyo .gradient-neon-text {
+    background: linear-gradient(135deg, #7AA2F7 0%, #BB9AF7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Glow effects */
+.theme-tokyo .glow-blue {
+    box-shadow: 0 0 20px rgba(122, 162, 247, 0.3);
+}
+
+.theme-tokyo .glow-purple {
+    box-shadow: 0 0 20px rgba(187, 154, 247, 0.3);
+}
+
+.theme-tokyo .glow-green {
+    box-shadow: 0 0 20px rgba(158, 206, 106, 0.3);
+}
+
+/* Scrollbar Tokyo */
+.theme-tokyo ::-webkit-scrollbar {
+    width: 10px;
+    background: var(--theme-bg);
+}
+
+.theme-tokyo ::-webkit-scrollbar-thumb {
+    background: rgba(122, 162, 247, 0.3);
+    border-radius: 8px;
+    border: 2px solid var(--theme-bg);
+}
+
+.theme-tokyo ::-webkit-scrollbar-thumb:hover {
+    background: rgba(122, 162, 247, 0.5);
+    box-shadow: 0 0 10px rgba(122, 162, 247, 0.3);
+}
