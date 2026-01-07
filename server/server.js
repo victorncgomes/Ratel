@@ -23,9 +23,19 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3109;
 
+// Configuração de URLs (Prod vs Dev)
+// No Railway, RAILWAY_PUBLIC_DOMAIN é injetado automaticamente.
+const DOMAIN = process.env.RAILWAY_PUBLIC_DOMAIN || process.env.PUBLIC_URL;
+const BASE_URL = DOMAIN ? `https://${DOMAIN}` : `http://localhost:${PORT}`;
+const FRONTEND_URL = DOMAIN ? `https://${DOMAIN}` : 'http://localhost:3009';
+
+console.log(`🌍 Environment: ${DOMAIN ? 'Production' : 'Development'}`);
+console.log(`🔗 Base URL: ${BASE_URL}`);
+console.log(`🖥️ Frontend URL: ${FRONTEND_URL}`);
+
 // Middleware
 app.use(cors({
-    origin: 'http://localhost:3009',
+    origin: FRONTEND_URL,
     credentials: true
 }));
 app.use(express.json());
@@ -34,10 +44,10 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false,
+        secure: !!DOMAIN, // Secure apenas em prod (HTTPS)
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000,
-        sameSite: 'lax'
+        sameSite: DOMAIN ? 'none' : 'lax' // None para cross-site em prod se necessário, ou lax
     }
 }));
 
@@ -51,7 +61,7 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Serialization - Agora inclui accessToken
+// Serialization
 passport.serializeUser((user, done) => {
     done(null, user);
 });
@@ -61,15 +71,14 @@ passport.deserializeUser((user, done) => {
 });
 
 // ========================================
-// GOOGLE OAUTH - Com escopos de Gmail
+// GOOGLE OAUTH
 // ========================================
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID || 'dummy_id',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy_secret',
-    callbackURL: "http://localhost:3109/auth/google/callback"
+    callbackURL: `${BASE_URL}/auth/google/callback`
 },
     function (accessToken, refreshToken, profile, cb) {
-        // Armazenar accessToken no perfil para uso posterior
         profile.accessToken = accessToken;
         profile.refreshToken = refreshToken;
         profile.provider = 'google';
@@ -78,12 +87,12 @@ passport.use(new GoogleStrategy({
 ));
 
 // ========================================
-// MICROSOFT OAUTH - Com escopos de Mail
+// MICROSOFT OAUTH
 // ========================================
 passport.use(new MicrosoftStrategy({
     clientID: process.env.MICROSOFT_CLIENT_ID || 'dummy_id',
     clientSecret: process.env.MICROSOFT_CLIENT_SECRET || 'dummy_secret',
-    callbackURL: "http://localhost:3109/auth/microsoft/callback",
+    callbackURL: `${BASE_URL}/auth/microsoft/callback`,
     scope: ['user.read', 'Mail.Read', 'Mail.ReadWrite']
 },
     function (accessToken, refreshToken, profile, done) {
@@ -98,7 +107,7 @@ passport.use(new MicrosoftStrategy({
 // AUTH ROUTES
 // ========================================
 
-// Google Auth - Escopos expandidos para Gmail
+// Google Auth
 app.get('/auth/google',
     passport.authenticate('google', {
         scope: [
@@ -113,7 +122,7 @@ app.get('/auth/google',
 );
 
 app.get('/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: 'http://localhost:3009?error=true' }),
+    passport.authenticate('google', { failureRedirect: `${FRONTEND_URL}?error=true` }),
     (req, res) => {
         const user = req.user;
         const userData = encodeURIComponent(JSON.stringify({
@@ -121,9 +130,9 @@ app.get('/auth/google/callback',
             email: user.emails?.[0]?.value || '',
             photo: user.photos?.[0]?.value || '',
             provider: 'google',
-            accessToken: user.accessToken // Incluir token
+            accessToken: user.accessToken
         }));
-        res.redirect(`http://localhost:3009?auth=success&user=${userData}`);
+        res.redirect(`${FRONTEND_URL}?auth=success&user=${userData}`);
     }
 );
 
@@ -135,7 +144,7 @@ app.get('/auth/microsoft',
 );
 
 app.get('/auth/microsoft/callback',
-    passport.authenticate('microsoft', { failureRedirect: 'http://localhost:3009?error=true' }),
+    passport.authenticate('microsoft', { failureRedirect: `${FRONTEND_URL}?error=true` }),
     (req, res) => {
         const user = req.user;
         const userData = encodeURIComponent(JSON.stringify({
@@ -143,9 +152,9 @@ app.get('/auth/microsoft/callback',
             email: user.emails?.[0]?.value || '',
             photo: user.photos?.[0]?.value || '',
             provider: 'microsoft',
-            accessToken: user.accessToken // Incluir token
+            accessToken: user.accessToken
         }));
-        res.redirect(`http://localhost:3009?auth=success&user=${userData}`);
+        res.redirect(`${FRONTEND_URL}?auth=success&user=${userData}`);
     }
 );
 
