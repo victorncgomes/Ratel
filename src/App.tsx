@@ -1,9 +1,10 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import {
     Menu, Bell, Search, HelpCircle, LogOut, Settings,
-    Mail, Trash2, Eye, Scale, Clock, Scroll, Tag,
+    Mail, Trash2, User, HardDrive, Calendar, Newspaper, Tag,
     Shield, Package
 } from 'lucide-react';
+import { useProgress } from './contexts/ProgressContext';
 import { useTheme } from './hooks/useTheme';
 import { Button } from './components/ui/Button';
 
@@ -46,6 +47,7 @@ function RatelApp() {
     useTheme(); // Inicializa tema
     const { t, language, setLanguage } = useLanguage();
     const { isNeobrutalist } = useStyleTheme();
+    const { isLoading: isGlobalLoading } = useProgress();
     const [isFlagMenuOpen, setIsFlagMenuOpen] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -106,7 +108,8 @@ function RatelApp() {
         return <PrivacyPage onBack={() => setShowLegalPage(null)} />;
     }
 
-    if (showProcessing) {
+    // Show processing screen if global loading is active or initial processing
+    if (showProcessing || isGlobalLoading) {
         return (
             <ProcessingScreen
                 onComplete={() => {
@@ -132,12 +135,11 @@ function RatelApp() {
         { id: 'cleanup', icon: Trash2, label: 'Limpeza', badge: null },
     ];
 
-    const smartViews = [
-        { id: 'by-sender', icon: Eye, label: t('sidebar.by_sender'), count: 156 },
-        { id: 'by-size', icon: Scale, label: t('sidebar.by_size'), count: 34 },
-        { id: 'by-date', icon: Clock, label: t('sidebar.by_date'), count: 89 },
-        { id: 'newsletters', icon: Scroll, label: t('sidebar.newsletters'), count: 45 },
-        { id: 'promotions', icon: Tag, label: t('sidebar.promotions'), count: 78 },
+    const smartViews = [{ id: 'by-sender', label: t('sidebar.smart_views.by_sender'), icon: User, count: 12 },
+    { id: 'by-size', label: t('sidebar.smart_views.by_size'), icon: HardDrive, count: 5 },
+    { id: 'by-date', label: t('sidebar.smart_views.by_date'), icon: Calendar, count: '' },
+    { id: 'newsletters', label: t('sidebar.smart_views.newsletters'), icon: Newspaper, count: 42 },
+    { id: 'promotions', icon: Tag, label: t('sidebar.promotions'), count: 78 },
     ];
 
     const actionItems = [
@@ -381,38 +383,34 @@ function RatelApp() {
                         {userMenuOpen && (
                             <div className="absolute bottom-full left-0 right-0 mb-2 bg-popover border rounded-lg shadow-xl py-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
                                 <button
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
-                                    style={{ fontStyle: 'normal' }}
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal not-italic hover:bg-muted transition-colors"
                                     onClick={() => { setActiveTab('notifications'); setUserMenuOpen(false); }}
                                 >
                                     <Bell className="h-4 w-4" />
-                                    <span style={{ fontStyle: 'normal' }}>{t('user_menu.notifications')}</span>
+                                    <span className="not-italic">{t('user_menu.notifications')}</span>
                                     <Badge className="ml-auto h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white rounded-full text-[10px]">3</Badge>
                                 </button>
                                 <button
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
-                                    style={{ fontStyle: 'normal' }}
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal not-italic hover:bg-muted transition-colors"
                                     onClick={() => { setActiveTab('help'); setUserMenuOpen(false); }}
                                 >
                                     <HelpCircle className="h-4 w-4" />
-                                    <span style={{ fontStyle: 'normal' }}>{t('user_menu.help')}</span>
+                                    <span className="not-italic">{t('user_menu.help')}</span>
                                 </button>
                                 <button
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal hover:bg-muted transition-colors"
-                                    style={{ fontStyle: 'normal' }}
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-normal not-italic hover:bg-muted transition-colors"
                                     onClick={() => { setActiveTab('profile'); setUserMenuOpen(false); }}
                                 >
                                     <Settings className="h-4 w-4" />
-                                    <span style={{ fontStyle: 'normal' }}>{t('user_menu.settings')}</span>
+                                    <span className="not-italic">{t('user_menu.settings')}</span>
                                 </button>
                                 <hr className="my-1 border-border" />
                                 <button
-                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                                    style={{ fontStyle: 'normal' }}
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-500 not-italic hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
                                     onClick={handleLogout}
                                 >
                                     <LogOut className="h-4 w-4" />
-                                    <span style={{ fontStyle: 'normal' }}>{t('user_menu.logout')}</span>
+                                    <span className="not-italic">{t('user_menu.logout')}</span>
                                 </button>
                             </div>
                         )}

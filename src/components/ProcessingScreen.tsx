@@ -1,48 +1,31 @@
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useProgress } from '../contexts/ProgressContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ProcessingScreenProps {
     onComplete: () => void;
 }
 
 export function ProcessingScreen({ onComplete }: ProcessingScreenProps) {
-    const [progress, setProgress] = useState(0);
-    const [currentStep, setCurrentStep] = useState(0);
+    // Agora consome o estado global do contexto!
+    const { progress, phase, currentMessage } = useProgress();
+    const { language } = useLanguage();
 
-    const steps = [
-        'Conectando à sua conta...',
-        'Analisando sua caixa de entrada...',
-        'Detectando newsletters e inscrições...',
-        'Calculando estatísticas...',
-        'Preparando seu painel...'
-    ];
+    const getPhaseMessage = () => {
+        switch (phase) {
+            case 'fetching': return 'Conectando ao servidor...';
+            case 'processing': return 'Analisando sua caixa de entrada...';
+            case 'scoring': return 'Calculando relevância dos emails...';
+            case 'complete': return 'Finalizando...';
+            default: return 'Preparando...';
+        }
+    };
 
-    useEffect(() => {
-        // Simular progresso
-        const progressInterval = setInterval(() => {
-            setProgress(prev => {
-                if (prev >= 100) {
-                    clearInterval(progressInterval);
-                    setTimeout(onComplete, 500);
-                    return 100;
-                }
-                return prev + 2;
-            });
-        }, 60);
-
-        // Atualizar step baseado no progresso
-        const stepInterval = setInterval(() => {
-            setCurrentStep(() => {
-                const newStep = Math.floor(progress / 20);
-                return Math.min(newStep, steps.length - 1);
-            });
-        }, 100);
-
-        return () => {
-            clearInterval(progressInterval);
-            clearInterval(stepInterval);
-        };
-    }, [onComplete, progress, steps.length]);
+    // Auto-complete quando terminar globalmente
+    // Nota: A lógica de fechar está no App.tsx via (showProcessing || isGlobalLoading)
+    // Mas o onComplete aqui pode ser chamado se o componente quiser forçar.
+    // Deixamos o controle visual apenas.
 
     return (
         <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
@@ -63,9 +46,9 @@ export function ProcessingScreen({ onComplete }: ProcessingScreenProps) {
 
                 {/* Current Step */}
                 <div className="text-center space-y-2">
-                    <h2 className="text-2xl font-bold">Processando seus emails...</h2>
-                    <p className="text-muted-foreground text-sm">
-                        {steps[currentStep]}
+                    <h2 className="text-2xl font-bold mb-4">{getPhaseMessage()}</h2>
+                    <p className="text-slate-600 text-lg font-medium animate-pulse min-h-[60px]">
+                        "{currentMessage}"
                     </p>
                 </div>
 

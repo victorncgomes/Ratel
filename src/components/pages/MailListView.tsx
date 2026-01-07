@@ -275,11 +275,12 @@ export function MailListView({ viewType }: Props) {
 
     return (
         <div className="h-[calc(100vh-8rem)] flex flex-col animate-in fade-in duration-300">
-            {/* Header Mobile Global para a View */}
-            <div className="md:hidden mb-4 px-2">
-                <h2 className={`text-2xl font-black tracking-tight flex items-center gap-2 ${isNeobrutalist ? 'uppercase' : ''}`}>
-                    <span className="gradient-text">{getTitle()}</span>
+            {/* Header Global (Mobile + Desktop) */}
+            <div className="mb-6 px-2 lg:px-0">
+                <h2 className={`text-2xl lg:text-3xl font-black tracking-tight flex items-center gap-2 ${isNeobrutalist ? 'uppercase text-black' : 'text-slate-800'}`}>
+                    <span className={isNeobrutalist ? '' : 'gradient-text'}>{getTitle()}</span>
                 </h2>
+                {isNeobrutalist && <div className="h-1 w-24 bg-black mt-2" />}
             </div>
 
             {/* Mobile Header with Back Button (only when group selected) */}
@@ -311,8 +312,11 @@ export function MailListView({ viewType }: Props) {
             <div className="flex-1 flex gap-4 min-h-0">
                 {/* Groups Column - hidden on mobile when group is selected */}
                 <div className={cn(
-                    "w-full lg:w-80 glass-card rounded-sm overflow-hidden flex-shrink-0",
-                    selectedGroup ? "hidden lg:block" : "block"
+                    "w-full lg:w-80 overflow-hidden flex-shrink-0 transition-all",
+                    selectedGroup ? "hidden lg:block" : "block",
+                    isNeobrutalist
+                        ? "bg-white border-4 border-black shadow-[4px_4px_0_0_#000]"
+                        : "glass-card rounded-sm"
                 )}>
                     <GroupsColumn
                         items={groupedItems}
@@ -355,17 +359,23 @@ export function MailListView({ viewType }: Props) {
                             </div>
 
                             {/* Email List */}
-                            <div className="flex-1 glass-card rounded-sm overflow-hidden">
+                            <div className={`flex-1 overflow-hidden transition-all ${isNeobrutalist
+                                    ? "bg-white border-4 border-black shadow-[4px_4px_0_0_#000]"
+                                    : "glass-card rounded-sm"
+                                }`}>
                                 <div className="h-full overflow-y-auto p-2 space-y-1">
                                     {/* Select All */}
                                     <button
                                         onClick={toggleSelectAll}
-                                        className="w-full flex items-center gap-3 p-3 hover:bg-secondary/50 rounded-sm transition-colors text-left"
+                                        className={`w-full flex items-center gap-3 p-3 transition-colors text-left ${isNeobrutalist
+                                                ? "hover:bg-yellow-100 border-b-2 border-black mb-2 font-bold"
+                                                : "hover:bg-secondary/50 rounded-sm"
+                                            }`}
                                     >
                                         {selectedEmailIds.size === filteredEmails.length ? (
-                                            <CheckSquare className="h-5 w-5 text-primary" />
+                                            <CheckSquare className={`h-5 w-5 ${isNeobrutalist ? 'text-black' : 'text-primary'}`} />
                                         ) : (
-                                            <Square className="h-5 w-5 text-muted-foreground" />
+                                            <Square className={`h-5 w-5 ${isNeobrutalist ? 'text-black' : 'text-muted-foreground'}`} />
                                         )}
                                         <span className="text-sm font-medium">
                                             {selectedEmailIds.size === filteredEmails.length ? 'Desmarcar todos' : 'Selecionar todos'}
@@ -380,24 +390,25 @@ export function MailListView({ viewType }: Props) {
                                         <div
                                             key={email.id}
                                             className={cn(
-                                                "flex items-start gap-3 p-3 rounded-sm cursor-pointer transition-all",
+                                                "flex items-start gap-3 p-3 cursor-pointer transition-all",
+                                                isNeobrutalist ? "border-2 border-black mb-2 hover:bg-blue-100 hover:translate-x-1 hover:-translate-y-1 hover:shadow-[2px_2px_0_0_#000]" : "rounded-sm",
                                                 selectedEmailIds.has(email.id)
-                                                    ? "bg-primary/10 border border-primary/30"
-                                                    : "hover:bg-secondary/50"
+                                                    ? (isNeobrutalist ? "bg-black text-white" : "bg-primary/10 border border-primary/30")
+                                                    : (isNeobrutalist ? "bg-white" : "hover:bg-secondary/50")
                                             )}
                                             onClick={() => toggleEmailSelection(email.id)}
                                         >
                                             {selectedEmailIds.has(email.id) ? (
-                                                <CheckSquare className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                                                <CheckSquare className={`h-5 w-5 flex-shrink-0 mt-0.5 ${isNeobrutalist ? 'text-white' : 'text-primary'}`} />
                                             ) : (
-                                                <Square className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                                                <Square className={`h-5 w-5 flex-shrink-0 mt-0.5 ${isNeobrutalist ? 'text-black' : 'text-muted-foreground'}`} />
                                             )}
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <p className="font-medium text-sm truncate flex-1">{email.subject}</p>
                                                 </div>
-                                                <p className="text-xs text-muted-foreground truncate">{email.snippet}</p>
-                                                <p className="text-xs text-muted-foreground mt-1">
+                                                <p className={`text-xs truncate ${isNeobrutalist && selectedEmailIds.has(email.id) ? 'text-gray-300' : 'text-muted-foreground'}`}>{email.snippet}</p>
+                                                <p className={`text-xs mt-1 ${isNeobrutalist && selectedEmailIds.has(email.id) ? 'text-gray-300' : 'text-muted-foreground'}`}>
                                                     {new Date(email.date).toLocaleDateString('pt-BR')}
                                                 </p>
                                             </div>

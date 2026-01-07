@@ -73,15 +73,11 @@ export function ProfilePage({ user }: ProfileProps) {
 
     return (
         <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Cover Image - Neobrutalist */}
-            <div className="h-48 w-full bg-[#E63946] border-b-4 border-black relative">
-                <Badge className="absolute top-4 left-4 bg-white text-black border-2 border-black shadow-[2px_2px_0_0_#000] font-bold">
-                    Conectado via {providerLabel}
-                </Badge>
-            </div>
+            {/* Cover Image removida conforme solicitação */}
+            <div className="pt-8" />
 
             {/* Profile Info */}
-            <div className="px-8 pb-8 -mt-16 flex flex-col md:flex-row items-end md:items-start gap-6">
+            <div className="px-8 pb-8 flex flex-col md:flex-row items-end md:items-start gap-6">
                 <Avatar className="h-32 w-32 border-4 border-black shadow-[6px_6px_0_0_#000] bg-white">
                     <AvatarImage src={displayPhoto} />
                     <AvatarFallback className="text-4xl bg-[#E63946] text-white font-black">
