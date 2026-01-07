@@ -34,14 +34,14 @@ export function LandingPage({ onLogin, onShowTerms, onShowPrivacy }: LandingPage
             {/* Section 2: Philosophy */}
             <PhilosophySection />
 
-            {/* Section 3: Features */}
-            <FeaturesSection />
+            {/* Section 3a: Features (Part 1 - Até 'Não Me Perturbe Mais') */}
+            <FeaturesSection rangeEnd={4} />
 
-            {/* Section 4: Stats 
-            <StatsSection /> -- Removed as it is now integrated into FeaturesSection */}
-
-            {/* Section 5: Testimonials */}
+            {/* Section 4: Testimonials (Intercalado) */}
             <TestimonialsSection />
+
+            {/* Section 3b: Features (Part 2 - 'Compras' e 'Newsletters') */}
+            <FeaturesSection rangeStart={4} />
 
             {/* Section 6: Footer with image only */}
             <FooterSection />
