@@ -3,6 +3,7 @@ const session = require('express-session');
 const passport = require('passport');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const path = require('path');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const MicrosoftStrategy = require('passport-microsoft').Strategy;
 
@@ -20,7 +21,7 @@ dotenv.config();
 
 // Initialize Express
 const app = express();
-const PORT = 3109;
+const PORT = process.env.PORT || 3109;
 
 // Middleware
 app.use(cors({
@@ -723,6 +724,19 @@ app.get('/api/health', (req, res) => {
         timestamp: new Date().toISOString(),
         version: '0.2.6'
     });
+});
+
+// ========================================
+// SERVE STATIC FILES (PROD)
+// ========================================
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 // ========================================
