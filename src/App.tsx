@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import {
-    Menu, Bell, Search, HelpCircle, LogOut, Settings,
+    Menu, Bell, HelpCircle, LogOut, Settings,
     Mail, Trash2, User, HardDrive, Calendar, Newspaper, Tag,
     Shield, Package
 } from 'lucide-react';
@@ -10,7 +10,6 @@ import { Button } from './components/ui/Button';
 
 import { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar';
 import { Badge } from './components/ui/badge';
-import { Input } from './components/ui/input';
 import { cn } from './lib/utils';
 import { LandingPage } from './components/LandingPage';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
@@ -32,7 +31,7 @@ const TermsPage = lazy(() => import('./components/pages/TermsPage').then(m => ({
 const PrivacyPage = lazy(() => import('./components/pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
 const MailListView = lazy(() => import('./components/pages/MailListView').then(m => ({ default: m.MailListView })));
 const RulesPage = lazy(() => import('./components/pages/RulesPage').then(m => ({ default: m.RulesPage })));
-const ProcessingScreen = lazy(() => import('./components/ProcessingScreen').then(m => ({ default: m.ProcessingScreen })));
+// const ProcessingScreen = lazy(() => import('./components/ProcessingScreen').then(m => ({ default: m.ProcessingScreen })));
 const DeepCleaning = lazy(() => import('./components/pages/DeepCleaning').then(m => ({ default: m.DeepCleaning })));
 
 interface UserData {
@@ -94,6 +93,18 @@ function RatelApp() {
         }
     }, [user]);
 
+    // Atalho Ctrl+K para Ajuda
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                setActiveTab('help');
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     const handleLogout = () => {
         setIsAuthenticated(false);
         setUser(null);
@@ -108,7 +119,8 @@ function RatelApp() {
         return <PrivacyPage onBack={() => setShowLegalPage(null)} />;
     }
 
-    // Show processing screen if global loading is active or initial processing
+    // Processing Screen removida a pedido do usuário - substituída por Nav Bar Indicator
+    /*
     if (showProcessing || isGlobalLoading) {
         return (
             <ProcessingScreen
@@ -119,6 +131,7 @@ function RatelApp() {
             />
         );
     }
+    */
 
     if (!isAuthenticated) {
         return (
@@ -207,16 +220,25 @@ function RatelApp() {
                         />
                     </div>
 
-                    {/* Search */}
-                    <div className="hidden md:flex flex-1 max-w-md mx-8 transition-all duration-300 focus-within:max-w-lg">
-                        <div className="relative w-full group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                            <Input
-                                type="text"
-                                placeholder={t('common.search_placeholder')}
-                                className="pl-10 w-full bg-secondary/50 border-transparent focus:bg-background focus:border-input transition-all"
-                            />
-                        </div>
+                    {/* Processing Bar / Status */}
+                    <div className="flex-1 flex justify-end mr-4">
+                        {isGlobalLoading && (
+                            <div className={`flex items-center gap-3 px-4 py-2 rounded-full transition-all ${isNeobrutalist
+                                ? 'bg-yellow-300 border-2 border-black shadow-[2px_2px_0_0_#000]'
+                                : 'bg-muted/50 border border-border'
+                                }`}>
+                                <span className="text-xs font-bold font-mono animate-pulse">
+                                    PROCESSANDO...
+                                </span>
+                                {/* Progress Bar */}
+                                <div className="h-2 w-32 bg-gray-200 rounded-full overflow-hidden border border-black/10">
+                                    <div
+                                        className="h-full bg-[#E63946] transition-all duration-300 ease-out"
+                                        style={{ width: '45%' }} // Mocked progress or use real from context
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Right Actions */}

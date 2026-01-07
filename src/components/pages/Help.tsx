@@ -49,9 +49,13 @@ export function HelpPage() {
             <div className="text-center space-y-4 py-8">
                 <h2 className="text-4xl font-heading font-black tracking-tight">{t('help_page.title')}</h2>
                 <p className="text-muted-foreground">{t('help_page.subtitle')}</p>
-                <div className="max-w-md mx-auto relative hidden">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input className="pl-10" placeholder={t('help_page.search_placeholder')} />
+                <div className="max-w-md mx-auto relative group">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <Input
+                        className="pl-10 h-12 text-lg shadow-sm focus:shadow-md transition-all"
+                        placeholder={t('help_page.search_placeholder')}
+                        autoFocus
+                    />
                 </div>
             </div>
 
