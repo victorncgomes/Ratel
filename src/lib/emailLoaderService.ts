@@ -2,10 +2,8 @@
  * Email Loader Service - Progressive loading for 10K+ emails
  */
 
-import { getAccessToken } from './api';
+import { getAccessToken, API_BASE } from './api';
 import * as emailStore from './emailStore';
-
-const API_BASE = 'http://localhost:3109';
 
 interface LoaderCallbacks {
     onProgress: (loaded: number, total: number, phase: 'fetching' | 'processing' | 'scoring') => void;
