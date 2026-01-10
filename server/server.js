@@ -218,6 +218,10 @@ app.get('/api/messages', requireAuth, async (req, res) => {
         const maxResults = parseInt(req.query.limit) || 50;
         const query = req.query.q || null; // Query string (ex: 'larger:5M', 'category:marketing')
 
+        if (maxResults > 2000) {
+            console.warn(`⚠️ [Performance] Requesting ${maxResults} emails. This may timeout on serverless functions.`);
+        }
+
         let emails;
         if (provider === 'google') {
             emails = await fetchGmailEmails(accessToken, maxResults, query);

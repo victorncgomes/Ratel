@@ -55,65 +55,102 @@ async function fetchGmailEmails(accessToken, maxResults = 100, query = null) {
 
         console.log(`[Gmail] Encontrados ${allMessageIds.length} emails. Buscando metadados...`);
 
-        // ETAPA 2: Buscar detalhes em batches maiores com delay
-        // Gmail permite ~15.000 queries/minuto por usuário = ~250/segundo
-        // Mas para segurança, usamos batches de 10 com 50ms de delay
-        const BATCH_SIZE = 10;
-        const DELAY_MS = 50;
+        // ETAPA 2: Buscar detalhes com Concurrency Pool
+        // Maximiza throughput respeitando rate limits via backoff individual
+        const CONCURRENCY = 45; // Seguro para evitar bursts muito grandes
         const emails = [];
+        let completed = 0;
 
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-        for (let i = 0; i < allMessageIds.length; i += BATCH_SIZE) {
-            const batch = allMessageIds.slice(i, i + BATCH_SIZE);
+        // Helper para fetch com retry
+        const fetchMessageWithRetry = async (msgId) => {
+            let retries = 3;
+            while (retries > 0) {
+                try {
+                    // Usar format=METADATA com apenas os headers necessários
+                    const detail = await gmail.users.messages.get({
+                        userId: 'me',
+                        id: msgId,
+                        format: 'metadata',
+                        metadataHeaders: ['From', 'Subject', 'Date', 'List-Unsubscribe'],
+                        // Usar fields para reduzir payload
+                        fields: 'id,threadId,snippet,labelIds,sizeEstimate,payload/headers'
+                    });
 
-            const batchResults = await Promise.all(
-                batch.map(async (msg) => {
-                    try {
-                        // Usar format=METADATA com apenas os headers necessários
-                        const detail = await gmail.users.messages.get({
-                            userId: 'me',
-                            id: msg.id,
-                            format: 'metadata',
-                            metadataHeaders: ['From', 'Subject', 'Date', 'List-Unsubscribe'],
-                            // Usar fields para reduzir payload
-                            fields: 'id,threadId,snippet,labelIds,sizeEstimate,payload/headers'
-                        });
+                    const headers = detail.data.payload?.headers || [];
+                    const getHeader = (name) => headers.find(h => h.name.toLowerCase() === name.toLowerCase())?.value || '';
 
-                        const headers = detail.data.payload?.headers || [];
-                        const getHeader = (name) => headers.find(h => h.name.toLowerCase() === name.toLowerCase())?.value || '';
-
-                        return {
-                            id: msg.id,
-                            threadId: detail.data.threadId,
-                            from: getHeader('From'),
-                            subject: getHeader('Subject'),
-                            date: getHeader('Date'),
-                            snippet: detail.data.snippet,
-                            labelIds: detail.data.labelIds || [],
-                            sizeEstimate: detail.data.sizeEstimate || 0,
-                            hasUnsubscribe: !!getHeader('List-Unsubscribe'),
-                            unsubscribeLink: getHeader('List-Unsubscribe')
-                        };
-                    } catch (err) {
-                        console.warn(`[Gmail] Failed to fetch message ${msg.id}: ${err.message}`);
-                        return null;
+                    return {
+                        id: msgId,
+                        threadId: detail.data.threadId,
+                        from: getHeader('From'),
+                        subject: getHeader('Subject'),
+                        date: getHeader('Date'),
+                        snippet: detail.data.snippet,
+                        labelIds: detail.data.labelIds || [],
+                        sizeEstimate: detail.data.sizeEstimate || 0,
+                        hasUnsubscribe: !!getHeader('List-Unsubscribe'),
+                        unsubscribeLink: getHeader('List-Unsubscribe')
+                    };
+                } catch (err) {
+                    if (err.code === 429 || err.code === 403) { // Rate limit or quota
+                        retries--;
+                        if (retries === 0) throw err;
+                        // Backoff exponencial: 1s, 2s, 4s... com jitter
+                        const waitTime = (1000 * Math.pow(2, 3 - retries)) + (Math.random() * 500);
+                        await delay(waitTime);
+                        continue;
                     }
-                })
-            );
-
-            emails.push(...batchResults.filter(e => e !== null));
-
-            // Log de progresso a cada 50 emails
-            if (emails.length % 50 === 0 || i + BATCH_SIZE >= allMessageIds.length) {
-                console.log(`[Gmail] Carregados ${emails.length}/${allMessageIds.length} emails`);
+                    throw err;
+                }
             }
+        };
 
-            // Delay entre batches para evitar rate limiting
-            if (i + BATCH_SIZE < allMessageIds.length) {
-                await delay(DELAY_MS);
+        // Implementação simplificada de p-limit/pool
+        const pool = [];
+        const results = [];
+
+        // Função para executar um item e gerenciar o pool
+        const executeItem = async (msg) => {
+            try {
+                const result = await fetchMessageWithRetry(msg.id);
+                if (result) results.push(result);
+            } catch (err) {
+                console.warn(`[Gmail] Failed to fetch message ${msg.id}: ${err.message}`);
+            } finally {
+                completed++;
+                if (completed % 100 === 0) {
+                     console.log(`[Gmail] Carregados ${completed}/${allMessageIds.length} emails`);
+                }
             }
+        };
+
+        // Iniciar pool inicial
+        const initialBatch = allMessageIds.slice(0, CONCURRENCY);
+        const remainingItems = allMessageIds.slice(CONCURRENCY);
+
+        const executing = new Set();
+
+        for (const msg of initialBatch) {
+            const p = executeItem(msg).then(() => executing.delete(p));
+            executing.add(p);
         }
+
+        // Processar restante
+        for (const msg of remainingItems) {
+            // Esperar que pelo menos um termine se o pool estiver cheio
+            if (executing.size >= CONCURRENCY) {
+                await Promise.race(executing);
+            }
+            const p = executeItem(msg).then(() => executing.delete(p));
+            executing.add(p);
+        }
+
+        // Esperar todos terminarem
+        await Promise.all(executing);
+
+        emails.push(...results);
 
         console.log(`[Gmail] Concluído! ${emails.length} emails carregados.`);
         return emails;

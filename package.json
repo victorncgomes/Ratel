@@ -27,7 +27,6 @@
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "framer-motion": "^12.24.7",
-    "googleapis": "^169.0.0",
     "idb": "^8.0.3",
     "isomorphic-fetch": "^3.0.0",
     "lucide-react": "^0.562.0",
