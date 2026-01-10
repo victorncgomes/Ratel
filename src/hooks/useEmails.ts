@@ -37,9 +37,11 @@ export function useEmails() {
     const fetchEmails = useCallback(async (limit: number = 50) => {
         const token = getAccessToken();
 
-        // FORÇAR MOCK DATA SE SEM TOKEN OU EM DEV
-        // Isso resolve o bug de "Zero Data"
-        if (!token || process.env.NODE_ENV === 'development') {
+        // FORÇAR MOCK DATA SE SEM TOKEN OU SE VITE_FORCE_MOCK ESTIVER SETADO
+        // Isso resolve o bug de "Zero Data" em testes sem backend
+        const forceMock = import.meta.env.VITE_FORCE_MOCK === 'true';
+
+        if (!token || forceMock) {
             console.log('Using Mock Data (Robust Fallback)');
             const mocked = mockEmails.slice(0, limit) as unknown as Email[];
             setState({
